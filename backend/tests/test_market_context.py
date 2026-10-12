@@ -817,6 +817,27 @@ def test_euro_area_macro_endpoint_has_explicit_region_and_no_asof_claim(monkeypa
     }).status_code == 422
 
 
+def test_euro_area_unemployment_vintages_expose_archived_release_date(monkeypatch) -> None:
+    async def fake_vintage(start: date, end: date, as_of: date) -> dict[str, Any]:
+        assert (start, end, as_of) == (date(2026, 9, 2), date(2026, 9, 10), date(2026, 9, 10))
+        return {"retrieved_at": "2026-10-12T10:00:00Z", "status": "available", "reason": None,
+                "observations": [{"reference_date": "2026-09-01", "value": 6.3,
+                                  "vintage_date": "2026-09-10"}]}
+
+    monkeypatch.setattr(market_context, "get_euro_area_unemployment_vintage", fake_vintage)
+    client = _client({})
+    response = client.post("/api/market-context/macro-observations/euro-area/unemployment-vintages", json={
+        "start_date": "2026-09-02", "end_date": "2026-09-10", "as_of_date": "2026-09-10",
+    })
+    assert response.status_code == 200
+    assert response.json()["series_id"] == "ei_lm_m_vtg"
+    assert response.json()["region"] == "EA"
+    assert response.json()["observations"][0]["vintage_date"] == "2026-09-10"
+    assert client.post("/api/market-context/macro-observations/euro-area/unemployment-vintages", json={
+        "start_date": "2026-09-02", "end_date": "2026-09-10", "as_of_date": "9999-12-31",
+    }).status_code == 422
+
+
 def _fundamentals_client(data: dict[str, Any]) -> TestClient:
     class FakeFetcher:
         async def fetch_pit_fundamentals_records(self, symbol: str) -> list[dict[str, Any]]:

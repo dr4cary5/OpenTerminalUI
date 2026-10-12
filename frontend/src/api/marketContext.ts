@@ -309,6 +309,19 @@ export interface EuroAreaMacroResponse {
   }[];
 }
 
+export interface EuroAreaUnemploymentVintageResponse {
+  start_date: string;
+  end_date: string;
+  as_of_date: string;
+  retrieved_at: string;
+  series_id: "ei_lm_m_vtg";
+  source: "eurostat";
+  region: "EA";
+  status: "available" | "no_vintages" | "unavailable";
+  reason: "provider_error" | null;
+  observations: { reference_date: string; value: number; vintage_date: string; flag: string | null }[];
+}
+
 export interface MarketFundamentalRelease {
   release_date: string;
   fiscal_period_end: string;
@@ -500,6 +513,18 @@ export async function fetchEuroAreaMacroObservations(startDate: string, endDate:
   const response = await api.post<EuroAreaMacroResponse>("/market-context/macro-observations/euro-area", {
     start_date: startDate, end_date: endDate,
   });
+  return response.data;
+}
+
+export async function fetchEuroAreaUnemploymentVintages(
+  startDate: string,
+  endDate: string,
+  asOfDate: string,
+): Promise<EuroAreaUnemploymentVintageResponse> {
+  const response = await api.post<EuroAreaUnemploymentVintageResponse>(
+    "/market-context/macro-observations/euro-area/unemployment-vintages",
+    { start_date: startDate, end_date: endDate, as_of_date: asOfDate },
+  );
   return response.data;
 }
 

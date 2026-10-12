@@ -7,6 +7,11 @@ adopt [Semantic Versioning](https://semver.org/spec/v2.0.0.html) from `1.0.0`.
 ## [Unreleased]
 
 ### Added
+- **Euro-area unemployment vintage cross-check** — the macro panel can
+  separately inspect dated Eurostat unemployment releases from its sparse
+  2021-onwards archive up to the pair end. It discloses provider flags, archive lag and
+  changing euro-area composition without claiming complete historical
+  availability or equating this series with current EA21 values.
 - **Euro-area macro context pilot** — an independent on-demand panel shows
   official Eurostat HICP/unemployment and ECB deposit-rate observations in the
   pair window, including source, reference period, provider flags, and partial

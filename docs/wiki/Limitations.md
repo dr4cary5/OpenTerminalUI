@@ -230,8 +230,14 @@ never silently faked.
   record, comprehensive availability audit, or proof of a market reaction.
   A separate keyless euro-area pilot uses Eurostat EA21 HICP annual change and
   seasonally adjusted unemployment plus the ECB deposit facility rate. Its
-  monthly dates label reference months, not release dates; Eurostat exposes
-  current dataset versions rather than historical vintages. The ECB series
+  monthly dates label reference months, not release dates; these selected
+  ordinary Eurostat datasets expose current versions. A separate Eurostat
+  archive does retain dated unemployment vintages from 2021 onward; the
+  optional pair-end check shows the latest archived release per reference
+  month. That archive is published about two months behind source releases
+  and can have gaps, so an absent vintage is not proof of non-publication.
+  Its euro-area aggregate changes composition and is not automatically
+  comparable with the current EA21 unemployment series. The ECB rate series
   uses a changing euro-area composition. Provider flags and partial failures
   are shown, but no series is inferred to be relevant to a ticker.
 - **Fundamental release context is a candidate snapshot, not a historical

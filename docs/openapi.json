@@ -4901,6 +4901,149 @@
         "title": "EuroAreaMacroSeries",
         "type": "object"
       },
+      "EuroAreaUnemploymentVintageObservation": {
+        "properties": {
+          "flag": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Flag"
+          },
+          "reference_date": {
+            "format": "date",
+            "title": "Reference Date",
+            "type": "string"
+          },
+          "value": {
+            "title": "Value",
+            "type": "number"
+          },
+          "vintage_date": {
+            "format": "date",
+            "title": "Vintage Date",
+            "type": "string"
+          }
+        },
+        "required": [
+          "reference_date",
+          "value",
+          "vintage_date"
+        ],
+        "title": "EuroAreaUnemploymentVintageObservation",
+        "type": "object"
+      },
+      "EuroAreaUnemploymentVintageRequest": {
+        "properties": {
+          "as_of_date": {
+            "format": "date",
+            "title": "As Of Date",
+            "type": "string"
+          },
+          "end_date": {
+            "format": "date",
+            "title": "End Date",
+            "type": "string"
+          },
+          "start_date": {
+            "format": "date",
+            "title": "Start Date",
+            "type": "string"
+          }
+        },
+        "required": [
+          "start_date",
+          "end_date",
+          "as_of_date"
+        ],
+        "title": "EuroAreaUnemploymentVintageRequest",
+        "type": "object"
+      },
+      "EuroAreaUnemploymentVintageResponse": {
+        "properties": {
+          "as_of_date": {
+            "format": "date",
+            "title": "As Of Date",
+            "type": "string"
+          },
+          "end_date": {
+            "format": "date",
+            "title": "End Date",
+            "type": "string"
+          },
+          "observations": {
+            "items": {
+              "$ref": "#/components/schemas/EuroAreaUnemploymentVintageObservation"
+            },
+            "title": "Observations",
+            "type": "array"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "const": "provider_error",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "region": {
+            "const": "EA",
+            "title": "Region",
+            "type": "string"
+          },
+          "retrieved_at": {
+            "format": "date-time",
+            "title": "Retrieved At",
+            "type": "string"
+          },
+          "series_id": {
+            "const": "ei_lm_m_vtg",
+            "title": "Series Id",
+            "type": "string"
+          },
+          "source": {
+            "const": "eurostat",
+            "title": "Source",
+            "type": "string"
+          },
+          "start_date": {
+            "format": "date",
+            "title": "Start Date",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "available",
+              "no_vintages",
+              "unavailable"
+            ],
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "start_date",
+          "end_date",
+          "as_of_date",
+          "retrieved_at",
+          "series_id",
+          "source",
+          "region",
+          "status",
+          "reason",
+          "observations"
+        ],
+        "title": "EuroAreaUnemploymentVintageResponse",
+        "type": "object"
+      },
       "EventsSummary": {
         "properties": {
           "events": {
@@ -27893,6 +28036,60 @@
           }
         ],
         "summary": "Get Market Context Euro Area Macro Observations",
+        "tags": [
+          "market-context"
+        ],
+        "x-openterminalui-auth": {
+          "permission": "user",
+          "scheme": "bearer"
+        },
+        "x-openterminalui-feature-state": {
+          "market-context": "experimental"
+        }
+      }
+    },
+    "/api/market-context/macro-observations/euro-area/unemployment-vintages": {
+      "post": {
+        "description": "Check dated Eurostat unemployment releases available in today's archive.",
+        "operationId": "get_market_context_euro_area_unemployment_vintages_api_market_context_macro_observations_euro_area_unemployment_vintages_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EuroAreaUnemploymentVintageRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EuroAreaUnemploymentVintageResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get Market Context Euro Area Unemployment Vintages",
         "tags": [
           "market-context"
         ],
