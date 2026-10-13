@@ -230,6 +230,9 @@ never silently faked.
   values may have been revised. They are not attributed to either asset.
   An optional FRED real-time request for the pair-end date shows differences
   from the current view only where source units and frequency match. FRED's
+  response, series, and observation real-time intervals must cover the
+  requested day, and truncated windows are withheld as feed errors. This
+  verifies the response contract, not the underlying historical record. The
   daily historical view is not a saved terminal snapshot, intraday release
   record, comprehensive availability audit, or proof of a market reaction.
   A separate keyless euro-area pilot uses Eurostat EA21 HICP annual change and

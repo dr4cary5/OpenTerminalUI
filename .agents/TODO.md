@@ -536,6 +536,10 @@ intelligence promise, or claim that contradiction handling is solved.
           absent reference-date values only when both feeds return comparable
           units/frequency, and keep provider failures distinct. This is not an
           intraday release audit or proof that a market participant saw a value.
+    - [x] Validate FRED response-level, series, and observation real-time
+          intervals against the requested day; reject truncated observation
+          windows as per-series feed errors instead of presenting a misleading
+          historical comparison. This does not validate intraday release timing.
   - [x] Add a separate on-demand euro-area pilot from official public feeds:
         Eurostat EA21 HICP annual change and seasonally adjusted unemployment,
         plus the ECB deposit facility rate. Show reference period, units,

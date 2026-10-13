@@ -129,13 +129,32 @@ class EconomicDataService:
         )
         metadata_response.raise_for_status()
         observations_response.raise_for_status()
-        metadata = metadata_response.json().get("seriess")
-        raw_observations = observations_response.json().get("observations")
+        metadata_payload = metadata_response.json()
+        observations_payload = observations_response.json()
+        if not isinstance(metadata_payload, dict) or not isinstance(observations_payload, dict):
+            raise ValueError("Unexpected FRED macro response")
+        requested_day = date.fromisoformat(realtime_date)
+
+        def covers_requested_day(item: Dict[str, Any]) -> bool:
+            try:
+                start_day = date.fromisoformat(item["realtime_start"])
+                end_day = date.fromisoformat(item["realtime_end"])
+                return start_day <= requested_day <= end_day
+            except (KeyError, TypeError, ValueError):
+                return False
+
+        if not covers_requested_day(metadata_payload) or not covers_requested_day(observations_payload):
+            raise ValueError("FRED real-time response does not cover requested date")
+        metadata = metadata_payload.get("seriess")
+        raw_observations = observations_payload.get("observations")
         if not isinstance(metadata, list) or len(metadata) != 1 or not isinstance(raw_observations, list):
             raise ValueError("Unexpected FRED macro response")
         info = metadata[0]
-        if not isinstance(info, dict) or info.get("id") != series_id:
+        if not isinstance(info, dict) or info.get("id") != series_id or not covers_requested_day(info):
             raise ValueError("Unexpected FRED series identity")
+        count = observations_payload.get("count")
+        if type(count) is not int or count != len(raw_observations):
+            raise ValueError("FRED macro observations truncated or invalid")
         title, units, frequency = (info.get(field) for field in ("title", "units", "frequency"))
         if not all(isinstance(value, str) and value.strip() for value in (title, units, frequency)):
             raise ValueError("Incomplete FRED series metadata")
@@ -145,6 +164,8 @@ class EconomicDataService:
         for item in raw_observations:
             if not isinstance(item, dict):
                 continue
+            if not covers_requested_day(item):
+                raise ValueError("FRED observation outside requested real-time view")
             try:
                 observed_on = date.fromisoformat(str(item["date"]))
                 value = float(item["value"])

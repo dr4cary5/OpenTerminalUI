@@ -7,6 +7,10 @@ adopt [Semantic Versioning](https://semver.org/spec/v2.0.0.html) from `1.0.0`.
 ## [Unreleased]
 
 ### Added
+- **FRED real-time evidence validation** — US macro series now fail closed
+  when returned real-time intervals miss the requested day or the bounded
+  observation response is truncated, protecting the pair-end comparison from
+  wrong-vintage or incomplete values.
 - **Bounded SEC continuation cross-check** — the on-demand submission check can
   inspect up to three SEC-declared older filing slices for claims absent from
   the recent index, distinguishing unchecked dates from checked-but-absent
