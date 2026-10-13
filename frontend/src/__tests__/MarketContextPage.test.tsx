@@ -832,10 +832,10 @@ describe("MarketContextPage", () => {
       checked_count: 0, matched_count: 0, results: [],
     }).mockResolvedValueOnce({
       contract_version: 1, cik: 320193, retrieved_at: "2026-09-11T10:03:00Z",
-      status: "available", index_scope: "sec_current_recent_submissions_only",
+      status: "available", index_scope: "sec_current_recent_plus_bounded_continuations", continuation_files_checked: 1,
       checked_count: 2, matched_count: 1, results: [
-        { accession: "0000320193-26-000001", form: "10-Q", filed_date: "2026-09-05", status: "matched", submission_form: "10-Q", submission_filed_date: "2026-09-05", accepted_at: "2026-09-05T15:30:00Z" },
-        { accession: "0000320193-26-000002", form: "10-Q/A", filed_date: "2026-09-07", status: "not_in_recent_index", submission_form: null, submission_filed_date: null, accepted_at: null },
+        { accession: "0000320193-26-000001", form: "10-Q", filed_date: "2026-09-05", status: "matched", index_source: "recent", submission_form: "10-Q", submission_filed_date: "2026-09-05", accepted_at: "2026-09-05T15:30:00Z" },
+        { accession: "0000320193-26-000002", form: "10-Q/A", filed_date: "2026-09-07", status: "continuation_not_checked", submission_form: null, submission_filed_date: null, accepted_at: null },
       ],
     });
     renderPage("/equity/market-context?symbol=AAPL&proxies=SPY");
@@ -856,7 +856,7 @@ describe("MarketContextPage", () => {
     expect(screen.getByText(/Different filed values are not verified revisions/)).toBeInTheDocument();
     expect(fundamentalsMock).not.toHaveBeenCalled();
     expect(secSubmissionMock).not.toHaveBeenCalled();
-    fireEvent.click(screen.getByRole("button", { name: "Check recent SEC submission metadata for AAPL" }));
+    fireEvent.click(screen.getByRole("button", { name: "Check SEC submission metadata for AAPL" }));
     await waitFor(() => expect(secSubmissionMock).toHaveBeenCalledWith(320193, [
       { accession: "0000320193-26-000001", form: "10-Q", filed_date: "2026-09-05" },
       { accession: "0000320193-26-000002", form: "10-Q/A", filed_date: "2026-09-07" },
@@ -865,8 +865,8 @@ describe("MarketContextPage", () => {
     expect(screen.getByText(/2026-09-05 · NetIncomeLoss/)).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Retry submission check for AAPL" }));
     expect(await screen.findByText(/1\/2 claims matched accession, form, and filed date/)).toBeInTheDocument();
-    expect(screen.getByText(/0000320193-26-000002 · 10-Q\/A · 2026-09-07: Not found in recent index/)).toBeInTheDocument();
-    expect(screen.getByText(/Older filings may be in continuation files not checked here/)).toBeInTheDocument();
+    expect(screen.getByText(/0000320193-26-000002 · 10-Q\/A · 2026-09-07: No date-matched continuation checked/)).toBeInTheDocument();
+    expect(screen.getByText(/up to three date-matched continuation files/)).toBeInTheDocument();
   });
 
   it("explains SEC configuration and provider failures without implying no filings", async () => {

@@ -7,6 +7,10 @@ adopt [Semantic Versioning](https://semver.org/spec/v2.0.0.html) from `1.0.0`.
 ## [Unreleased]
 
 ### Added
+- **Bounded SEC continuation cross-check** — the on-demand submission check can
+  inspect up to three SEC-declared older filing slices for claims absent from
+  the recent index, distinguishing unchecked dates from checked-but-absent
+  accessions without implying full historical coverage or dissemination time.
 - **Euro-area unemployment vintage cross-check** — the macro panel can
   separately inspect dated Eurostat unemployment releases from its sparse
   2021-onwards archive up to the pair end. It discloses provider flags, archive lag and

@@ -966,24 +966,24 @@ function SecSubmissionCrosscheckPanel({ symbol, data }: { symbol: string; data: 
   return (
     <div className="mt-3 border-t border-terminal-border pt-2">
       <button type="button" className="text-terminal-accent underline" aria-expanded={open} onClick={() => setOpen((value) => !value)}>
-        {open ? "Hide" : "Check"} recent SEC submission metadata for {symbol}
+        {open ? "Hide" : "Check"} SEC submission metadata for {symbol}
       </button>
       {open ? (
         <div className="mt-2 space-y-1">
           <p className="text-terminal-muted">
-            Checking {claims.length} of {distinctCount} distinct claims from the displayed facts and disclosures against the current recent-submissions index. Older filings may be in continuation files not checked here. A miss does not disprove a filing; a match does not establish when a market participant saw it.
+            Checking {claims.length} of {distinctCount} distinct claims against the current recent SEC index and up to three date-matched continuation files. Unchecked or missing claims do not disprove a filing; a match does not establish when a market participant saw it.
           </p>
-          {query.isPending ? <p role="status" className="text-terminal-muted">Checking recent SEC submissions for {symbol}…</p> : null}
+          {query.isPending ? <p role="status" className="text-terminal-muted">Checking SEC submissions for {symbol}…</p> : null}
           {query.isError ? <p role="alert" className="text-terminal-neg">{extractApiErrorMessage(query.error, "Could not check recent SEC submissions.")} <button type="button" className="underline" onClick={() => void query.refetch()}>Retry submission check for {symbol}</button></p> : null}
           {query.data?.status === "configuration_required" ? <p className="text-terminal-muted">SEC user agent is not configured; no submission check was made.</p> : null}
           {query.data?.status === "provider_error" ? <p className="text-terminal-warn">SEC submissions check failed; the filed facts above remain available. <button type="button" className="underline" onClick={() => void query.refetch()}>Retry submission check for {symbol}</button></p> : null}
           {query.data?.status === "available" ? (
             <>
-              <p className="text-terminal-muted">{query.data.matched_count}/{query.data.checked_count} claims matched accession, form, and filed date in the recent index.</p>
+              <p className="text-terminal-muted">{query.data.matched_count}/{query.data.checked_count} claims matched accession, form, and filed date. {query.data.continuation_files_checked ?? 0} continuation files checked.</p>
               <ul className="max-h-64 space-y-1 overflow-y-auto">
                 {query.data.results.map((item) => (
                   <li key={`${item.accession}-${item.form}-${item.filed_date}`} className="rounded border border-terminal-border p-1 text-terminal-text">
-                    {item.accession} · {item.form} · {item.filed_date}: {item.status === "matched" ? "Recent-index match" : item.status === "metadata_mismatch" ? "SEC metadata differs" : item.status === "ambiguous_in_recent_index" ? "Conflicting recent-index rows" : "Not found in recent index"}.
+                    {item.accession} · {item.form} · {item.filed_date}: {item.status === "matched" ? `${item.index_source === "continuation" ? "Continuation" : "Recent-index"} match` : item.status === "metadata_mismatch" ? "SEC metadata differs" : item.status === "ambiguous_in_recent_index" || item.status === "ambiguous_in_continuation" ? "Conflicting index rows" : item.status === "continuation_not_checked" ? "No date-matched continuation checked" : item.status === "not_in_checked_continuation" ? "Not found in checked continuation" : "Not found in recent index"}.
                     {item.status === "metadata_mismatch" ? ` SEC lists ${item.submission_form} on ${item.submission_filed_date}.` : null}
                     {item.accepted_at ? ` SEC-reported acceptance ${item.accepted_at}.` : null}
                   </li>

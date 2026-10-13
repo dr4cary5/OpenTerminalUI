@@ -20,7 +20,9 @@ from backend.services.sec_filing_evidence import (
     disclosure_difference_candidates,
     filed_facts,
 )
-from backend.services.sec_submission_evidence import crosscheck_recent_submission, recent_submission_index
+from backend.services.sec_submission_evidence import (
+    continuation_files, crosscheck_recent_submission, recent_submission_index, submission_index,
+)
 
 
 router = APIRouter(prefix="/api/market-context", tags=["market-context"])
@@ -87,13 +89,16 @@ class SecSubmissionClaim(BaseModel):
 class SecSubmissionCrosscheckRequest(BaseModel):
     cik: int = Field(ge=1, le=9_999_999_999)
     claims: list[SecSubmissionClaim] = Field(min_length=1, max_length=100)
+    check_continuations: bool = False
 
 
 class SecSubmissionCrosscheckItem(SecSubmissionClaim):
-    status: Literal["matched", "metadata_mismatch", "not_in_recent_index", "ambiguous_in_recent_index"]
+    status: Literal["matched", "metadata_mismatch", "not_in_recent_index", "ambiguous_in_recent_index",
+                    "not_in_checked_continuation", "ambiguous_in_continuation", "continuation_not_checked"]
     submission_form: str | None
     submission_filed_date: date | None
     accepted_at: datetime | None
+    index_source: Literal["recent", "continuation"] | None = None
 
 
 class SecSubmissionCrosscheckResponse(BaseModel):
@@ -101,7 +106,8 @@ class SecSubmissionCrosscheckResponse(BaseModel):
     cik: int
     retrieved_at: datetime
     status: Literal["available", "configuration_required", "provider_error"]
-    index_scope: Literal["sec_current_recent_submissions_only"] = "sec_current_recent_submissions_only"
+    index_scope: Literal["sec_current_recent_submissions_only", "sec_current_recent_plus_bounded_continuations"] = "sec_current_recent_submissions_only"
+    continuation_files_checked: int = 0
     checked_count: int = 0
     matched_count: int = 0
     results: list[SecSubmissionCrosscheckItem] = Field(default_factory=list)
@@ -153,14 +159,15 @@ async def sec_submission_crosscheck(
     _user: User = Depends(get_current_user),
     client: SecEdgarClient = Depends(get_sec_edgar_client),
 ) -> dict[str, Any]:
-    """Check supplied accession/date/form claims against the current recent index."""
+    """Check claims against current SEC indexes; continuation retrieval is bounded and opt-in."""
     result: dict[str, Any] = {
         "cik": payload.cik, "retrieved_at": datetime.now(timezone.utc), "status": "configuration_required",
     }
     if not client.configured:
         return result
     try:
-        index = recent_submission_index(await client.recent_submissions(payload.cik), payload.cik)
+        raw = await client.recent_submissions(payload.cik)
+        index = recent_submission_index(raw, payload.cik)
         seen: set[tuple[str, str, date]] = set()
         checks = []
         for claim in payload.claims:
@@ -168,10 +175,35 @@ async def sec_submission_crosscheck(
             if identity in seen:
                 continue
             seen.add(identity)
-            checks.append({**claim.model_dump(),
-                           **crosscheck_recent_submission(index, claim.accession, claim.form, claim.filed_date)})
+            check = crosscheck_recent_submission(index, claim.accession, claim.form, claim.filed_date)
+            checks.append({**claim.model_dump(), **check,
+                           "index_source": "recent" if check["status"] != "not_in_recent_index" else None})
+        files_checked = 0
+        if payload.check_continuations:
+            missing = [row for row in checks if row["status"] == "not_in_recent_index"]
+            names, covered = continuation_files(raw, payload.cik, {row["filed_date"] for row in missing})
+            older: dict[str, dict[str, Any] | None] = {}
+            for name in names:
+                current = submission_index(await client.continuation_submissions(name))
+                files_checked += 1
+                for accession, entry in current.items():
+                    if accession not in older:
+                        older[accession] = entry
+                    elif older[accession] != entry:
+                        older[accession] = None
+            for row in missing:
+                if row["filed_date"] not in covered:
+                    row["status"] = "continuation_not_checked"
+                else:
+                    check = crosscheck_recent_submission(older, row["accession"], row["form"], row["filed_date"])
+                    row.update(check)
+                    row["status"] = {"not_in_recent_index": "not_in_checked_continuation",
+                                     "ambiguous_in_recent_index": "ambiguous_in_continuation"}.get(check["status"], check["status"])
+                    row["index_source"] = "continuation" if row["status"] not in ("not_in_checked_continuation",) else None
+            result["index_scope"] = "sec_current_recent_plus_bounded_continuations"
         result.update(status="available", checked_count=len(checks),
-                      matched_count=sum(row["status"] == "matched" for row in checks), results=checks)
+                      matched_count=sum(row["status"] == "matched" for row in checks),
+                      continuation_files_checked=files_checked, results=checks)
     except Exception as exc:
         # Never expose upstream URLs or transport diagnostics in a public response.
         logger.warning("SEC submissions cross-check failed for CIK %s (%s)", payload.cik, type(exc).__name__)

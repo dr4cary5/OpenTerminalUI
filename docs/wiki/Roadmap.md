@@ -449,12 +449,14 @@ or proof that a later filing superseded an earlier fact. Historical coverage
 and revision-aware interpretation remain open gates.
 
 Users can optionally cross-check displayed accession, form, and filed-date
-claims against the current SEC *recent* submissions index. This is a separate
-request so failure cannot erase Company Facts evidence. A match adds SEC
-reported submission metadata; a miss means only that the accession was not
-found in the bounded recent index. Older continuation files are not fetched,
-and an acceptance timestamp is not proof of market dissemination or a
-complete historical vintage. The wider revision-aware gate remains open.
+claims against the current SEC *recent* submissions index. The browser also
+requests up to three SEC-declared continuation files covering claimed filing
+dates; API callers default to recent-only. This separate request cannot erase
+Company Facts evidence on failure. A match adds SEC-reported submission metadata;
+a miss or unchecked range does not invalidate a filing. Date-based selection
+can miss a filing if the claimed date is wrong, and older files beyond the cap
+are not checked. An acceptance timestamp is not proof of market dissemination
+or a complete historical vintage. The wider revision-aware gate remains open.
 
 A first macro-context candidate now uses the same pair window to request the
 configured Finnhub/FMP economic calendar on demand. Unlike the legacy calendar

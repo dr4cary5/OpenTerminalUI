@@ -15329,12 +15329,30 @@
             "title": "Form",
             "type": "string"
           },
+          "index_source": {
+            "anyOf": [
+              {
+                "enum": [
+                  "recent",
+                  "continuation"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Index Source"
+          },
           "status": {
             "enum": [
               "matched",
               "metadata_mismatch",
               "not_in_recent_index",
-              "ambiguous_in_recent_index"
+              "ambiguous_in_recent_index",
+              "not_in_checked_continuation",
+              "ambiguous_in_continuation",
+              "continuation_not_checked"
             ],
             "title": "Status",
             "type": "string"
@@ -15377,6 +15395,11 @@
       },
       "SecSubmissionCrosscheckRequest": {
         "properties": {
+          "check_continuations": {
+            "default": false,
+            "title": "Check Continuations",
+            "type": "boolean"
+          },
           "cik": {
             "maximum": 9999999999.0,
             "minimum": 1.0,
@@ -15411,6 +15434,11 @@
             "title": "Cik",
             "type": "integer"
           },
+          "continuation_files_checked": {
+            "default": 0,
+            "title": "Continuation Files Checked",
+            "type": "integer"
+          },
           "contract_version": {
             "const": 1,
             "default": 1,
@@ -15418,8 +15446,11 @@
             "type": "integer"
           },
           "index_scope": {
-            "const": "sec_current_recent_submissions_only",
             "default": "sec_current_recent_submissions_only",
+            "enum": [
+              "sec_current_recent_submissions_only",
+              "sec_current_recent_plus_bounded_continuations"
+            ],
             "title": "Index Scope",
             "type": "string"
           },
@@ -28158,7 +28189,7 @@
     },
     "/api/market-context/sec-submission-crosscheck": {
       "post": {
-        "description": "Check supplied accession/date/form claims against the current recent index.",
+        "description": "Check claims against current SEC indexes; continuation retrieval is bounded and opt-in.",
         "operationId": "sec_submission_crosscheck_api_market_context_sec_submission_crosscheck_post",
         "requestBody": {
           "content": {

@@ -9,7 +9,7 @@ from typing import Any
 
 import httpx
 
-from backend.services.sec_submission_evidence import recent_submission_index
+from backend.services.sec_submission_evidence import recent_submission_index, submission_index
 
 
 class SecEdgarClient:
@@ -23,6 +23,7 @@ class SecEdgarClient:
         self._ticker_cache: tuple[float, Any] | None = None
         self._facts_cache: dict[int, tuple[float, Any]] = {}
         self._submissions_cache: dict[int, tuple[float, Any]] = {}
+        self._continuation_cache: dict[str, tuple[float, Any]] = {}
 
     @property
     def configured(self) -> bool:
@@ -79,6 +80,18 @@ class SecEdgarClient:
         if len(self._submissions_cache) >= 4:
             self._submissions_cache.pop(next(iter(self._submissions_cache)))
         self._submissions_cache[cik] = (now, payload)
+        return payload
+
+    async def continuation_submissions(self, name: str) -> dict[str, Any]:
+        now = time.monotonic()
+        cached = self._continuation_cache.get(name)
+        if cached is not None and now - cached[0] <= 1800:
+            return cached[1]
+        payload = await self._get(f"https://data.sec.gov/submissions/{name}")
+        submission_index(payload)
+        if len(self._continuation_cache) >= 12:
+            self._continuation_cache.pop(next(iter(self._continuation_cache)))
+        self._continuation_cache[name] = (now, payload)
         return payload
 
 

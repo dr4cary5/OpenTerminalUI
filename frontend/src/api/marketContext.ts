@@ -411,10 +411,11 @@ export interface SecSubmissionClaim {
 }
 
 export interface SecSubmissionCrosscheckItem extends SecSubmissionClaim {
-  status: "matched" | "metadata_mismatch" | "not_in_recent_index" | "ambiguous_in_recent_index";
+  status: "matched" | "metadata_mismatch" | "not_in_recent_index" | "ambiguous_in_recent_index" | "not_in_checked_continuation" | "ambiguous_in_continuation" | "continuation_not_checked";
   submission_form: string | null;
   submission_filed_date: string | null;
   accepted_at: string | null;
+  index_source?: "recent" | "continuation" | null;
 }
 
 export interface SecSubmissionCrosscheckResponse {
@@ -422,7 +423,8 @@ export interface SecSubmissionCrosscheckResponse {
   cik: number;
   retrieved_at: string;
   status: "available" | "configuration_required" | "provider_error";
-  index_scope: "sec_current_recent_submissions_only";
+  index_scope: "sec_current_recent_submissions_only" | "sec_current_recent_plus_bounded_continuations";
+  continuation_files_checked?: number;
   checked_count: number;
   matched_count: number;
   results: SecSubmissionCrosscheckItem[];
@@ -548,7 +550,7 @@ export async function fetchMarketSecFiledFacts(symbol: string, filedStart: strin
 }
 
 export async function fetchSecSubmissionCrosscheck(cik: number, claims: SecSubmissionClaim[]): Promise<SecSubmissionCrosscheckResponse> {
-  const response = await api.post<SecSubmissionCrosscheckResponse>("/market-context/sec-submission-crosscheck", { cik, claims });
+  const response = await api.post<SecSubmissionCrosscheckResponse>("/market-context/sec-submission-crosscheck", { cik, claims, check_continuations: true });
   return response.data;
 }
 

@@ -17,7 +17,7 @@ from backend.services.sec_filing_evidence import (
     CANDIDATE_DISPLAY_LIMIT, DISCLOSURES_PER_CANDIDATE_LIMIT, DISPLAY_LIMIT,
     disclosure_difference_candidates, filed_facts,
 )
-from backend.services.sec_submission_evidence import crosscheck_recent_submission, recent_submission_index
+from backend.services.sec_submission_evidence import continuation_files, crosscheck_recent_submission, recent_submission_index
 
 
 def _row(accession: str, value: float = 100.0, **changes: object) -> dict:
@@ -229,6 +229,23 @@ def test_recent_submission_index_rejects_wrong_cik_and_broken_columns() -> None:
         pass
 
 
+def test_continuation_selection_caps_requests_and_rejects_foreign_file_names() -> None:
+    payload = _submissions()
+    payload["filings"]["files"] = [
+        {"name": f"CIK0000320193-submissions-{number:03d}.json", "filingFrom": f"202{number}-01-01",
+         "filingTo": f"202{number}-12-31"} for number in range(1, 5)
+    ]
+    names, covered = continuation_files(payload, 320193, {date(year, 3, 1) for year in range(2021, 2025)})
+    assert len(names) == 3
+    assert covered == {date(year, 3, 1) for year in range(2021, 2024)}
+    payload["filings"]["files"][0]["name"] = "../foreign.json"
+    try:
+        continuation_files(payload, 320193, {date(2021, 3, 1)})
+        assert False, "expected foreign filename rejection"
+    except ValueError:
+        pass
+
+
 def test_submission_crosscheck_route_keeps_recent_index_misses_explicit_and_caches() -> None:
     calls: list[str] = []
 
@@ -253,6 +270,60 @@ def test_submission_crosscheck_route_keeps_recent_index_misses_explicit_and_cach
     assert data["results"][0]["accepted_at"] == "2025-05-02T15:30:00Z"
     assert client.post("/api/market-context/sec-submission-crosscheck", json=body).status_code == 200
     assert calls == ["/submissions/CIK0000320193.json"]
+
+
+def test_submission_crosscheck_checks_bounded_continuation_and_preserves_coverage() -> None:
+    calls: list[str] = []
+    recent = _submissions()
+    recent["filings"]["files"] = [
+        {"name": "CIK0000320193-submissions-001.json", "filingFrom": "2023-01-01", "filingTo": "2023-12-31"},
+        {"name": "CIK0000320193-submissions-002.json", "filingFrom": "2022-01-01", "filingTo": "2022-12-31"},
+    ]
+    older = {"accessionNumber": ["0000320193-23-000001", "0000320193-23-000002"],
+             "form": ["10-K", "10-Q"], "filingDate": ["2023-03-01", "2023-08-01"]}
+
+    def respond(request: httpx.Request) -> httpx.Response:
+        calls.append(request.url.path)
+        return httpx.Response(200, json=older if request.url.path.endswith("-001.json") else recent)
+
+    client = _app(SecEdgarClient(user_agent="test@example.com", transport=httpx.MockTransport(respond), pace_seconds=0))
+    body = {"cik": 320193, "check_continuations": True, "claims": [
+        {"accession": "0000320193-23-000001", "form": "10-K", "filed_date": "2023-03-01"},
+        {"accession": "0000320193-23-000002", "form": "10-K", "filed_date": "2023-08-01"},
+        {"accession": "0000320193-23-000003", "form": "10-K", "filed_date": "2023-09-01"},
+        {"accession": "0000320193-21-000001", "form": "10-K", "filed_date": "2021-03-01"},
+    ]}
+    response = client.post("/api/market-context/sec-submission-crosscheck", json=body)
+    assert response.status_code == 200, response.text
+    data = response.json()
+    assert data["index_scope"] == "sec_current_recent_plus_bounded_continuations"
+    assert data["continuation_files_checked"] == 1
+    assert [row["status"] for row in data["results"]] == [
+        "matched", "metadata_mismatch", "not_in_checked_continuation", "continuation_not_checked",
+    ]
+    assert data["results"][0]["index_source"] == "continuation"
+    assert data["results"][3]["index_source"] is None
+    assert calls == ["/submissions/CIK0000320193.json", "/submissions/CIK0000320193-submissions-001.json"]
+    assert client.post("/api/market-context/sec-submission-crosscheck", json=body).status_code == 200
+    assert len(calls) == 2
+
+
+def test_submission_crosscheck_continuation_failure_is_not_reported_as_absence() -> None:
+    recent = _submissions()
+    recent["filings"]["files"] = [
+        {"name": "CIK0000320193-submissions-001.json", "filingFrom": "2023-01-01", "filingTo": "2023-12-31"},
+    ]
+
+    def respond(request: httpx.Request) -> httpx.Response:
+        if request.url.path.endswith("-001.json"):
+            return httpx.Response(503, text="secret-upstream-url")
+        return httpx.Response(200, json=recent)
+
+    client = _app(SecEdgarClient(user_agent="test@example.com", transport=httpx.MockTransport(respond), pace_seconds=0))
+    response = client.post("/api/market-context/sec-submission-crosscheck", json={"cik": 320193,
+        "check_continuations": True, "claims": [{"accession": "0000320193-23-000001", "form": "10-K", "filed_date": "2023-03-01"}]})
+    assert response.json()["status"] == "provider_error"
+    assert "secret-upstream-url" not in response.text
 
 
 def test_submission_crosscheck_configuration_provider_failure_and_validation() -> None:
