@@ -29,7 +29,7 @@ from backend.services.cross_market_context import (
     yahoo_reported_quote_unit,
 )
 from backend.services.economic_data import EconomicDataService, get_economic_data_service
-from backend.services.euro_area_macro import get_euro_area_macro_observations
+from backend.services.euro_area_macro import get_euro_area_macro_observations, get_euro_area_unemployment_vintage
 from backend.services.fundamental_evidence import source_dated_candidates
 from backend.services.forex_service import SUPPORTED_CURRENCIES, service as forex_service
 from backend.services.return_decomposition import decompose_base_currency_return
@@ -424,6 +424,28 @@ class EuroAreaMacroResponse(BaseModel):
     status: Literal["available", "unavailable"]
     reason: Literal["provider_error"] | None
     series: list[EuroAreaMacroSeries]
+
+
+class EuroAreaUnemploymentVintageRequest(MarketMacroEventsRequest):
+    as_of_date: date
+
+
+class EuroAreaUnemploymentVintageObservation(MarketMacroObservation):
+    vintage_date: date
+    flag: str | None = None
+
+
+class EuroAreaUnemploymentVintageResponse(BaseModel):
+    start_date: date
+    end_date: date
+    as_of_date: date
+    retrieved_at: datetime
+    series_id: Literal["ei_lm_m_vtg"]
+    source: Literal["eurostat"]
+    region: Literal["EA"]
+    status: Literal["available", "no_vintages", "unavailable"]
+    reason: Literal["provider_error"] | None
+    observations: list[EuroAreaUnemploymentVintageObservation]
 
 
 class MarketFundamentalsRequest(BaseModel):
@@ -946,6 +968,21 @@ async def get_market_context_euro_area_macro_observations(
     _validate_context_window(payload.start_date, payload.end_date)
     result = await get_euro_area_macro_observations(payload.start_date, payload.end_date)
     return {"start_date": payload.start_date, "end_date": payload.end_date, **result}
+
+
+@router.post("/macro-observations/euro-area/unemployment-vintages", response_model=EuroAreaUnemploymentVintageResponse)
+async def get_market_context_euro_area_unemployment_vintages(
+    payload: EuroAreaUnemploymentVintageRequest,
+    _: User = Depends(get_current_user),
+) -> dict[str, Any]:
+    """Check dated Eurostat unemployment releases available in today's archive."""
+    _validate_context_window(payload.start_date, payload.end_date)
+    if payload.as_of_date > datetime.now(timezone.utc).date() or payload.as_of_date < date(2021, 1, 1):
+        raise HTTPException(status_code=422, detail="Vintage as-of date must be between 2021-01-01 and today")
+    result = await get_euro_area_unemployment_vintage(payload.start_date, payload.end_date, payload.as_of_date)
+    return {"start_date": payload.start_date, "end_date": payload.end_date,
+            "as_of_date": payload.as_of_date, "series_id": "ei_lm_m_vtg",
+            "source": "eurostat", "region": "EA", **result}
 
 
 @router.post("/fundamental-releases", response_model=MarketFundamentalsResponse)

@@ -17,6 +17,10 @@ logger = logging.getLogger(__name__)
 EUROSTAT_URL = "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data"
 ECB_URL = "https://data-api.ecb.europa.eu/service/data/FM/D.U2.EUR.4F.KR.DFR.LEV"
 ECB_SERIES = "FM.D.U2.EUR.4F.KR.DFR.LEV"
+UNEMPLOYMENT_VINTAGE_SERIES = "ei_lm_m_vtg"
+UNEMPLOYMENT_VINTAGE_FILTERS = {
+    "geo": "EA", "unit": "PC_ACT", "s_adj": "SA", "sex": "T", "age": "TOTAL",
+}
 
 SERIES = (
     ("prc_hicp_minr", "Euro-area HICP, annual change", "eurostat", "Monthly", "Percent", {
@@ -132,3 +136,83 @@ async def get_euro_area_macro_observations(start: date, end: date) -> dict[str, 
     available = any(group["status"] != "feed_error" for group in groups)
     return {"retrieved_at": retrieved_at, "region": "EA21", "status": "available" if available else "unavailable",
             "reason": None if available else "provider_error", "series": groups}
+
+
+def _unemployment_vintage_rows(data: Any, start: date, end: date, as_of: date) -> list[dict[str, Any]]:
+    """Select the latest archived release no later than as_of per reference month.
+
+    Eurostat stores only changed vintages, so absent later revision dates do not
+    make an earlier observation disappear. This reconstructs from the archive
+    currently available, not from what the archive exposed on the as-of date.
+    """
+    if not isinstance(data, dict) or not isinstance(data.get("dimension"), dict):
+        raise ValueError("Invalid Eurostat vintage response")
+    ids, sizes = data.get("id"), data.get("size")
+    expected = {"freq", *UNEMPLOYMENT_VINTAGE_FILTERS, "revdate", "time"}
+    if not isinstance(ids, list) or not isinstance(sizes, list) or len(ids) != len(sizes) or set(ids) != expected:
+        raise ValueError("Invalid Eurostat vintage dimensions")
+    if any(not isinstance(size, int) or size < 0 for size in sizes):
+        raise ValueError("Invalid Eurostat vintage shape")
+    dimensions = data["dimension"]
+    for name, code in {"freq": "M", **UNEMPLOYMENT_VINTAGE_FILTERS}.items():
+        if sizes[ids.index(name)] != 1 or dimensions.get(name, {}).get("category", {}).get("index") != {code: 0}:
+            raise ValueError("Unexpected Eurostat vintage identity")
+    rev_index = dimensions.get("revdate", {}).get("category", {}).get("index")
+    time_index = dimensions.get("time", {}).get("category", {}).get("index")
+    values = data.get("value")
+    if not isinstance(rev_index, dict) or not isinstance(time_index, dict) or not isinstance(values, dict):
+        raise ValueError("Invalid Eurostat vintage observations")
+    statuses = data.get("status") or {}
+    if not isinstance(statuses, dict):
+        raise ValueError("Invalid Eurostat vintage flags")
+    revisions = {position: date.fromisoformat(raw) for raw, position in rev_index.items()}
+    months = {position: _month_start(raw) for raw, position in time_index.items()}
+    if len(revisions) != sizes[ids.index("revdate")] or len(months) != sizes[ids.index("time")]:
+        raise ValueError("Invalid Eurostat vintage axis")
+    if any(not isinstance(position, int) for position in (*revisions, *months)):
+        raise ValueError("Invalid Eurostat vintage positions")
+
+    strides: dict[str, int] = {}
+    stride = 1
+    for name, size in reversed(list(zip(ids, sizes))):
+        strides[name] = stride
+        stride *= size
+    chosen: dict[date, dict[str, Any]] = {}
+    for raw_position, raw_value in values.items():
+        position = int(raw_position)
+        if not 0 <= position < stride:
+            raise ValueError("Eurostat vintage value outside dimensions")
+        rev_position = (position // strides["revdate"]) % sizes[ids.index("revdate")]
+        time_position = (position // strides["time"]) % sizes[ids.index("time")]
+        revision, month = revisions[rev_position], months[time_position]
+        if revision > as_of or not ((month.year, month.month) == (start.year, start.month) or start <= month <= end):
+            continue
+        value = _finite(raw_value)
+        flag = statuses.get(raw_position)
+        if flag is not None and not isinstance(flag, str):
+            raise ValueError("Invalid Eurostat vintage flag")
+        previous = chosen.get(month)
+        if previous is None or revision > previous["vintage_date"]:
+            chosen[month] = {"reference_date": month, "value": value, "vintage_date": revision, "flag": flag}
+        elif revision == previous["vintage_date"] and value != previous["value"]:
+            raise ValueError("Conflicting Eurostat vintage")
+    return [chosen[month] for month in sorted(chosen)]
+
+
+async def get_euro_area_unemployment_vintage(start: date, end: date, as_of: date) -> dict[str, Any]:
+    """Check the currently available Eurostat archive; never fabricate gaps."""
+    retrieved_at = datetime.now(timezone.utc)
+    try:
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            response = await client.get(f"{EUROSTAT_URL}/{UNEMPLOYMENT_VINTAGE_SERIES}", params={
+                **UNEMPLOYMENT_VINTAGE_FILTERS,
+                "sinceTimePeriod": start.strftime("%Y-%m"),
+                "untilTimePeriod": end.strftime("%Y-%m"),
+            })
+            response.raise_for_status()
+            observations = _unemployment_vintage_rows(response.json(), start, end, as_of)
+    except Exception as exc:
+        logger.warning("Euro-area unemployment vintage failed (%s)", type(exc).__name__)
+        return {"retrieved_at": retrieved_at, "status": "unavailable", "reason": "provider_error", "observations": []}
+    return {"retrieved_at": retrieved_at, "status": "available" if observations else "no_vintages",
+            "reason": None, "observations": observations}

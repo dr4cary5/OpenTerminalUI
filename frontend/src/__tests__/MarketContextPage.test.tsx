@@ -3,11 +3,11 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { captureMarketFundamentals, compareMarketContext, compareMarketFundamentalCaptures, fetchEuroAreaMacroObservations, fetchMarketContextFundamentalReleases, fetchMarketContextHeadlines, fetchMarketContextMacroEvents, fetchMarketContextMacroObservations, fetchMarketSecFiledFacts, fetchSecSubmissionCrosscheck, getMarketFundamentalCapture, listMarketFundamentalCaptures } from "../api/marketContext";
+import { captureMarketFundamentals, compareMarketContext, compareMarketFundamentalCaptures, fetchEuroAreaMacroObservations, fetchEuroAreaUnemploymentVintages, fetchMarketContextFundamentalReleases, fetchMarketContextHeadlines, fetchMarketContextMacroEvents, fetchMarketContextMacroObservations, fetchMarketSecFiledFacts, fetchSecSubmissionCrosscheck, getMarketFundamentalCapture, listMarketFundamentalCaptures } from "../api/marketContext";
 import { searchSymbols } from "../api/marketData";
 import { MarketContextPage } from "../pages/MarketContextPage";
 
-vi.mock("../api/marketContext", () => ({ captureMarketFundamentals: vi.fn(), compareMarketContext: vi.fn(), compareMarketFundamentalCaptures: vi.fn(), fetchEuroAreaMacroObservations: vi.fn(), fetchMarketContextFundamentalReleases: vi.fn(), fetchMarketContextHeadlines: vi.fn(), fetchMarketContextMacroEvents: vi.fn(), fetchMarketContextMacroObservations: vi.fn(), fetchMarketSecFiledFacts: vi.fn(), fetchSecSubmissionCrosscheck: vi.fn(), getMarketFundamentalCapture: vi.fn(), listMarketFundamentalCaptures: vi.fn() }));
+vi.mock("../api/marketContext", () => ({ captureMarketFundamentals: vi.fn(), compareMarketContext: vi.fn(), compareMarketFundamentalCaptures: vi.fn(), fetchEuroAreaMacroObservations: vi.fn(), fetchEuroAreaUnemploymentVintages: vi.fn(), fetchMarketContextFundamentalReleases: vi.fn(), fetchMarketContextHeadlines: vi.fn(), fetchMarketContextMacroEvents: vi.fn(), fetchMarketContextMacroObservations: vi.fn(), fetchMarketSecFiledFacts: vi.fn(), fetchSecSubmissionCrosscheck: vi.fn(), getMarketFundamentalCapture: vi.fn(), listMarketFundamentalCaptures: vi.fn() }));
 vi.mock("../api/marketData", () => ({ searchSymbols: vi.fn() }));
 
 const compareMock = vi.mocked(compareMarketContext);
@@ -15,6 +15,7 @@ const headlinesMock = vi.mocked(fetchMarketContextHeadlines);
 const macroMock = vi.mocked(fetchMarketContextMacroEvents);
 const macroObservationsMock = vi.mocked(fetchMarketContextMacroObservations);
 const euroAreaMacroMock = vi.mocked(fetchEuroAreaMacroObservations);
+const euroAreaVintageMock = vi.mocked(fetchEuroAreaUnemploymentVintages);
 const fundamentalsMock = vi.mocked(fetchMarketContextFundamentalReleases);
 const secFactsMock = vi.mocked(fetchMarketSecFiledFacts);
 const secSubmissionMock = vi.mocked(fetchSecSubmissionCrosscheck);
@@ -42,6 +43,7 @@ describe("MarketContextPage", () => {
     macroMock.mockReset();
     macroObservationsMock.mockReset();
     euroAreaMacroMock.mockReset();
+    euroAreaVintageMock.mockReset();
     fundamentalsMock.mockReset();
     secFactsMock.mockReset();
     secSubmissionMock.mockReset();
@@ -639,6 +641,18 @@ describe("MarketContextPage", () => {
     expect(await screen.findByText(/2026-09: 3.8 \(provider flag: e\)/)).toBeInTheDocument();
     expect(screen.getByText(/possibly revised or estimated—not release-time or ticker-specific evidence/)).toBeInTheDocument();
     expect(screen.getByText(/Provider request or response failed/)).toBeInTheDocument();
+    euroAreaVintageMock.mockResolvedValueOnce({
+      start_date: "2026-09-02", end_date: "2026-09-10", as_of_date: "2026-09-10",
+      retrieved_at: "2026-10-12T10:00:00Z", series_id: "ei_lm_m_vtg", source: "eurostat",
+      region: "EA", status: "available", reason: null,
+      observations: [{ reference_date: "2026-09-01", value: 6.3, vintage_date: "2026-09-10", flag: "p" }],
+    });
+    expect(euroAreaVintageMock).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole("button", { name: "Check Eurostat unemployment vintages as of 2026-09-10" }));
+    await waitFor(() => expect(euroAreaVintageMock).toHaveBeenCalledWith("2026-09-02", "2026-09-10", "2026-09-10"));
+    expect(await screen.findByText(/2026-09: 6.3% · archived release 2026-09-10 · provider flag: p/)).toBeInTheDocument();
+    expect(screen.getByText(/The archive is updated about two months after source publication/)).toBeInTheDocument();
+    expect(screen.getByText(/not a direct numeric comparison with the current EA21 series/)).toBeInTheDocument();
   });
 
   it("loads only on-demand source-dated fundamental candidates for the pair window", async () => {

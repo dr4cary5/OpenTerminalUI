@@ -542,6 +542,12 @@ intelligence promise, or claim that contradiction handling is solved.
     - [ ] Validate release timestamps and historical vintages before using
           these euro-area values for point-in-time macro explanations; extend
           geography only with explicit series, coverage, and freshness checks.
+      - [x] Add a narrowly scoped Eurostat unemployment-vintage check from the
+            separate 2021-onwards archive. For each reference month, select
+            the latest archived release dated no later than the pair end;
+            disclose release date, provider flag, current archive retrieval time, changing
+            euro-area composition, and two-month archive lag. Sparse or
+            missing vintages cannot establish complete historical knowledge.
   - [x] Expose the exact shared-close trajectory behind each available pair,
         rebased to 100 at the first shared date, with an on-demand chart and
         inspectable observation table. No missing dates are filled in; the path

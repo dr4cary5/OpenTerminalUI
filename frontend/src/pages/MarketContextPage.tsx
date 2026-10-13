@@ -3,7 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSearchParams } from "react-router-dom";
 import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 
-import { captureMarketFundamentals, compareMarketContext, compareMarketFundamentalCaptures, fetchEuroAreaMacroObservations, fetchMarketContextFundamentalReleases, fetchMarketContextHeadlines, fetchMarketContextMacroEvents, fetchMarketContextMacroObservations, fetchMarketSecFiledFacts, fetchSecSubmissionCrosscheck, getMarketFundamentalCapture, listMarketFundamentalCaptures, type MarketContextPeriod, type MarketComparisonRow, type MarketMacroObservationSeries, type MarketQuoteUnitDisclosure, type MarketReportingCurrency, type SecFiledFactsResponse, type SecSubmissionClaim } from "../api/marketContext";
+import { captureMarketFundamentals, compareMarketContext, compareMarketFundamentalCaptures, fetchEuroAreaMacroObservations, fetchEuroAreaUnemploymentVintages, fetchMarketContextFundamentalReleases, fetchMarketContextHeadlines, fetchMarketContextMacroEvents, fetchMarketContextMacroObservations, fetchMarketSecFiledFacts, fetchSecSubmissionCrosscheck, getMarketFundamentalCapture, listMarketFundamentalCaptures, type MarketContextPeriod, type MarketComparisonRow, type MarketMacroObservationSeries, type MarketQuoteUnitDisclosure, type MarketReportingCurrency, type SecFiledFactsResponse, type SecSubmissionClaim } from "../api/marketContext";
 import { extractApiErrorMessage } from "../api/base";
 import { SymbolSuggestions } from "../components/market/SymbolSuggestions";
 import { TerminalPanel } from "../components/terminal/TerminalPanel";
@@ -664,12 +664,20 @@ function HistoricalMacroObservations({ anchor, row }: { anchor: string; row: Mar
 
 function EuroAreaMacroObservations({ row }: { row: MarketComparisonRow }) {
   const [open, setOpen] = useState(false);
+  const [showVintages, setShowVintages] = useState(false);
   const startDate = row.start_date || "";
   const endDate = row.end_date || "";
   const query = useQuery({
     queryKey: ["market-context-euro-area-macro", startDate, endDate],
     queryFn: () => fetchEuroAreaMacroObservations(startDate, endDate),
     enabled: open && !!startDate && !!endDate,
+    staleTime: 5 * 60_000,
+    retry: false,
+  });
+  const vintageQuery = useQuery({
+    queryKey: ["market-context-euro-area-unemployment-vintage", startDate, endDate],
+    queryFn: () => fetchEuroAreaUnemploymentVintages(startDate, endDate, endDate),
+    enabled: open && showVintages && !!startDate && !!endDate,
     staleTime: 5 * 60_000,
     retry: false,
   });
@@ -688,6 +696,20 @@ function EuroAreaMacroObservations({ row }: { row: MarketComparisonRow }) {
         <p className="text-terminal-muted">{series.source === "ecb" ? "ECB" : "Eurostat"} · {series.units} · {series.frequency}</p>
         {series.status === "feed_error" ? <p className="text-terminal-warn">Provider request or response failed.</p> : series.observations.length ? <ul className="mt-1 max-h-28 space-y-1 overflow-auto">{series.observations.map((observation) => <li key={observation.reference_date}>{series.frequency === "Monthly" ? observation.reference_date.slice(0, 7) : observation.reference_date}: {observation.value.toLocaleString()}{observation.flag ? ` (provider flag: ${observation.flag})` : ""}</li>)}</ul> : <p className="text-terminal-muted">No values in this reference-period window.</p>}
       </div>)}</div> : null}
+      <button type="button" className="text-terminal-accent underline" onClick={() => setShowVintages((value) => !value)} aria-expanded={showVintages}>
+        {showVintages ? "Hide" : "Check"} Eurostat unemployment vintages as of {endDate}
+      </button>
+      {showVintages ? <div className="space-y-2 rounded border border-terminal-border p-2">
+        <p className="text-terminal-muted">Eurostat’s separate <a className="text-terminal-accent underline" href="https://ec.europa.eu/eurostat/databrowser/view/ei_lm_m_vtg/default/table?lang=en" target="_blank" rel="noopener noreferrer">unemployment vintage archive</a> records dated releases for the euro area in its changing composition. This check selects the latest archived release no later than the pair end for each reference month. The archive is updated about two months after source publication and can have missing vintages; an absent row does not prove that no value was public then. This is not a direct numeric comparison with the current EA21 series or an intraday availability audit.</p>
+        {vintageQuery.isPending ? <p role="status" className="text-terminal-muted">Checking archived unemployment vintages…</p> : null}
+        {vintageQuery.isError ? <p role="alert" className="text-terminal-neg">{extractApiErrorMessage(vintageQuery.error, "Could not check unemployment vintages.")} <button type="button" className="underline" onClick={() => void vintageQuery.refetch()}>Retry vintage check</button></p> : null}
+        {vintageQuery.data?.status === "unavailable" ? <p className="text-terminal-warn">The Eurostat vintage feed failed; no historical values are shown.</p> : null}
+        {vintageQuery.data?.status === "no_vintages" ? <p className="text-terminal-muted">No archived release rows matched these reference months and the {endDate} cutoff. This may reflect publication or archive lag.</p> : null}
+        {vintageQuery.data?.status === "available" ? <>
+          <p className="text-terminal-muted">Archive checked {new Date(vintageQuery.data.retrieved_at).toLocaleString()} · release-date cutoff {vintageQuery.data.as_of_date}.</p>
+          <ul className="max-h-28 space-y-1 overflow-auto">{vintageQuery.data.observations.map((observation) => <li key={observation.reference_date}>{observation.reference_date.slice(0, 7)}: {observation.value.toLocaleString()}% · archived release {observation.vintage_date}{observation.flag ? ` · provider flag: ${observation.flag}` : ""}</li>)}</ul>
+        </> : null}
+      </div> : null}
     </div> : null}
   </div>;
 }
