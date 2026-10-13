@@ -456,7 +456,10 @@ intelligence promise, or claim that contradiction handling is solved.
           displayed accession/form/filed-date claims. Match only the current
           recent index, keep absent/ambiguous/mismatched claims distinct, and
           leave filed facts visible if this additional provider request fails.
-          Older continuation files and historical dissemination remain unverified.
+    - [x] Extend the opt-in cross-check to at most three SEC-declared continuation
+          files selected by claimed filing date. Keep uncovered, absent, ambiguous,
+          and mismatched claims distinct; older files beyond the cap and historical
+          dissemination remain unverified.
   - [x] First news-provenance prerequisite: live news parsing and background
         ingestion no longer invent a publication date when the source omits or
         corrupts one. Undated rows are skipped; previously stored rows are not

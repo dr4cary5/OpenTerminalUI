@@ -3,15 +3,12 @@
 from __future__ import annotations
 
 from datetime import date, datetime
+import re
 from typing import Any
 
 
-def recent_submission_index(payload: dict[str, Any], cik: int) -> dict[str, dict[str, Any] | None]:
-    """Map accession to metadata; None marks contradictory rows in this index."""
-    if payload.get("cik") != cik:
-        raise ValueError("SEC submissions CIK mismatch")
-    filings = payload.get("filings")
-    recent = filings.get("recent") if isinstance(filings, dict) else None
+def submission_index(recent: Any) -> dict[str, dict[str, Any] | None]:
+    """Map accession to metadata; None marks contradictory rows in one slice."""
     if not isinstance(recent, dict):
         raise ValueError("SEC recent submissions missing")
     columns = [recent.get(name) for name in ("accessionNumber", "form", "filingDate")]
@@ -45,6 +42,40 @@ def recent_submission_index(payload: dict[str, Any], cik: int) -> dict[str, dict
         elif index[accession] != row:
             index[accession] = None
     return index
+
+
+def recent_submission_index(payload: dict[str, Any], cik: int) -> dict[str, dict[str, Any] | None]:
+    if payload.get("cik") != cik:
+        raise ValueError("SEC submissions CIK mismatch")
+    filings = payload.get("filings")
+    return submission_index(filings.get("recent") if isinstance(filings, dict) else None)
+
+
+def continuation_files(payload: dict[str, Any], cik: int, dates: set[date], limit: int = 3) -> tuple[list[str], set[date]]:
+    """Choose only SEC-declared files covering claimed dates; never synthesize URLs."""
+    filings = payload.get("filings")
+    files = filings.get("files", []) if isinstance(filings, dict) else []
+    if not isinstance(files, list):
+        raise ValueError("SEC continuation metadata invalid")
+    selected: list[str] = []
+    covered: set[date] = set()
+    for item in files:
+        if not isinstance(item, dict):
+            raise ValueError("SEC continuation metadata invalid")
+        name = item.get("name")
+        if not isinstance(name, str) or not re.fullmatch(rf"CIK{cik:010d}-submissions-\d{{3}}\.json", name):
+            raise ValueError("SEC continuation filename invalid")
+        try:
+            start, end = date.fromisoformat(item["filingFrom"]), date.fromisoformat(item["filingTo"])
+        except (KeyError, TypeError, ValueError) as exc:
+            raise ValueError("SEC continuation range invalid") from exc
+        if start > end:
+            raise ValueError("SEC continuation range invalid")
+        matching = {day for day in dates if start <= day <= end}
+        if matching and len(selected) < limit:
+            selected.append(name)
+            covered.update(matching)
+    return selected, covered
 
 
 def crosscheck_recent_submission(
