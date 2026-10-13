@@ -145,20 +145,25 @@ async def test_macro_context_preserves_reference_dates_metadata_and_partial_fail
             if params["series_id"] == "FEDFUNDS":
                 raise RuntimeError("provider down")
             if url.endswith("/series"):
-                return FakeResponse({"seriess": [{
+                return FakeResponse({"realtime_start": params["realtime_start"], "realtime_end": params["realtime_end"], "seriess": [{
                     "id": params["series_id"], "title": "Provider title",
                     "units": "Percent", "frequency": "Monthly",
+                    "realtime_start": params["realtime_start"], "realtime_end": params["realtime_end"],
                 }]})
             assert params["observation_start"] == "2026-09-01"
             assert params["observation_end"] == "2026-09-30"
-            return FakeResponse({"observations": [
+            rows = [
                 {"date": "2026-09-01", "value": "3.5"},
                 {"date": "2026-09-01", "value": "3.5"},
                 {"date": "2026-09-02", "value": "4.0"},
                 {"date": "2026-09-02", "value": "5.0"},
                 {"date": "2026-09-03", "value": "."},
                 {"date": "2026-10-01", "value": "8.0"},
-            ]})
+            ]
+            return FakeResponse({"realtime_start": params["realtime_start"], "realtime_end": params["realtime_end"],
+                                 "count": len(rows), "observations": [
+                                     {**row, "realtime_start": params["realtime_start"],
+                                      "realtime_end": params["realtime_end"]} for row in rows]})
 
     monkeypatch.setattr(economic_data.httpx, "AsyncClient", lambda **kwargs: FakeClient())
     service = economic_data.EconomicDataService()
@@ -180,6 +185,48 @@ async def test_macro_context_preserves_reference_dates_metadata_and_partial_fail
     )
     assert historical["realtime_date"] == "2026-09-10"
     assert all(params["realtime_start"] == params["realtime_end"] == "2026-09-10" for _, params in requests[6:])
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("defect", ["metadata_vintage", "response_vintage", "observation_vintage", "truncated"])
+async def test_macro_context_rejects_wrong_vintage_or_truncated_response(monkeypatch, defect: str) -> None:
+    requested = "2026-09-10"
+
+    class FakeResponse:
+        def __init__(self, data):
+            self.data = data
+
+        def raise_for_status(self):
+            return None
+
+        def json(self):
+            return self.data
+
+    class FakeClient:
+        async def get(self, url, params):  # noqa: ANN001
+            interval = {"realtime_start": requested, "realtime_end": requested}
+            if url.endswith("/series"):
+                info = {"id": params["series_id"], "title": "Provider title", "units": "Percent",
+                        "frequency": "Monthly", **interval}
+                if defect == "metadata_vintage":
+                    info["realtime_start"] = "2026-09-11"
+                return FakeResponse({**interval, "seriess": [info]})
+            row = {"date": "2026-09-01", "value": "3.5", **interval}
+            if defect == "observation_vintage":
+                row["realtime_end"] = "2026-09-09"
+            response = {**interval, "count": 1, "observations": [row]}
+            if defect == "response_vintage":
+                response["realtime_start"] = "2026-09-11"
+            if defect == "truncated":
+                response["count"] = 2
+            return FakeResponse(response)
+
+    service = economic_data.EconomicDataService()
+    service.fred_key = "test-key"
+    with pytest.raises(ValueError):
+        await service._fetch_market_context_fred_series(
+            FakeClient(), "UNRATE", "Unemployment rate", date(2026, 9, 1), date(2026, 9, 30), requested,
+        )
 
 
 @pytest.mark.asyncio

@@ -477,7 +477,9 @@ future prerequisites for macro explanations.
 An optional second request now asks FRED for its daily real-time view at the
 pair's end date and contrasts values on the same reference dates with the
 current view. Missing values, changed values, provider failures, and changed
-units/frequency remain distinct. This is a provider-returned daily historical
+units/frequency remain distinct. Response, series, and observation real-time
+intervals must cover the requested day; truncated windows are feed errors.
+This is a provider-returned daily historical
 view, not a locally preserved snapshot, exact intraday publication timeline,
 or guarantee of what any market participant saw. Wider release-time and
 coverage validation remain open.
