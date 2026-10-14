@@ -71,6 +71,11 @@ describe("MarketContextPage", () => {
         anchor_history_source: "yahoo", comparison_history_source: "yahoo",
         anchor_quote_unit: { unit: "USD", source: "yahoo_chart_meta" },
         comparison_quote_unit: { unit: "EUR", source: "yahoo_chart_meta" },
+        anchor_exchange_dates: { status: "available", exchange_timezone: "Asia/Tokyo", checked_utc_dates: 22,
+          shifted_utc_date_count: 2, ambiguous_utc_date_count: 0,
+          examples: [{ utc_date: "2026-09-24", exchange_local_date: "2026-09-25" }] },
+        comparison_exchange_dates: { status: "available", exchange_timezone: "Europe/Berlin", checked_utc_dates: 22,
+          shifted_utc_date_count: 0, ambiguous_utc_date_count: 0, examples: [] },
         observations: 22, freshness: "current", anchor_return_pct: 0,
         comparison_return_pct: 0, relative_return_pp: 0, points: [
           { date: "2026-08-25", anchor_index: 100, comparison_index: 100 },
@@ -102,6 +107,9 @@ describe("MarketContextPage", () => {
     expect(compareMock).toHaveBeenCalledWith("AAPL", ["SAP.DE"], "1M", "USD");
     expect(screen.getByText(/SAP.DE: -8.33%/)).toBeInTheDocument();
     expect(screen.getByText(/not an FX-normalized daily path/)).toBeInTheDocument();
+    expect(screen.getByText(/AAPL: 2\/22 UTC dates differ in Asia\/Tokyo/)).toBeInTheDocument();
+    expect(screen.getByText(/2026-09-24 UTC → 2026-09-25 local/)).toBeInTheDocument();
+    expect(screen.getByText(/Pair alignment still uses UTC dates/)).toBeInTheDocument();
     expect(screen.getByText(/SAP.DE start 2026-08-25: 1.2/)).toBeInTheDocument();
     expect(screen.getByRole("combobox", { name: "Reporting currency" })).toHaveValue("USD");
     fireEvent.click(screen.getByText("Break down price and FX returns"));

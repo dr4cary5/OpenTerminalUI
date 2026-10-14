@@ -7775,6 +7775,16 @@
           "anchor_close_date_conflicts": {
             "$ref": "#/components/schemas/MarketCloseDateConflicts"
           },
+          "anchor_exchange_dates": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MarketExchangeDateDisclosure"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "anchor_history_feed": {
             "anyOf": [
               {
@@ -7841,6 +7851,16 @@
           },
           "comparison_close_date_conflicts": {
             "$ref": "#/components/schemas/MarketCloseDateConflicts"
+          },
+          "comparison_exchange_dates": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MarketExchangeDateDisclosure"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "comparison_history_feed": {
             "anyOf": [
@@ -8106,6 +8126,78 @@
           "type"
         ],
         "title": "MarketCorporateAction",
+        "type": "object"
+      },
+      "MarketExchangeDateDisclosure": {
+        "properties": {
+          "ambiguous_utc_date_count": {
+            "title": "Ambiguous Utc Date Count",
+            "type": "integer"
+          },
+          "checked_utc_dates": {
+            "title": "Checked Utc Dates",
+            "type": "integer"
+          },
+          "examples": {
+            "items": {
+              "$ref": "#/components/schemas/MarketExchangeDateExample"
+            },
+            "title": "Examples",
+            "type": "array"
+          },
+          "exchange_timezone": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Exchange Timezone"
+          },
+          "shifted_utc_date_count": {
+            "title": "Shifted Utc Date Count",
+            "type": "integer"
+          },
+          "status": {
+            "enum": [
+              "available",
+              "unavailable"
+            ],
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "status",
+          "exchange_timezone",
+          "checked_utc_dates",
+          "shifted_utc_date_count",
+          "ambiguous_utc_date_count",
+          "examples"
+        ],
+        "title": "MarketExchangeDateDisclosure",
+        "type": "object"
+      },
+      "MarketExchangeDateExample": {
+        "properties": {
+          "exchange_local_date": {
+            "format": "date",
+            "title": "Exchange Local Date",
+            "type": "string"
+          },
+          "utc_date": {
+            "format": "date",
+            "title": "Utc Date",
+            "type": "string"
+          }
+        },
+        "required": [
+          "utc_date",
+          "exchange_local_date"
+        ],
+        "title": "MarketExchangeDateExample",
         "type": "object"
       },
       "MarketFXEndpointComparison": {

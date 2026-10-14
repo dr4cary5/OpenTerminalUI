@@ -9,7 +9,7 @@ from fastapi.testclient import TestClient
 from backend.api.deps import get_unified_fetcher
 from backend.api.routes import market_context
 from backend.auth.deps import get_current_user
-from backend.services.cross_market_context import _daily_closes, adjusted_observations, compare_closes, daily_closes_with_conflicts, yahoo_action_metadata_present, yahoo_adjusted_closes, yahoo_adjusted_closes_with_conflicts, yahoo_reported_actions, yahoo_reported_quote_unit
+from backend.services.cross_market_context import _daily_closes, adjusted_observations, compare_closes, daily_closes_with_conflicts, yahoo_action_metadata_present, yahoo_adjusted_closes, yahoo_adjusted_closes_with_conflicts, yahoo_exchange_date_disclosure, yahoo_reported_actions, yahoo_reported_quote_unit
 from backend.services.economic_data import get_economic_data_service
 
 
@@ -61,6 +61,21 @@ def test_short_or_disjoint_history_never_claims_full_period_return() -> None:
 def test_invalid_closes_are_ignored() -> None:
     closes = _daily_closes(_chart({date(2026, 9, 1): 100.0, date(2026, 9, 2): 0.0}))
     assert closes == {date(2026, 9, 1): 100.0}
+
+
+def test_yahoo_exchange_date_disclosure_only_counts_accepted_utc_dates() -> None:
+    first, second = date(2026, 9, 1), date(2026, 9, 2)
+    raw = _chart({first: 100.0, second: 110.0})
+    result = raw["chart"]["result"][0]
+    result["timestamp"] = [stamp + 22 * 3600 for stamp in result["timestamp"]]
+    result["meta"] = {"exchangeTimezoneName": "Asia/Tokyo"}
+    assert yahoo_exchange_date_disclosure(raw, {first: 100.0}) == {
+        "status": "available", "exchange_timezone": "Asia/Tokyo", "checked_utc_dates": 1,
+        "shifted_utc_date_count": 1, "ambiguous_utc_date_count": 0,
+        "examples": [{"utc_date": first, "exchange_local_date": second}],
+    }
+    result["meta"] = {"exchangeTimezoneName": "invalid/zone"}
+    assert yahoo_exchange_date_disclosure(raw, {first: 100.0})["status"] == "unavailable"
 
 
 def test_conflicting_same_utc_date_closes_are_withheld_but_identical_duplicates_survive() -> None:
@@ -468,6 +483,29 @@ def test_route_reports_fmp_non_split_adjustment_without_inferring_other_feeds() 
     assert row["anchor_reported_adjustment_basis"] == "unspecified"
     assert row["comparison_reported_adjustment_basis"] == "non_split_adjusted"
     assert row["comparison_quote_unit"] == {"unit": None, "source": "unavailable"}
+
+
+def test_route_discloses_exchange_local_date_shift_without_realigning_returns() -> None:
+    start = date(2026, 8, 24)
+    days = [start + timedelta(days=i) for i in range(32)]
+    anchor_chart = _chart({day: 100.0 + i for i, day in enumerate(days)})
+    anchor_result = anchor_chart["chart"]["result"][0]
+    anchor_result["timestamp"] = [stamp + 22 * 3600 for stamp in anchor_result["timestamp"]]
+    anchor_result["meta"] = {"exchangeTimezoneName": "Asia/Tokyo"}
+    client = _client({
+        "AAPL": anchor_chart,
+        "SPY": _chart({day: 200.0 + i for i, day in enumerate(days)}),
+    })
+    row = client.post("/api/market-context/compare", json={
+        "anchor": "AAPL", "comparisons": ["SPY"], "period": "1M",
+    }).json()["comparisons"][0]
+    assert row["status"] == "available"
+    assert row["anchor_exchange_dates"]["shifted_utc_date_count"] == 32
+    assert row["anchor_exchange_dates"]["examples"][0] == {
+        "utc_date": "2026-09-24", "exchange_local_date": "2026-09-25",
+    }
+    assert row["comparison_exchange_dates"]["status"] == "unavailable"
+    assert row["start_date"] == "2026-08-25"
 
 
 def test_route_discloses_only_yahoo_reported_actions_in_observed_window() -> None:

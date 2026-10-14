@@ -619,6 +619,10 @@ intelligence promise, or claim that contradiction handling is solved.
           quantify adjusted-minus-provider return differences for each asset
           and the pair on exactly the same dates; keep the primary series and
           broader technical-quality gate unchanged.
+    - [x] Disclose when accepted Yahoo daily bars have different UTC and
+          exchange-local calendar dates using the selected chart's timezone
+          metadata. Show bounded examples and unknown metadata explicitly;
+          do not realign returns or claim exchange-session verification.
 
 ## Current handoff boundary
 

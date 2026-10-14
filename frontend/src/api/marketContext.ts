@@ -112,6 +112,15 @@ export interface MarketCloseDateConflicts {
   display_limit: number;
 }
 
+export interface MarketExchangeDateDisclosure {
+  status: "available" | "unavailable";
+  exchange_timezone: string | null;
+  checked_utc_dates: number;
+  shifted_utc_date_count: number;
+  ambiguous_utc_date_count: number;
+  examples: { utc_date: string; exchange_local_date: string }[];
+}
+
 export interface MarketQuoteUnitDisclosure {
   unit: string | null;
   source: "yahoo_chart_meta" | "unavailable";
@@ -193,6 +202,8 @@ export interface MarketComparisonRow {
   comparison_quote_unit?: MarketQuoteUnitDisclosure;
   anchor_close_date_conflicts?: MarketCloseDateConflicts;
   comparison_close_date_conflicts?: MarketCloseDateConflicts;
+  anchor_exchange_dates?: MarketExchangeDateDisclosure | null;
+  comparison_exchange_dates?: MarketExchangeDateDisclosure | null;
   observations: number | null;
   freshness: "current" | "stale" | null;
   anchor_return_pct: number | null;

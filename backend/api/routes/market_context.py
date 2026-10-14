@@ -25,6 +25,7 @@ from backend.services.cross_market_context import (
     daily_closes_with_conflicts,
     yahoo_adjusted_closes_with_conflicts,
     yahoo_action_metadata_present,
+    yahoo_exchange_date_disclosure,
     yahoo_reported_actions,
     yahoo_reported_quote_unit,
 )
@@ -266,6 +267,20 @@ class MarketFXSharedPath(BaseModel):
     points: list[MarketFXPathPoint] = Field(default_factory=list)
 
 
+class MarketExchangeDateExample(BaseModel):
+    utc_date: date
+    exchange_local_date: date
+
+
+class MarketExchangeDateDisclosure(BaseModel):
+    status: Literal["available", "unavailable"]
+    exchange_timezone: str | None
+    checked_utc_dates: int
+    shifted_utc_date_count: int
+    ambiguous_utc_date_count: int
+    examples: list[MarketExchangeDateExample]
+
+
 class MarketComparisonRow(BaseModel):
     symbol: str
     status: Literal["available", "unavailable"]
@@ -285,6 +300,8 @@ class MarketComparisonRow(BaseModel):
     comparison_quote_unit: MarketQuoteUnitDisclosure
     anchor_close_date_conflicts: MarketCloseDateConflicts
     comparison_close_date_conflicts: MarketCloseDateConflicts
+    anchor_exchange_dates: MarketExchangeDateDisclosure | None = None
+    comparison_exchange_dates: MarketExchangeDateDisclosure | None = None
     observations: int | None = None
     freshness: Literal["current", "stale"] | None = None
     anchor_return_pct: float | None = None
@@ -546,6 +563,7 @@ async def compare_market_context(
     action_metadata_available: set[str] = set()
     adjusted_closes: dict[str, dict[date, float]] = {}
     close_conflicts: dict[str, tuple[set[date], set[date]]] = {}
+    exchange_dates: dict[str, dict[str, Any]] = {}
     errors: set[str] = set()
     semaphore = asyncio.Semaphore(3)
 
@@ -576,6 +594,10 @@ async def compare_market_context(
                     yahoo_adjusted_closes_with_conflicts(raw) if yahoo_evidence else ({}, set())
                 )
                 close_conflicts[symbol] = provider_conflicts, adjusted_conflicts
+                exchange_dates[symbol] = yahoo_exchange_date_disclosure(raw, histories[symbol]) if yahoo_evidence else {
+                    "status": "unavailable", "exchange_timezone": None, "checked_utc_dates": 0,
+                    "shifted_utc_date_count": 0, "ambiguous_utc_date_count": 0, "examples": [],
+                }
                 if yahoo_evidence and yahoo_action_metadata_present(raw):
                     action_metadata_available.add(symbol)
                     reported_actions[symbol] = yahoo_reported_actions(raw)
@@ -592,6 +614,9 @@ async def compare_market_context(
                 reported_actions[symbol] = []
                 adjusted_closes[symbol] = {}
                 close_conflicts[symbol] = set(), set()
+                exchange_dates[symbol] = {"status": "unavailable", "exchange_timezone": None,
+                                          "checked_utc_dates": 0, "shifted_utc_date_count": 0,
+                                          "ambiguous_utc_date_count": 0, "examples": []}
 
     await asyncio.gather(*(load(symbol) for symbol in [anchor, *comparisons]))
 
@@ -709,6 +734,8 @@ async def compare_market_context(
             "comparison_quote_unit": quote_unit_disclosure(symbol),
             "anchor_close_date_conflicts": conflict_disclosure(anchor),
             "comparison_close_date_conflicts": conflict_disclosure(symbol),
+            "anchor_exchange_dates": exchange_dates[anchor],
+            "comparison_exchange_dates": exchange_dates[symbol],
         })
 
     if payload.reporting_currency:
