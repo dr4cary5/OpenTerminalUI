@@ -372,6 +372,10 @@ cannot be silently dropped just because pair-shared weekdays are complete.
 The primary returns and shared-date measures remain unchanged. Adjustment
 quality, historical vintage, provider session calendars, and deeper provider
 provenance remain prerequisites for decision-grade technical evidence.
+Selected Yahoo charts now also disclose when accepted bar timestamps map to
+different UTC and exchange-local calendar dates, with bounded examples. This
+exposes possible cross-market session misalignment but does not change the
+shared-UTC calculation or certify exchange trading dates.
 The comparison now also classifies the two selected close feeds as matching,
 mixed, unknown, or unavailable *reported* adjustment bases. Complete Yahoo-
 adjusted series show the adjusted-minus-provider return difference for each

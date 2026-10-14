@@ -7,6 +7,10 @@ adopt [Semantic Versioning](https://semver.org/spec/v2.0.0.html) from `1.0.0`.
 ## [Unreleased]
 
 ### Added
+- **Exchange-local date disclosure** — cross-market comparisons now show when
+  selected Yahoo daily bars carry a different exchange-local calendar date
+  than the UTC date used for alignment. Returns remain unchanged; this is not
+  a verified exchange-session calendar.
 - **First-published euro-area HICP check** — an on-demand Eurostat panel shows
   first-published flash and final EA21 annual-change values beside matching
   current months. It exposes partial failures and provider flags without

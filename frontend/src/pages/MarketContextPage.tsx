@@ -110,6 +110,23 @@ function CloseDateConflicts({ anchor, row }: { anchor: string; row: MarketCompar
   );
 }
 
+function ExchangeDateDisclosure({ anchor, row }: { anchor: string; row: MarketComparisonRow }) {
+  const entries = [
+    { symbol: anchor, disclosure: row.anchor_exchange_dates },
+    { symbol: row.symbol, disclosure: row.comparison_exchange_dates },
+  ];
+  if (!entries.some(({ disclosure }) => disclosure)) return null;
+  const hasShift = entries.some(({ disclosure }) => disclosure && (disclosure.shifted_utc_date_count || disclosure.ambiguous_utc_date_count));
+  return <div className={`mt-1 text-xs ${hasShift ? "text-terminal-warn" : "text-terminal-muted"}`}>
+    <p>When available, exchange-local calendar dates come from selected Yahoo chart metadata, not verified trading sessions. Pair alignment still uses UTC dates; counts cover accepted fetched bars, possibly beyond this pair window.</p>
+    {entries.map(({ symbol, disclosure }) => disclosure ? <p key={symbol} className="mt-1">
+      {symbol}: {disclosure.status === "available"
+        ? `${disclosure.shifted_utc_date_count}/${disclosure.checked_utc_dates} UTC dates differ in ${disclosure.exchange_timezone}; ${disclosure.ambiguous_utc_date_count} ambiguous. ${disclosure.examples.length ? `Latest: ${disclosure.examples.map((item) => `${item.utc_date} UTC → ${item.exchange_local_date} local`).join(", ")}.` : ""}`
+        : "exchange-local date check unavailable from selected history."}
+    </p> : null)}
+  </div>;
+}
+
 function unavailableReason(row: MarketComparisonRow): string {
   if (row.reason === "provider_error") return "History provider failed; no comparison was calculated.";
   if (row.reason === "insufficient_overlap") return "Not enough shared daily closes for this window.";
@@ -1325,6 +1342,7 @@ export function MarketContextPage() {
                     <p className="mt-1 text-xs text-terminal-muted">
                       Price-history paths: {selection.anchor} {historyPathLabel(row.anchor_history_source, row.anchor_history_feed)} · {row.symbol} {historyPathLabel(row.comparison_history_source, row.comparison_history_feed)}.
                     </p>
+                    <ExchangeDateDisclosure anchor={selection.anchor} row={row} />
                     <p className="mt-1 text-xs text-terminal-muted">
                       Reported price basis: {selection.anchor} {adjustmentBasisLabel(row.anchor_reported_adjustment_basis)} · {row.symbol} {adjustmentBasisLabel(row.comparison_reported_adjustment_basis)}. These labels describe feed requests, not an audit of returned values.
                     </p>

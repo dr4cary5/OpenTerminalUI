@@ -179,6 +179,11 @@ never silently faked.
   gap is unavailable. Crypto weekends may be omitted when the proxy has no
   close. Feed adjustment policies can differ, and splits or other corporate
   actions can distort or retrospectively change values.
+  For selected Yahoo charts with valid exchange-timezone metadata, the pair
+  reports accepted bars whose UTC calendar date differs from the exchange-local
+  date, with bounded examples. This is a request-level date-label check, not a
+  verified trading-session calendar; non-Yahoo or missing metadata is unknown.
+  Comparisons still align by UTC date even when a shift is disclosed.
   A Yahoo chart response with event metadata now discloses split/dividend
   markers reported in the observed pair window. No markers reported does not
   prove there were none; paths without event metadata remain unavailable.

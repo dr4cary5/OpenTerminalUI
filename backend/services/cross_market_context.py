@@ -6,6 +6,7 @@ import math
 import re
 from datetime import date, datetime, timedelta, timezone
 from typing import Any
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 import pandas as pd
 
@@ -29,6 +30,50 @@ def yahoo_reported_quote_unit(raw: Any) -> str | None:
         return None
     unit = unit.strip()
     return unit if re.fullmatch(r"[A-Za-z0-9]{2,12}", unit) else None
+
+
+def yahoo_exchange_date_disclosure(raw: Any, accepted: dict[date, float]) -> dict[str, Any]:
+    """Compare accepted UTC bar dates with chart-reported exchange-local dates.
+
+    This only discloses date-label divergence; it does not infer sessions or
+    alter the primary UTC-date comparison.
+    """
+    unavailable = {"status": "unavailable", "exchange_timezone": None, "checked_utc_dates": 0,
+                   "shifted_utc_date_count": 0, "ambiguous_utc_date_count": 0, "examples": []}
+    if not isinstance(raw, dict) or not accepted:
+        return unavailable
+    chart = raw.get("chart")
+    results = chart.get("result") if isinstance(chart, dict) else None
+    result = results[0] if isinstance(results, list) and results and isinstance(results[0], dict) else None
+    meta = result.get("meta") if result else None
+    name = meta.get("exchangeTimezoneName") if isinstance(meta, dict) else None
+    if not isinstance(name, str):
+        return unavailable
+    try:
+        exchange_zone = ZoneInfo(name)
+    except (ValueError, ZoneInfoNotFoundError):
+        return unavailable
+    frame = _parse_yahoo_chart(raw)
+    if frame.empty or "Close" not in frame:
+        return unavailable
+    local_dates: dict[date, set[date]] = {}
+    for timestamp, value in frame["Close"].items():
+        try:
+            moment = pd.Timestamp(timestamp)
+            utc_day = moment.date()
+            if utc_day not in accepted or float(value) != accepted[utc_day]:
+                continue
+            local_day = moment.tz_convert(exchange_zone).date()
+        except (TypeError, ValueError, OverflowError):
+            continue
+        local_dates.setdefault(utc_day, set()).add(local_day)
+    shifted = [(utc_day, next(iter(days))) for utc_day, days in local_dates.items()
+               if len(days) == 1 and next(iter(days)) != utc_day]
+    ambiguous = sum(len(days) > 1 for days in local_dates.values())
+    return {"status": "available", "exchange_timezone": name, "checked_utc_dates": len(local_dates),
+            "shifted_utc_date_count": len(shifted), "ambiguous_utc_date_count": ambiguous,
+            "examples": [{"utc_date": utc_day, "exchange_local_date": local_day}
+                         for utc_day, local_day in sorted(shifted, reverse=True)[:5]]}
 
 
 def _record_daily_close(
