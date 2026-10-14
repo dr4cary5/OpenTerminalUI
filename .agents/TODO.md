@@ -555,6 +555,11 @@ intelligence promise, or claim that contradiction handling is solved.
             disclose release date, provider flag, current archive retrieval time, changing
             euro-area composition, and two-month archive lag. Sparse or
             missing vintages cannot establish complete historical knowledge.
+      - [x] Add a separate on-demand Eurostat HICP first-published check for
+            EA21 total annual change, retaining flash and final release types,
+            provider flags, partial failures, and same-month differences from
+            current EA21 values. The dataset lacks a per-value publication
+            timestamp here, so this does not establish pair-end availability.
   - [x] Expose the exact shared-close trajectory behind each available pair,
         rebased to 100 at the first shared date, with an on-demand chart and
         inspectable observation table. No missing dates are filled in; the path

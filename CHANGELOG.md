@@ -7,6 +7,10 @@ adopt [Semantic Versioning](https://semver.org/spec/v2.0.0.html) from `1.0.0`.
 ## [Unreleased]
 
 ### Added
+- **First-published euro-area HICP check** — an on-demand Eurostat panel shows
+  first-published flash and final EA21 annual-change values beside matching
+  current months. It exposes partial failures and provider flags without
+  treating the archive as dated historical availability evidence.
 - **FRED real-time evidence validation** — US macro series now fail closed
   when returned real-time intervals miss the requested day or the bounded
   observation response is truncated, protecting the pair-end comparison from

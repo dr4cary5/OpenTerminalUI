@@ -3,7 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSearchParams } from "react-router-dom";
 import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 
-import { captureMarketFundamentals, compareMarketContext, compareMarketFundamentalCaptures, fetchEuroAreaMacroObservations, fetchEuroAreaUnemploymentVintages, fetchMarketContextFundamentalReleases, fetchMarketContextHeadlines, fetchMarketContextMacroEvents, fetchMarketContextMacroObservations, fetchMarketSecFiledFacts, fetchSecSubmissionCrosscheck, getMarketFundamentalCapture, listMarketFundamentalCaptures, type MarketContextPeriod, type MarketComparisonRow, type MarketMacroObservationSeries, type MarketQuoteUnitDisclosure, type MarketReportingCurrency, type SecFiledFactsResponse, type SecSubmissionClaim } from "../api/marketContext";
+import { captureMarketFundamentals, compareMarketContext, compareMarketFundamentalCaptures, fetchEuroAreaHicpFirstPublished, fetchEuroAreaMacroObservations, fetchEuroAreaUnemploymentVintages, fetchMarketContextFundamentalReleases, fetchMarketContextHeadlines, fetchMarketContextMacroEvents, fetchMarketContextMacroObservations, fetchMarketSecFiledFacts, fetchSecSubmissionCrosscheck, getMarketFundamentalCapture, listMarketFundamentalCaptures, type MarketContextPeriod, type MarketComparisonRow, type MarketMacroObservationSeries, type MarketQuoteUnitDisclosure, type MarketReportingCurrency, type SecFiledFactsResponse, type SecSubmissionClaim } from "../api/marketContext";
 import { extractApiErrorMessage } from "../api/base";
 import { SymbolSuggestions } from "../components/market/SymbolSuggestions";
 import { TerminalPanel } from "../components/terminal/TerminalPanel";
@@ -665,6 +665,7 @@ function HistoricalMacroObservations({ anchor, row }: { anchor: string; row: Mar
 function EuroAreaMacroObservations({ row }: { row: MarketComparisonRow }) {
   const [open, setOpen] = useState(false);
   const [showVintages, setShowVintages] = useState(false);
+  const [showHicp, setShowHicp] = useState(false);
   const startDate = row.start_date || "";
   const endDate = row.end_date || "";
   const query = useQuery({
@@ -681,6 +682,15 @@ function EuroAreaMacroObservations({ row }: { row: MarketComparisonRow }) {
     staleTime: 5 * 60_000,
     retry: false,
   });
+  const hicpQuery = useQuery({
+    queryKey: ["market-context-euro-area-hicp-first-published", startDate, endDate],
+    queryFn: () => fetchEuroAreaHicpFirstPublished(startDate, endDate),
+    enabled: open && showHicp && !!startDate && !!endDate,
+    staleTime: 5 * 60_000,
+    retry: false,
+  });
+  const currentHicp = query.data?.series.find((series) => series.series_id === "prc_hicp_minr");
+  const currentByMonth = new Map(currentHicp?.observations.map((observation) => [observation.reference_date, observation.value]) ?? []);
   return <div className="mt-3 border-t border-terminal-border pt-3">
     <button type="button" className="text-xs text-terminal-accent underline" onClick={() => setOpen((value) => !value)} aria-expanded={open}>
       {open ? "Hide" : "Show"} euro-area macro context for {startDate} to {endDate}
@@ -696,6 +706,25 @@ function EuroAreaMacroObservations({ row }: { row: MarketComparisonRow }) {
         <p className="text-terminal-muted">{series.source === "ecb" ? "ECB" : "Eurostat"} · {series.units} · {series.frequency}</p>
         {series.status === "feed_error" ? <p className="text-terminal-warn">Provider request or response failed.</p> : series.observations.length ? <ul className="mt-1 max-h-28 space-y-1 overflow-auto">{series.observations.map((observation) => <li key={observation.reference_date}>{series.frequency === "Monthly" ? observation.reference_date.slice(0, 7) : observation.reference_date}: {observation.value.toLocaleString()}{observation.flag ? ` (provider flag: ${observation.flag})` : ""}</li>)}</ul> : <p className="text-terminal-muted">No values in this reference-period window.</p>}
       </div>)}</div> : null}
+      <button type="button" className="text-terminal-accent underline" onClick={() => setShowHicp((value) => !value)} aria-expanded={showHicp}>
+        {showHicp ? "Hide" : "Check"} first-published euro-area HICP values
+      </button>
+      {showHicp ? <div className="space-y-2 rounded border border-terminal-border p-2">
+        <p className="text-terminal-muted">Eurostat’s separate <a className="text-terminal-accent underline" href="https://ec.europa.eu/eurostat/databrowser/view/prc_hicp_fpd/default/table?lang=en" target="_blank" rel="noopener noreferrer">first-published HICP dataset</a> records flash (FLS) and final (FIN) annual-change values for EA21. It does not provide release dates here; it is not a complete historical availability or intraday publication record. Values may reflect a changing euro-area composition and the archive as retrieved now.</p>
+        {hicpQuery.isPending ? <p role="status" className="text-terminal-muted">Checking first-published HICP values…</p> : null}
+        {hicpQuery.isError ? <p role="alert" className="text-terminal-neg">{extractApiErrorMessage(hicpQuery.error, "Could not check first-published HICP values.")} <button type="button" className="underline" onClick={() => void hicpQuery.refetch()}>Retry HICP check</button></p> : null}
+        {hicpQuery.data?.status === "unavailable" ? <p className="text-terminal-warn">Both first-published HICP feeds failed; no archive values are shown.</p> : null}
+        {hicpQuery.data?.status === "available" ? <>
+          <p className="text-terminal-muted">Archive checked {new Date(hicpQuery.data.retrieved_at).toLocaleString()} · annual change, percent · current EA21 comparison only where the current feed returned the same month.</p>
+          {hicpQuery.data.releases.map((release) => <div key={release.release}>
+            <p className="font-medium">{release.release === "FLS" ? "Flash" : "Final"} first-published</p>
+            {release.status === "feed_error" ? <p className="text-terminal-warn">Provider request or response failed.</p> : release.observations.length ? <ul className="max-h-28 space-y-1 overflow-auto">{release.observations.map((observation) => {
+              const current = currentByMonth.get(observation.reference_date);
+              return <li key={observation.reference_date}>{observation.reference_date.slice(0, 7)}: first {observation.value.toLocaleString()}%{current !== undefined ? ` · current ${current.toLocaleString()}% · current minus first ${(current - observation.value).toFixed(2)} pp` : " · current comparison unavailable"}{observation.flag ? ` · provider flag: ${observation.flag}` : ""}</li>;
+            })}</ul> : <p className="text-terminal-muted">No first-published values in this reference-period window.</p>}
+          </div>)}
+        </> : null}
+      </div> : null}
       <button type="button" className="text-terminal-accent underline" onClick={() => setShowVintages((value) => !value)} aria-expanded={showVintages}>
         {showVintages ? "Hide" : "Check"} Eurostat unemployment vintages as of {endDate}
       </button>
