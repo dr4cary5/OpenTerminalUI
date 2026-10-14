@@ -623,6 +623,11 @@ intelligence promise, or claim that contradiction handling is solved.
           exchange-local calendar dates using the selected chart's timezone
           metadata. Show bounded examples and unknown metadata explicitly;
           do not realign returns or claim exchange-session verification.
+    - [x] Add a separate Yahoo-only exchange-local calendar-date comparison
+          using accepted provider closes and both reported timezones. Withhold
+          ambiguous UTC-to-local mappings and colliding local dates, and leave
+          the original UTC result untouched. Same local date does not imply
+          simultaneous closes, verified exchange sessions, or adjusted prices.
 
 ## Current handoff boundary
 

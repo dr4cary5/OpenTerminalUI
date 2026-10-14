@@ -76,6 +76,14 @@ describe("MarketContextPage", () => {
           examples: [{ utc_date: "2026-09-24", exchange_local_date: "2026-09-25" }] },
         comparison_exchange_dates: { status: "available", exchange_timezone: "Europe/Berlin", checked_utc_dates: 22,
           shifted_utc_date_count: 0, ambiguous_utc_date_count: 0, examples: [] },
+        exchange_local_pair: { basis: "shared_exchange_local_calendar_date_provider_closes", status: "available", reason: null,
+          anchor_exchange_timezone: "Asia/Tokyo", comparison_exchange_timezone: "Europe/Berlin",
+          anchor_ambiguous_utc_dates: 0, comparison_ambiguous_utc_dates: 0,
+          anchor_colliding_local_dates: 0, comparison_colliding_local_dates: 0,
+          start_date: "2026-08-26", end_date: "2026-09-24", observations: 21,
+          anchor_return_pct: 1, comparison_return_pct: 0, relative_return_pp: 1,
+          points: [{ date: "2026-08-26", anchor_index: 100, comparison_index: 100 },
+            { date: "2026-09-24", anchor_index: 101, comparison_index: 100 }] },
         observations: 22, freshness: "current", anchor_return_pct: 0,
         comparison_return_pct: 0, relative_return_pp: 0, points: [
           { date: "2026-08-25", anchor_index: 100, comparison_index: 100 },
@@ -110,6 +118,11 @@ describe("MarketContextPage", () => {
     expect(screen.getByText(/AAPL: 2\/22 UTC dates differ in Asia\/Tokyo/)).toBeInTheDocument();
     expect(screen.getByText(/2026-09-24 UTC → 2026-09-25 local/)).toBeInTheDocument();
     expect(screen.getByText(/Pair alignment still uses UTC dates/)).toBeInTheDocument();
+    fireEvent.click(screen.getByText("Exchange-local calendar-date comparison (separate view)"));
+    expect(screen.getByText(/21 shared local dates/)).toBeInTheDocument();
+    expect(screen.getByText(/primary UTC comparison above is unchanged/)).toBeInTheDocument();
+    fireEvent.click(screen.getByText("Inspect local-date indexed closes"));
+    expect(screen.getByText("Local date")).toBeInTheDocument();
     expect(screen.getByText(/SAP.DE start 2026-08-25: 1.2/)).toBeInTheDocument();
     expect(screen.getByRole("combobox", { name: "Reporting currency" })).toHaveValue("USD");
     fireEvent.click(screen.getByText("Break down price and FX returns"));

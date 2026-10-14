@@ -127,6 +127,26 @@ function ExchangeDateDisclosure({ anchor, row }: { anchor: string; row: MarketCo
   </div>;
 }
 
+function ExchangeLocalPair({ anchor, row }: { anchor: string; row: MarketComparisonRow }) {
+  const local = row.exchange_local_pair;
+  if (!local) return null;
+  const exclusions = local.anchor_ambiguous_utc_dates + local.comparison_ambiguous_utc_dates
+    + local.anchor_colliding_local_dates + local.comparison_colliding_local_dates;
+  return <details className="mt-2 rounded border border-terminal-border p-2 text-xs">
+    <summary className="cursor-pointer text-terminal-text">Exchange-local calendar-date comparison (separate view)</summary>
+    <p className="mt-2 text-terminal-muted">Selected Yahoo chart timestamps are labelled in each asset’s reported exchange timezone ({anchor}: {local.anchor_exchange_timezone || "unknown"}; {row.symbol}: {local.comparison_exchange_timezone || "unknown"}). Same local calendar date does not mean simultaneous closes or verified exchange sessions. These native-quote provider closes are not FX-normalized or adjustment-verified; the primary UTC comparison above is unchanged.</p>
+    {exclusions > 0 ? <p className="mt-1 text-terminal-warn">Withheld ambiguous mappings: {anchor} {local.anchor_ambiguous_utc_dates} UTC dates and {local.anchor_colliding_local_dates} local dates; {row.symbol} {local.comparison_ambiguous_utc_dates} UTC dates and {local.comparison_colliding_local_dates} local dates. Counts cover fetched bars, possibly beyond this pair’s window.</p> : null}
+    {local.status === "available" ? <>
+      <p className="mt-2">{local.start_date} to {local.end_date} · {local.observations} shared local dates. {anchor}: {formatPercent(local.anchor_return_pct)} · {row.symbol}: {formatPercent(local.comparison_return_pct)} · Difference: {formatPoints(local.relative_return_pp)}.</p>
+      <details className="mt-2"><summary className="cursor-pointer">Inspect local-date indexed closes</summary>
+        <div className="mt-1 max-h-64 overflow-auto"><table className="w-full text-left"><thead><tr><th>Local date</th><th>{anchor} index</th><th>{row.symbol} index</th></tr></thead>
+          <tbody>{local.points.map((point) => <tr key={point.date}><td>{point.date}</td><td>{point.anchor_index.toFixed(2)}</td><td>{point.comparison_index.toFixed(2)}</td></tr>)}</tbody>
+        </table></div>
+      </details>
+    </> : <p className="mt-2 text-terminal-muted">Unavailable: {local.reason === "timezone_unavailable" ? "both selected histories need usable Yahoo exchange-timezone metadata" : local.reason === "insufficient_overlap" ? "not enough shared local-date history for this window" : "no usable local-date history"}.</p>}
+  </details>;
+}
+
 function unavailableReason(row: MarketComparisonRow): string {
   if (row.reason === "provider_error") return "History provider failed; no comparison was calculated.";
   if (row.reason === "insufficient_overlap") return "Not enough shared daily closes for this window.";
@@ -1343,6 +1363,7 @@ export function MarketContextPage() {
                       Price-history paths: {selection.anchor} {historyPathLabel(row.anchor_history_source, row.anchor_history_feed)} · {row.symbol} {historyPathLabel(row.comparison_history_source, row.comparison_history_feed)}.
                     </p>
                     <ExchangeDateDisclosure anchor={selection.anchor} row={row} />
+                    <ExchangeLocalPair anchor={selection.anchor} row={row} />
                     <p className="mt-1 text-xs text-terminal-muted">
                       Reported price basis: {selection.anchor} {adjustmentBasisLabel(row.anchor_reported_adjustment_basis)} · {row.symbol} {adjustmentBasisLabel(row.comparison_reported_adjustment_basis)}. These labels describe feed requests, not an audit of returned values.
                     </p>
@@ -1361,6 +1382,7 @@ export function MarketContextPage() {
                     <p className="mt-2 text-sm text-terminal-muted">{unavailableReason(row)} Latest dates: {selection.anchor} {row.anchor_latest_date || "unknown"}, {row.symbol} {row.comparison_latest_date || "unknown"}.</p>
                     <p className="mt-1 text-xs text-terminal-muted">Price-history paths: {selection.anchor} {historyPathLabel(row.anchor_history_source, row.anchor_history_feed)} · {row.symbol} {historyPathLabel(row.comparison_history_source, row.comparison_history_feed)}.</p>
                     <p className="mt-1 text-xs text-terminal-muted">Reported price basis: {selection.anchor} {adjustmentBasisLabel(row.anchor_reported_adjustment_basis)} · {row.symbol} {adjustmentBasisLabel(row.comparison_reported_adjustment_basis)}.</p>
+                    {row.exchange_local_pair?.status === "available" ? <ExchangeLocalPair anchor={selection.anchor} row={row} /> : null}
                   </>
                 )}
               </div>

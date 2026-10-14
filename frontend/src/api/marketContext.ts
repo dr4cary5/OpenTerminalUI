@@ -121,6 +121,25 @@ export interface MarketExchangeDateDisclosure {
   examples: { utc_date: string; exchange_local_date: string }[];
 }
 
+export interface MarketExchangeLocalPair {
+  basis: "shared_exchange_local_calendar_date_provider_closes";
+  status: "available" | "unavailable";
+  reason: "timezone_unavailable" | "missing_history" | "insufficient_overlap" | null;
+  anchor_exchange_timezone: string | null;
+  comparison_exchange_timezone: string | null;
+  anchor_ambiguous_utc_dates: number;
+  comparison_ambiguous_utc_dates: number;
+  anchor_colliding_local_dates: number;
+  comparison_colliding_local_dates: number;
+  start_date: string | null;
+  end_date: string | null;
+  observations: number | null;
+  anchor_return_pct: number | null;
+  comparison_return_pct: number | null;
+  relative_return_pp: number | null;
+  points: MarketComparisonPoint[];
+}
+
 export interface MarketQuoteUnitDisclosure {
   unit: string | null;
   source: "yahoo_chart_meta" | "unavailable";
@@ -204,6 +223,7 @@ export interface MarketComparisonRow {
   comparison_close_date_conflicts?: MarketCloseDateConflicts;
   anchor_exchange_dates?: MarketExchangeDateDisclosure | null;
   comparison_exchange_dates?: MarketExchangeDateDisclosure | null;
+  exchange_local_pair?: MarketExchangeLocalPair | null;
   observations: number | null;
   freshness: "current" | "stale" | null;
   anchor_return_pct: number | null;

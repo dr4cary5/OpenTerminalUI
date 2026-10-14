@@ -7,6 +7,10 @@ adopt [Semantic Versioning](https://semver.org/spec/v2.0.0.html) from `1.0.0`.
 ## [Unreleased]
 
 ### Added
+- **Separate exchange-local comparison** — selected Yahoo chart closes can now
+  be compared on shared exchange-local calendar dates alongside, never in place
+  of, the existing UTC result. Missing timezones or ambiguous date mappings
+  degrade explicitly; local dates are not verified simultaneous sessions.
 - **Exchange-local date disclosure** — cross-market comparisons now show when
   selected Yahoo daily bars carry a different exchange-local calendar date
   than the UTC date used for alignment. Returns remain unchanged; this is not

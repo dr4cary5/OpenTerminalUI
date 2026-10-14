@@ -183,7 +183,13 @@ never silently faked.
   reports accepted bars whose UTC calendar date differs from the exchange-local
   date, with bounded examples. This is a request-level date-label check, not a
   verified trading-session calendar; non-Yahoo or missing metadata is unknown.
-  Comparisons still align by UTC date even when a shift is disclosed.
+  The primary comparison still aligns by UTC date even when a shift is disclosed.
+  A separate Yahoo-only view can align accepted closes by reported exchange-local
+  calendar date; missing timezone metadata or insufficient overlap leaves it
+  unavailable, and ambiguous mappings or local-date collisions are withheld.
+  Equal local dates do not mean simultaneous closes or verified sessions. Its
+  returns remain native-quote provider closes, not FX-normalized or adjustment-
+  verified performance.
   A Yahoo chart response with event metadata now discloses split/dividend
   markers reported in the observed pair window. No markers reported does not
   prove there were none; paths without event metadata remain unavailable.
