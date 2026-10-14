@@ -3,11 +3,11 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { captureMarketFundamentals, compareMarketContext, compareMarketFundamentalCaptures, fetchEuroAreaMacroObservations, fetchEuroAreaUnemploymentVintages, fetchMarketContextFundamentalReleases, fetchMarketContextHeadlines, fetchMarketContextMacroEvents, fetchMarketContextMacroObservations, fetchMarketSecFiledFacts, fetchSecSubmissionCrosscheck, getMarketFundamentalCapture, listMarketFundamentalCaptures } from "../api/marketContext";
+import { captureMarketFundamentals, compareMarketContext, compareMarketFundamentalCaptures, fetchEuroAreaHicpFirstPublished, fetchEuroAreaMacroObservations, fetchEuroAreaUnemploymentVintages, fetchMarketContextFundamentalReleases, fetchMarketContextHeadlines, fetchMarketContextMacroEvents, fetchMarketContextMacroObservations, fetchMarketSecFiledFacts, fetchSecSubmissionCrosscheck, getMarketFundamentalCapture, listMarketFundamentalCaptures } from "../api/marketContext";
 import { searchSymbols } from "../api/marketData";
 import { MarketContextPage } from "../pages/MarketContextPage";
 
-vi.mock("../api/marketContext", () => ({ captureMarketFundamentals: vi.fn(), compareMarketContext: vi.fn(), compareMarketFundamentalCaptures: vi.fn(), fetchEuroAreaMacroObservations: vi.fn(), fetchEuroAreaUnemploymentVintages: vi.fn(), fetchMarketContextFundamentalReleases: vi.fn(), fetchMarketContextHeadlines: vi.fn(), fetchMarketContextMacroEvents: vi.fn(), fetchMarketContextMacroObservations: vi.fn(), fetchMarketSecFiledFacts: vi.fn(), fetchSecSubmissionCrosscheck: vi.fn(), getMarketFundamentalCapture: vi.fn(), listMarketFundamentalCaptures: vi.fn() }));
+vi.mock("../api/marketContext", () => ({ captureMarketFundamentals: vi.fn(), compareMarketContext: vi.fn(), compareMarketFundamentalCaptures: vi.fn(), fetchEuroAreaHicpFirstPublished: vi.fn(), fetchEuroAreaMacroObservations: vi.fn(), fetchEuroAreaUnemploymentVintages: vi.fn(), fetchMarketContextFundamentalReleases: vi.fn(), fetchMarketContextHeadlines: vi.fn(), fetchMarketContextMacroEvents: vi.fn(), fetchMarketContextMacroObservations: vi.fn(), fetchMarketSecFiledFacts: vi.fn(), fetchSecSubmissionCrosscheck: vi.fn(), getMarketFundamentalCapture: vi.fn(), listMarketFundamentalCaptures: vi.fn() }));
 vi.mock("../api/marketData", () => ({ searchSymbols: vi.fn() }));
 
 const compareMock = vi.mocked(compareMarketContext);
@@ -15,6 +15,7 @@ const headlinesMock = vi.mocked(fetchMarketContextHeadlines);
 const macroMock = vi.mocked(fetchMarketContextMacroEvents);
 const macroObservationsMock = vi.mocked(fetchMarketContextMacroObservations);
 const euroAreaMacroMock = vi.mocked(fetchEuroAreaMacroObservations);
+const euroAreaHicpMock = vi.mocked(fetchEuroAreaHicpFirstPublished);
 const euroAreaVintageMock = vi.mocked(fetchEuroAreaUnemploymentVintages);
 const fundamentalsMock = vi.mocked(fetchMarketContextFundamentalReleases);
 const secFactsMock = vi.mocked(fetchMarketSecFiledFacts);
@@ -641,6 +642,19 @@ describe("MarketContextPage", () => {
     expect(await screen.findByText(/2026-09: 3.8 \(provider flag: e\)/)).toBeInTheDocument();
     expect(screen.getByText(/possibly revised or estimated—not release-time or ticker-specific evidence/)).toBeInTheDocument();
     expect(screen.getByText(/Provider request or response failed/)).toBeInTheDocument();
+    euroAreaHicpMock.mockResolvedValueOnce({
+      start_date: "2026-09-02", end_date: "2026-09-10", retrieved_at: "2026-10-13T10:00:00Z",
+      series_id: "prc_hicp_fpd", region: "EA21", unit: "RCH_A", status: "available", reason: null,
+      releases: [
+        { release: "FIN", status: "available", observations: [{ reference_date: "2026-09-01", value: 3.6, flag: null }] },
+        { release: "FLS", status: "feed_error", observations: [] },
+      ],
+    });
+    expect(euroAreaHicpMock).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole("button", { name: "Check first-published euro-area HICP values" }));
+    await waitFor(() => expect(euroAreaHicpMock).toHaveBeenCalledWith("2026-09-02", "2026-09-10"));
+    expect(await screen.findByText(/2026-09: first 3.6% · current 3.8% · current minus first 0.20 pp/)).toBeInTheDocument();
+    expect(screen.getByText(/It does not provide release dates here/)).toBeInTheDocument();
     euroAreaVintageMock.mockResolvedValueOnce({
       start_date: "2026-09-02", end_date: "2026-09-10", as_of_date: "2026-09-10",
       retrieved_at: "2026-10-12T10:00:00Z", series_id: "ei_lm_m_vtg", source: "eurostat",

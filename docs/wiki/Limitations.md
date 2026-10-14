@@ -239,6 +239,11 @@ never silently faked.
   seasonally adjusted unemployment plus the ECB deposit facility rate. Its
   monthly dates label reference months, not release dates; these selected
   ordinary Eurostat datasets expose current versions. A separate Eurostat
+  first-published HICP dataset exposes flash and final EA21 annual-change
+  values. Its first-versus-current comparison is limited to matching reference
+  months; the dataset response has no per-value publication timestamp, and
+  today's archive is not a preserved pair-end snapshot. Missing first-published
+  values do not prove non-publication. A separate Eurostat
   archive does retain dated unemployment vintages from 2021 onward; the
   optional pair-end check shows the latest archived release per reference
   month. That archive is published about two months behind source releases

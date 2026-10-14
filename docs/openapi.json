@@ -4749,6 +4749,115 @@
         "title": "EquityPerformanceSnapshot",
         "type": "object"
       },
+      "EuroAreaHicpFirstPublishedRelease": {
+        "properties": {
+          "observations": {
+            "items": {
+              "$ref": "#/components/schemas/EuroAreaMacroObservation"
+            },
+            "title": "Observations",
+            "type": "array"
+          },
+          "release": {
+            "enum": [
+              "FIN",
+              "FLS"
+            ],
+            "title": "Release",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "available",
+              "no_observations",
+              "feed_error"
+            ],
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "release",
+          "status",
+          "observations"
+        ],
+        "title": "EuroAreaHicpFirstPublishedRelease",
+        "type": "object"
+      },
+      "EuroAreaHicpFirstPublishedResponse": {
+        "properties": {
+          "end_date": {
+            "format": "date",
+            "title": "End Date",
+            "type": "string"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "const": "provider_error",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "region": {
+            "const": "EA21",
+            "default": "EA21",
+            "title": "Region",
+            "type": "string"
+          },
+          "releases": {
+            "items": {
+              "$ref": "#/components/schemas/EuroAreaHicpFirstPublishedRelease"
+            },
+            "title": "Releases",
+            "type": "array"
+          },
+          "retrieved_at": {
+            "format": "date-time",
+            "title": "Retrieved At",
+            "type": "string"
+          },
+          "series_id": {
+            "const": "prc_hicp_fpd",
+            "default": "prc_hicp_fpd",
+            "title": "Series Id",
+            "type": "string"
+          },
+          "start_date": {
+            "format": "date",
+            "title": "Start Date",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "available",
+              "unavailable"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "unit": {
+            "const": "RCH_A",
+            "default": "RCH_A",
+            "title": "Unit",
+            "type": "string"
+          }
+        },
+        "required": [
+          "start_date",
+          "end_date",
+          "retrieved_at",
+          "status",
+          "reason",
+          "releases"
+        ],
+        "title": "EuroAreaHicpFirstPublishedResponse",
+        "type": "object"
+      },
       "EuroAreaMacroObservation": {
         "properties": {
           "flag": {
@@ -28067,6 +28176,60 @@
           }
         ],
         "summary": "Get Market Context Euro Area Macro Observations",
+        "tags": [
+          "market-context"
+        ],
+        "x-openterminalui-auth": {
+          "permission": "user",
+          "scheme": "bearer"
+        },
+        "x-openterminalui-feature-state": {
+          "market-context": "experimental"
+        }
+      }
+    },
+    "/api/market-context/macro-observations/euro-area/hicp-first-published": {
+      "post": {
+        "description": "First-published flash/final HICP values, without a release-date claim.",
+        "operationId": "get_market_context_euro_area_hicp_first_published_api_market_context_macro_observations_euro_area_hicp_first_published_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MarketMacroEventsRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EuroAreaHicpFirstPublishedResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get Market Context Euro Area Hicp First Published",
         "tags": [
           "market-context"
         ],

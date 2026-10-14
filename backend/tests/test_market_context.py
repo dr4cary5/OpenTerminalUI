@@ -817,6 +817,28 @@ def test_euro_area_macro_endpoint_has_explicit_region_and_no_asof_claim(monkeypa
     }).status_code == 422
 
 
+def test_euro_area_hicp_first_published_endpoint_keeps_release_types_distinct(monkeypatch) -> None:
+    async def fake_first_published(start: date, end: date) -> dict[str, Any]:
+        assert (start, end) == (date(2026, 9, 2), date(2026, 9, 10))
+        return {"retrieved_at": "2026-10-13T10:00:00Z", "status": "available", "reason": None,
+                "releases": [
+                    {"release": "FIN", "status": "available", "observations": [
+                        {"reference_date": "2026-09-01", "value": 2.0, "flag": None}]},
+                    {"release": "FLS", "status": "no_observations", "observations": []},
+                ]}
+
+    monkeypatch.setattr(market_context, "get_euro_area_hicp_first_published", fake_first_published)
+    client = _client({})
+    path = "/api/market-context/macro-observations/euro-area/hicp-first-published"
+    response = client.post(path, json={"start_date": "2026-09-02", "end_date": "2026-09-10"})
+    assert response.status_code == 200
+    assert response.json()["series_id"] == "prc_hicp_fpd"
+    assert response.json()["region"] == "EA21"
+    assert response.json()["releases"][0]["release"] == "FIN"
+    assert "release_date" not in response.json()
+    assert client.post(path, json={"start_date": "2026-01-01", "end_date": "2026-09-10"}).status_code == 422
+
+
 def test_euro_area_unemployment_vintages_expose_archived_release_date(monkeypatch) -> None:
     async def fake_vintage(start: date, end: date, as_of: date) -> dict[str, Any]:
         assert (start, end, as_of) == (date(2026, 9, 2), date(2026, 9, 10), date(2026, 9, 10))

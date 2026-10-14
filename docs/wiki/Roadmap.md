@@ -492,12 +492,18 @@ a scheduled release event. Provider flags, retrieval time, and partial failures
 remain visible. This is not a FRED-style historical-vintage cross-check:
 release timestamps, point-in-time availability, geographical expansion, and
 asset relevance remain open gates.
+Eurostat's separate first-published HICP dataset now supports an optional
+EA21 annual-change check. It keeps flash and final values separate and shows
+same-reference-month differences from the current EA21 series. It does not
+provide per-value publication timestamps in this response, so the comparison
+cannot establish what was available at the pair end; archive retrieval today
+is not a saved historical snapshot.
 Eurostat also maintains a separate, sparse unemployment-vintage archive.
 The optional pair-end check reconstructs the latest archived euro-area (changing
 composition) unemployment value per reference month with a release date no
 later than the pair end. The archive itself is updated about two months after
 the source release and can omit vintages; these rows are not compared directly
-with current EA21 values or extended to HICP and ECB rates. This remains a
+with current EA21 values or extended to the HICP and ECB datasets. This remains a
 bounded historical cross-check, not complete point-in-time macro coverage.
 
 ## Release plan

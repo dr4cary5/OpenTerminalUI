@@ -309,6 +309,22 @@ export interface EuroAreaMacroResponse {
   }[];
 }
 
+export interface EuroAreaHicpFirstPublishedResponse {
+  start_date: string;
+  end_date: string;
+  retrieved_at: string;
+  series_id: "prc_hicp_fpd";
+  region: "EA21";
+  unit: "RCH_A";
+  status: "available" | "unavailable";
+  reason: "provider_error" | null;
+  releases: {
+    release: "FIN" | "FLS";
+    status: "available" | "no_observations" | "feed_error";
+    observations: { reference_date: string; value: number; flag: string | null }[];
+  }[];
+}
+
 export interface EuroAreaUnemploymentVintageResponse {
   start_date: string;
   end_date: string;
@@ -515,6 +531,14 @@ export async function fetchEuroAreaMacroObservations(startDate: string, endDate:
   const response = await api.post<EuroAreaMacroResponse>("/market-context/macro-observations/euro-area", {
     start_date: startDate, end_date: endDate,
   });
+  return response.data;
+}
+
+export async function fetchEuroAreaHicpFirstPublished(startDate: string, endDate: string): Promise<EuroAreaHicpFirstPublishedResponse> {
+  const response = await api.post<EuroAreaHicpFirstPublishedResponse>(
+    "/market-context/macro-observations/euro-area/hicp-first-published",
+    { start_date: startDate, end_date: endDate },
+  );
   return response.data;
 }
 

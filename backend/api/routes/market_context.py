@@ -29,7 +29,9 @@ from backend.services.cross_market_context import (
     yahoo_reported_quote_unit,
 )
 from backend.services.economic_data import EconomicDataService, get_economic_data_service
-from backend.services.euro_area_macro import get_euro_area_macro_observations, get_euro_area_unemployment_vintage
+from backend.services.euro_area_macro import (
+    get_euro_area_hicp_first_published, get_euro_area_macro_observations, get_euro_area_unemployment_vintage,
+)
 from backend.services.fundamental_evidence import source_dated_candidates
 from backend.services.forex_service import SUPPORTED_CURRENCIES, service as forex_service
 from backend.services.return_decomposition import decompose_base_currency_return
@@ -428,6 +430,24 @@ class EuroAreaMacroResponse(BaseModel):
 
 class EuroAreaUnemploymentVintageRequest(MarketMacroEventsRequest):
     as_of_date: date
+
+
+class EuroAreaHicpFirstPublishedRelease(BaseModel):
+    release: Literal["FIN", "FLS"]
+    status: Literal["available", "no_observations", "feed_error"]
+    observations: list[EuroAreaMacroObservation]
+
+
+class EuroAreaHicpFirstPublishedResponse(BaseModel):
+    start_date: date
+    end_date: date
+    retrieved_at: datetime
+    series_id: Literal["prc_hicp_fpd"] = "prc_hicp_fpd"
+    region: Literal["EA21"] = "EA21"
+    unit: Literal["RCH_A"] = "RCH_A"
+    status: Literal["available", "unavailable"]
+    reason: Literal["provider_error"] | None
+    releases: list[EuroAreaHicpFirstPublishedRelease]
 
 
 class EuroAreaUnemploymentVintageObservation(MarketMacroObservation):
@@ -967,6 +987,17 @@ async def get_market_context_euro_area_macro_observations(
     """Current-vintage EA21 observations, not historical release-time evidence."""
     _validate_context_window(payload.start_date, payload.end_date)
     result = await get_euro_area_macro_observations(payload.start_date, payload.end_date)
+    return {"start_date": payload.start_date, "end_date": payload.end_date, **result}
+
+
+@router.post("/macro-observations/euro-area/hicp-first-published", response_model=EuroAreaHicpFirstPublishedResponse)
+async def get_market_context_euro_area_hicp_first_published(
+    payload: MarketMacroEventsRequest,
+    _: User = Depends(get_current_user),
+) -> dict[str, Any]:
+    """First-published flash/final HICP values, without a release-date claim."""
+    _validate_context_window(payload.start_date, payload.end_date)
+    result = await get_euro_area_hicp_first_published(payload.start_date, payload.end_date)
     return {"start_date": payload.start_date, "end_date": payload.end_date, **result}
 
 

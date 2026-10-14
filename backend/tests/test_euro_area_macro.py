@@ -86,6 +86,56 @@ async def test_euro_area_macro_reports_partial_feed_failure_without_samples(monk
     assert result["series"][1]["observations"] == []
 
 
+@pytest.mark.asyncio
+async def test_hicp_first_published_keeps_flash_final_and_partial_failure_distinct(monkeypatch) -> None:
+    class Response:
+        def __init__(self, content):
+            self.content = content
+
+        def raise_for_status(self):
+            return None
+
+        def json(self):
+            return self.content
+
+    class Client:
+        async def __aenter__(self):
+            return self
+
+        async def __aexit__(self, *args):
+            return None
+
+        async def get(self, url, params):
+            assert url.endswith("prc_hicp_fpd")
+            assert (params["geo"], params["coicop18"], params["unit"]) == ("EA21", "TOTAL", "RCH_A")
+            if params["release"] == "FLS":
+                raise RuntimeError("provider down")
+            return Response(_eurostat({**euro_area_macro.HICP_FIRST_PUBLISHED_FILTERS, "release": "FIN"}))
+
+    monkeypatch.setattr(euro_area_macro.httpx, "AsyncClient", lambda **kwargs: Client())
+    result = await euro_area_macro.get_euro_area_hicp_first_published(date(2026, 8, 20), date(2026, 9, 10))
+    assert result["status"] == "available"
+    assert [group["status"] for group in result["releases"]] == ["available", "feed_error"]
+    assert result["releases"][0]["observations"][0]["reference_date"] == date(2026, 8, 1)
+
+    wrong = _eurostat({**euro_area_macro.HICP_FIRST_PUBLISHED_FILTERS, "release": "FIN"})
+    wrong["dimension"]["release"]["category"]["index"] = {"FLS": 0}
+    with pytest.raises(ValueError, match="identity"):
+        euro_area_macro._eurostat_observations(
+            wrong, {**euro_area_macro.HICP_FIRST_PUBLISHED_FILTERS, "release": "FIN"},
+            date(2026, 8, 20), date(2026, 9, 10),
+        )
+
+    class FailingClient(Client):
+        async def get(self, url, params):
+            raise RuntimeError("provider down")
+
+    monkeypatch.setattr(euro_area_macro.httpx, "AsyncClient", lambda **kwargs: FailingClient())
+    failed = await euro_area_macro.get_euro_area_hicp_first_published(date(2026, 8, 20), date(2026, 9, 10))
+    assert failed["status"] == "unavailable" and failed["reason"] == "provider_error"
+    assert [group["status"] for group in failed["releases"]] == ["feed_error", "feed_error"]
+
+
 def _vintages() -> dict:
     filters = euro_area_macro.UNEMPLOYMENT_VINTAGE_FILTERS
     return {
