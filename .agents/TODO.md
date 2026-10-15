@@ -1,8 +1,8 @@
 # Current project state and backlog
 
-Last audited: **2026-09-24**, from `main` at `ee8e00e` (through the browser
-cross-market comparison PR #162), plus symbol-suggestion UX work on this branch.
-The latest tag and published GitHub release are **v1.7.0** at `0473307`.
+Last release-prep audit: **2026-10-15**, from `main` at `d8eb932` (through
+v2.0/v2.1 scope PR #210). The latest tag and published GitHub release remain
+**v1.7.0** at `0473307` until host acceptance and the v2.0 tag.
 
 This is a handoff, not an immutable roadmap. Before taking an item, verify it
 against recent Git history, code, and tests. Move shipped work to the completed

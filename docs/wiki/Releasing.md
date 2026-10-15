@@ -33,7 +33,8 @@ Confirm the target milestone in [Roadmap](Roadmap.md) is complete, then:
 1. **Version bump** — set `frontend/package.json` and backend `app_version` to the
    release version; grep for stragglers.
 2. **CHANGELOG** — move `[Unreleased]` to `[X.Y.Z] - YYYY-MM-DD`; start a fresh
-   `[Unreleased]`.
+   `[Unreleased]`. If release preparation and the tag fall on different days,
+   confirm the dated heading at tag time.
 3. **Docs** — README quickstart verified end-to-end; the out-of-the-box-vs-keys
    matrix, Limitations, and upgrade notes (e.g. the pgvector image swap) current
    in [Limitations](Limitations) (mirrored condensed in the README).

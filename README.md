@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-1.7.0-0f172a" alt="Version 1.7.0" />
+  <img src="https://img.shields.io/badge/version-2.0.0-0f172a" alt="Version 2.0.0" />
   <img src="https://img.shields.io/badge/python-3.11-3776AB?logo=python&logoColor=white" alt="Python 3.11" />
   <img src="https://img.shields.io/badge/node-22-339933?logo=node.js&logoColor=white" alt="Node 22" />
   <img src="https://img.shields.io/badge/FastAPI-009688?logo=fastapi&logoColor=white" alt="FastAPI" />
@@ -68,7 +68,12 @@ parity checks, generated public API contracts, and clean-install verification.
 ledger activity, valuation, P&L, allocation, and supported history into an
 explicit portfolio base currency. Missing evidence is withheld rather than
 guessed, and supported attribution separates security performance from FX.
-The next product arc is v2 cross-market intelligence.
+**v2.0 — Cross-market context** opens the next arc with an experimental,
+user-selected comparison of an asset and market proxies. It shows observed,
+dated price relationships and separately labelled optional evidence, with
+source and missing-data caveats. It does not automatically discover causal
+relationships or recommend trades; those wider intelligence goals remain on
+the [Roadmap](docs/wiki/Roadmap.md).
 
 NSE/BSE **F&O** stays supported. See the [Roadmap](docs/wiki/Roadmap.md) for what's shipped and what's next.
 
@@ -489,9 +494,10 @@ ever shown as live. When a feature has no live source (missing key, rate-limited
 provider, or no free feed), the API returns empty + a `degraded` marker and the UI
 shows a banner. Highlights:
 
-| Area | Keyless | Add a key for |
+| Area | Keyless | Optional configuration |
 |---|---|---|
 | Charts & quotes (US/EU/crypto), symbol search | ✅ Yahoo / CoinGecko / Binance | — |
+| Cross-market context | ✅ selected price comparisons; optional evidence stays separately labelled | `FMP_API_KEY` / `FRED_API_KEY` for selected evidence; SEC requests also need `SEC_USER_AGENT` (not a key) |
 | Fundamentals, financials, earnings, commodities | partial (Yahoo) | `FMP_API_KEY` (full US fundamentals) |
 | Real-time US ticks | delayed quotes | `FINNHUB_API_KEY` (live WS) |
 | Macro indicators / yield curve | degraded banner | `FRED_API_KEY` |

@@ -4,9 +4,9 @@ This directory is the repository-owned handoff for AI coding agents and new
 maintainers. Read it before making changes. It records decisions that may have
 previously existed only in a maintainer's chat or local agent memory.
 
-Last audited: **2026-09-23**, from `main` at `92d8d76` (through Brain Log PR
-#158), plus the retrieval evaluation harness on this branch. The latest tag and
-published GitHub release are **v1.7.0** at `0473307`.
+Last release-prep audit: **2026-10-15**, from `main` at `d8eb932` (through
+v2.0/v2.1 scope PR #210). The latest tag and published GitHub release remain
+**v1.7.0** at `0473307` until host acceptance and the v2.0 tag.
 
 ## Read order and sources of truth
 

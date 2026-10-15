@@ -13,9 +13,10 @@ the genuine gaps are.
 running compatible model service, and all network-backed features remain subject
 to upstream availability and rate limits.
 
-| Area | Keyless (out of the box) | Add a key for | Without the key |
+| Area | Keyless (out of the box) | Optional configuration | Without it |
 |---|---|---|---|
 | **Charts & quotes** (US / EU / crypto) | ✅ Yahoo; CoinGecko + Binance for crypto | — | n/a — works keyless |
+| **Cross-market context** | ✅ selected price comparisons; optional evidence is requested separately | `FMP_API_KEY` / `FRED_API_KEY` extend selected evidence; SEC requests also need `SEC_USER_AGENT` (not a key) | comparison can still work, while unavailable optional panels say why |
 | **Symbol search** | ✅ seeded `instrument_master` (US/EU/crypto) + Yahoo long-tail fallback | — | n/a |
 | **Fundamentals / financials / earnings** | partial via Yahoo | `FMP_API_KEY` — full US fundamentals, estimates, profiles | reduced coverage, labelled where empty |
 | **Real-time US ticks** | delayed / polled quotes | `FINNHUB_API_KEY` — live WebSocket ticks | delayed quotes (not fabricated) |
