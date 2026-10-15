@@ -82,7 +82,7 @@ def yahoo_exchange_local_closes(raw: Any, accepted: dict[date, float]) -> dict[s
     Ambiguous UTC mappings and local dates reached by multiple UTC dates are
     withheld, even when their prices agree.
     """
-    unavailable = {"status": "unavailable", "exchange_timezone": None, "closes": {},
+    unavailable = {"status": "unavailable", "exchange_timezone": None, "closes": {}, "utc_by_local": {},
                    "ambiguous_utc_dates": 0, "colliding_local_dates": 0}
     if not isinstance(raw, dict) or not accepted:
         return unavailable
@@ -118,9 +118,66 @@ def yahoo_exchange_local_closes(raw: Any, accepted: dict[date, float]) -> dict[s
     collisions = {day for day, utc_days in local_to_utc.items() if len(utc_days) > 1}
     closes = {day: accepted[next(iter(utc_days))] for day, utc_days in local_to_utc.items()
               if day not in collisions}
+    utc_by_local = {day: next(iter(utc_days)) for day, utc_days in local_to_utc.items()
+                    if day not in collisions}
     return {"status": "available", "exchange_timezone": name, "closes": closes,
+            "utc_by_local": utc_by_local,
             "ambiguous_utc_dates": sum(len(days) > 1 for days in utc_to_local.values()),
             "colliding_local_dates": len(collisions)}
+
+
+def yahoo_exchange_local_adjusted_closes(
+    raw: Any, local: dict[str, Any], accepted_adjusted: dict[date, float],
+) -> dict[date, float]:
+    """Take adjusted values from the accepted close rows, not merely their UTC date."""
+    if local["status"] != "available" or not accepted_adjusted:
+        return {}
+    result = raw["chart"]["result"][0]
+    timestamps = result.get("timestamp")
+    indicators = result.get("indicators")
+    quote = indicators.get("quote") if isinstance(indicators, dict) else None
+    adjusted = indicators.get("adjclose") if isinstance(indicators, dict) else None
+    if not (isinstance(timestamps, list) and isinstance(quote, list) and quote
+            and isinstance(quote[0], dict) and isinstance(adjusted, list) and adjusted
+            and isinstance(adjusted[0], dict)):
+        return {}
+    fields = [quote[0].get(key) for key in ("open", "high", "low", "close")]
+    values = adjusted[0].get("adjclose")
+    if any(not isinstance(field, list) or len(field) != len(timestamps) for field in fields):
+        return {}
+    if not isinstance(values, list):
+        return {}
+    try:
+        zone = ZoneInfo(local["exchange_timezone"])
+    except (ValueError, ZoneInfoNotFoundError):
+        return {}
+    candidates: dict[date, float] = {}
+    invalid: set[date] = set()
+    for index, timestamp in enumerate(timestamps):
+        try:
+            moment = datetime.fromtimestamp(int(timestamp), tz=timezone.utc)
+            utc_day = moment.date()
+            local_day = moment.astimezone(zone).date()
+            if local["utc_by_local"].get(local_day) != utc_day:
+                continue
+            ohlc = [field[index] for field in fields]
+            if None in ohlc or float(ohlc[-1]) != local["closes"][local_day]:
+                continue
+            try:
+                value = float(values[index])
+            except (TypeError, ValueError, IndexError):
+                invalid.add(local_day)
+                continue
+            if not math.isfinite(value) or value <= 0 or accepted_adjusted.get(utc_day) != value:
+                invalid.add(local_day)
+                continue
+        except (OSError, OverflowError, TypeError, ValueError, IndexError):
+            continue
+        if local_day in candidates and candidates[local_day] != value:
+            invalid.add(local_day)
+        else:
+            candidates[local_day] = value
+    return {day: value for day, value in candidates.items() if day not in invalid}
 
 
 def exchange_local_pair_comparison(anchor: dict[str, Any], comparison: dict[str, Any],
@@ -142,6 +199,38 @@ def exchange_local_pair_comparison(anchor: dict[str, Any], comparison: dict[str,
             **{key: result[key] for key in ("start_date", "end_date", "observations",
                                                "anchor_return_pct", "comparison_return_pct",
                                                "relative_return_pp", "points")}}
+
+
+def exchange_local_adjusted_comparison(
+    local_anchor: dict[str, Any], local_comparison: dict[str, Any],
+    adjusted_anchor: dict[date, float], adjusted_comparison: dict[date, float],
+    local_pair: dict[str, Any],
+) -> dict[str, Any] | None:
+    """Require adjusted closes on every selected local pair date, never a subset."""
+    if local_pair["status"] != "available":
+        return None
+    shared = [date.fromisoformat(point["date"]) for point in local_pair["points"]]
+
+    def covered(adjusted: dict[date, float]) -> tuple[dict[date, float], dict[str, Any]]:
+        values = {day: adjusted[day] for day in shared if day in adjusted}
+        count = len(values)
+        return values, {
+            "status": "complete" if count == len(shared) else "partial" if count else "unavailable",
+            "source": "yahoo_adjclose" if count else None,
+            "available_observations": count,
+            "shared_observations": len(shared),
+        }
+
+    anchor, anchor_coverage = covered(adjusted_anchor)
+    comparison, comparison_coverage = covered(adjusted_comparison)
+    result = adjusted_pair_comparison(
+        anchor, comparison, shared,
+        provider_anchor=local_anchor["closes"], provider_comparison=local_comparison["closes"],
+    )
+    if result is not None:
+        result["basis"] = "shared_exchange_local_calendar_date_provider_adjusted_closes"
+    return {"coverage": {"anchor": anchor_coverage, "comparison": comparison_coverage},
+            "adjusted_pair": result}
 
 
 def _record_daily_close(

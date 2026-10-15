@@ -83,7 +83,17 @@ describe("MarketContextPage", () => {
           start_date: "2026-08-26", end_date: "2026-09-24", observations: 21,
           anchor_return_pct: 1, comparison_return_pct: 0, relative_return_pp: 1,
           points: [{ date: "2026-08-26", anchor_index: 100, comparison_index: 100 },
-            { date: "2026-09-24", anchor_index: 101, comparison_index: 100 }] },
+            { date: "2026-09-24", anchor_index: 101, comparison_index: 100 }],
+          adjusted_coverage: {
+            anchor: { status: "complete", source: "yahoo_adjclose", available_observations: 21, shared_observations: 21 },
+            comparison: { status: "complete", source: "yahoo_adjclose", available_observations: 21, shared_observations: 21 },
+          },
+          adjusted_pair: { basis: "shared_exchange_local_calendar_date_provider_adjusted_closes", source: "yahoo_adjclose",
+            start_date: "2026-08-26", end_date: "2026-09-24", observations: 21,
+            anchor_return_pct: 2, comparison_return_pct: 0.5, relative_return_pp: 1.5,
+            provider_relative_return_pp: 1, adjusted_minus_provider_relative_return_pp: 0.5,
+            points: [{ date: "2026-08-26", anchor_index: 100, comparison_index: 100 },
+              { date: "2026-09-24", anchor_index: 102, comparison_index: 100.5 }] } },
         observations: 22, freshness: "current", anchor_return_pct: 0,
         comparison_return_pct: 0, relative_return_pp: 0, points: [
           { date: "2026-08-25", anchor_index: 100, comparison_index: 100 },
@@ -121,8 +131,11 @@ describe("MarketContextPage", () => {
     fireEvent.click(screen.getByText("Exchange-local calendar-date comparison (separate view)"));
     expect(screen.getByText(/21 shared local dates/)).toBeInTheDocument();
     expect(screen.getByText(/primary UTC comparison above is unchanged/)).toBeInTheDocument();
+    expect(screen.getByText(/Yahoo adjusted-close coverage on these exact local dates/)).toBeInTheDocument();
+    fireEvent.click(screen.getByText("Compare Yahoo adjusted closes on shared local dates"));
+    expect(screen.getByText(/Adjusted minus provider-close difference: \+0.50 pp/)).toBeInTheDocument();
     fireEvent.click(screen.getByText("Inspect local-date indexed closes"));
-    expect(screen.getByText("Local date")).toBeInTheDocument();
+    expect(screen.getAllByText("Local date")).toHaveLength(2);
     expect(screen.getByText(/SAP.DE start 2026-08-25: 1.2/)).toBeInTheDocument();
     expect(screen.getByRole("combobox", { name: "Reporting currency" })).toHaveValue("USD");
     fireEvent.click(screen.getByText("Break down price and FX returns"));
