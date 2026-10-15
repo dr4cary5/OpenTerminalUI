@@ -6,6 +6,18 @@ adopt [Semantic Versioning](https://semver.org/spec/v2.0.0.html) from `1.0.0`.
 
 ## [Unreleased]
 
+## [2.0.0] - 2026-10-15
+
+The first v2 release makes **cross-market context** available as an explicit,
+inspectable research journey. Users select an asset and market proxies, then
+see dated shared-market returns and price paths with source, currency,
+adjustment, and missing-data disclosures. Optional on-demand fundamentals,
+macro, news, and technical evidence remains independently labelled; none of it
+proves why a price moved. Time-aware Second Brain and Brain Log work completed
+in this development cycle also ships here. This major version marks the next
+product generation, not a claim of a breaking migration or the full long-term
+cross-market intelligence vision.
+
 ### Added
 - **Exchange-local adjusted-close view** — the separate Yahoo local-date pair
   now reports exact-date adjusted coverage and, only when both paths are
