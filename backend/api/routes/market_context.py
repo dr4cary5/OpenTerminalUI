@@ -23,9 +23,11 @@ from backend.services.cross_market_context import (
     adjusted_observations,
     compare_closes,
     daily_closes_with_conflicts,
+    exchange_local_pair_comparison,
     yahoo_adjusted_closes_with_conflicts,
     yahoo_action_metadata_present,
     yahoo_exchange_date_disclosure,
+    yahoo_exchange_local_closes,
     yahoo_reported_actions,
     yahoo_reported_quote_unit,
 )
@@ -281,6 +283,25 @@ class MarketExchangeDateDisclosure(BaseModel):
     examples: list[MarketExchangeDateExample]
 
 
+class MarketExchangeLocalPair(BaseModel):
+    basis: Literal["shared_exchange_local_calendar_date_provider_closes"]
+    status: Literal["available", "unavailable"]
+    reason: Literal["timezone_unavailable", "missing_history", "insufficient_overlap"] | None = None
+    anchor_exchange_timezone: str | None
+    comparison_exchange_timezone: str | None
+    anchor_ambiguous_utc_dates: int
+    comparison_ambiguous_utc_dates: int
+    anchor_colliding_local_dates: int
+    comparison_colliding_local_dates: int
+    start_date: date | None = None
+    end_date: date | None = None
+    observations: int | None = None
+    anchor_return_pct: float | None = None
+    comparison_return_pct: float | None = None
+    relative_return_pp: float | None = None
+    points: list[MarketComparisonPoint] = Field(default_factory=list)
+
+
 class MarketComparisonRow(BaseModel):
     symbol: str
     status: Literal["available", "unavailable"]
@@ -302,6 +323,7 @@ class MarketComparisonRow(BaseModel):
     comparison_close_date_conflicts: MarketCloseDateConflicts
     anchor_exchange_dates: MarketExchangeDateDisclosure | None = None
     comparison_exchange_dates: MarketExchangeDateDisclosure | None = None
+    exchange_local_pair: MarketExchangeLocalPair | None = None
     observations: int | None = None
     freshness: Literal["current", "stale"] | None = None
     anchor_return_pct: float | None = None
@@ -564,6 +586,7 @@ async def compare_market_context(
     adjusted_closes: dict[str, dict[date, float]] = {}
     close_conflicts: dict[str, tuple[set[date], set[date]]] = {}
     exchange_dates: dict[str, dict[str, Any]] = {}
+    local_closes: dict[str, dict[str, Any]] = {}
     errors: set[str] = set()
     semaphore = asyncio.Semaphore(3)
 
@@ -598,6 +621,10 @@ async def compare_market_context(
                     "status": "unavailable", "exchange_timezone": None, "checked_utc_dates": 0,
                     "shifted_utc_date_count": 0, "ambiguous_utc_date_count": 0, "examples": [],
                 }
+                local_closes[symbol] = yahoo_exchange_local_closes(raw, histories[symbol]) if yahoo_evidence else {
+                    "status": "unavailable", "exchange_timezone": None, "closes": {},
+                    "ambiguous_utc_dates": 0, "colliding_local_dates": 0,
+                }
                 if yahoo_evidence and yahoo_action_metadata_present(raw):
                     action_metadata_available.add(symbol)
                     reported_actions[symbol] = yahoo_reported_actions(raw)
@@ -617,6 +644,8 @@ async def compare_market_context(
                 exchange_dates[symbol] = {"status": "unavailable", "exchange_timezone": None,
                                           "checked_utc_dates": 0, "shifted_utc_date_count": 0,
                                           "ambiguous_utc_date_count": 0, "examples": []}
+                local_closes[symbol] = {"status": "unavailable", "exchange_timezone": None,
+                                        "closes": {}, "ambiguous_utc_dates": 0, "colliding_local_dates": 0}
 
     await asyncio.gather(*(load(symbol) for symbol in [anchor, *comparisons]))
 
@@ -736,6 +765,9 @@ async def compare_market_context(
             "comparison_close_date_conflicts": conflict_disclosure(symbol),
             "anchor_exchange_dates": exchange_dates[anchor],
             "comparison_exchange_dates": exchange_dates[symbol],
+            "exchange_local_pair": exchange_local_pair_comparison(
+                local_closes[anchor], local_closes[symbol], period=payload.period
+            ),
         })
 
     if payload.reporting_currency:

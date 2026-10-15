@@ -7938,6 +7938,16 @@
             ],
             "title": "End Date"
           },
+          "exchange_local_pair": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MarketExchangeLocalPair"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "freshness": {
             "anyOf": [
               {
@@ -8198,6 +8208,164 @@
           "exchange_local_date"
         ],
         "title": "MarketExchangeDateExample",
+        "type": "object"
+      },
+      "MarketExchangeLocalPair": {
+        "properties": {
+          "anchor_ambiguous_utc_dates": {
+            "title": "Anchor Ambiguous Utc Dates",
+            "type": "integer"
+          },
+          "anchor_colliding_local_dates": {
+            "title": "Anchor Colliding Local Dates",
+            "type": "integer"
+          },
+          "anchor_exchange_timezone": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Anchor Exchange Timezone"
+          },
+          "anchor_return_pct": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Anchor Return Pct"
+          },
+          "basis": {
+            "const": "shared_exchange_local_calendar_date_provider_closes",
+            "title": "Basis",
+            "type": "string"
+          },
+          "comparison_ambiguous_utc_dates": {
+            "title": "Comparison Ambiguous Utc Dates",
+            "type": "integer"
+          },
+          "comparison_colliding_local_dates": {
+            "title": "Comparison Colliding Local Dates",
+            "type": "integer"
+          },
+          "comparison_exchange_timezone": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Comparison Exchange Timezone"
+          },
+          "comparison_return_pct": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Comparison Return Pct"
+          },
+          "end_date": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "End Date"
+          },
+          "observations": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Observations"
+          },
+          "points": {
+            "items": {
+              "$ref": "#/components/schemas/MarketComparisonPoint"
+            },
+            "title": "Points",
+            "type": "array"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "enum": [
+                  "timezone_unavailable",
+                  "missing_history",
+                  "insufficient_overlap"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "relative_return_pp": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Relative Return Pp"
+          },
+          "start_date": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Start Date"
+          },
+          "status": {
+            "enum": [
+              "available",
+              "unavailable"
+            ],
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "basis",
+          "status",
+          "anchor_exchange_timezone",
+          "comparison_exchange_timezone",
+          "anchor_ambiguous_utc_dates",
+          "comparison_ambiguous_utc_dates",
+          "anchor_colliding_local_dates",
+          "comparison_colliding_local_dates"
+        ],
+        "title": "MarketExchangeLocalPair",
         "type": "object"
       },
       "MarketFXEndpointComparison": {

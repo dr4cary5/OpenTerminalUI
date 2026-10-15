@@ -376,6 +376,13 @@ Selected Yahoo charts now also disclose when accepted bar timestamps map to
 different UTC and exchange-local calendar dates, with bounded examples. This
 exposes possible cross-market session misalignment but does not change the
 shared-UTC calculation or certify exchange trading dates.
+A separate Yahoo-only view now aligns accepted provider closes by each asset's
+reported exchange-local calendar date, with its own window, path, returns, and
+counts of withheld ambiguous mappings or colliding local dates. It is unavailable
+when either selected path lacks valid Yahoo timezone metadata or sufficient
+local-date overlap. The original UTC comparison remains unchanged. Equal local
+dates do not establish simultaneous closes, verified trading sessions, comparable
+provider adjustments, or a decision-grade signal.
 The comparison now also classifies the two selected close feeds as matching,
 mixed, unknown, or unavailable *reported* adjustment bases. Complete Yahoo-
 adjusted series show the adjusted-minus-provider return difference for each

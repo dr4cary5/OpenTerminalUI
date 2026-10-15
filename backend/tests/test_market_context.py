@@ -9,7 +9,7 @@ from fastapi.testclient import TestClient
 from backend.api.deps import get_unified_fetcher
 from backend.api.routes import market_context
 from backend.auth.deps import get_current_user
-from backend.services.cross_market_context import _daily_closes, adjusted_observations, compare_closes, daily_closes_with_conflicts, yahoo_action_metadata_present, yahoo_adjusted_closes, yahoo_adjusted_closes_with_conflicts, yahoo_exchange_date_disclosure, yahoo_reported_actions, yahoo_reported_quote_unit
+from backend.services.cross_market_context import _daily_closes, adjusted_observations, compare_closes, daily_closes_with_conflicts, exchange_local_pair_comparison, yahoo_action_metadata_present, yahoo_adjusted_closes, yahoo_adjusted_closes_with_conflicts, yahoo_exchange_date_disclosure, yahoo_exchange_local_closes, yahoo_reported_actions, yahoo_reported_quote_unit
 from backend.services.economic_data import get_economic_data_service
 
 
@@ -76,6 +76,55 @@ def test_yahoo_exchange_date_disclosure_only_counts_accepted_utc_dates() -> None
     }
     result["meta"] = {"exchangeTimezoneName": "invalid/zone"}
     assert yahoo_exchange_date_disclosure(raw, {first: 100.0})["status"] == "unavailable"
+
+
+def test_exchange_local_closes_withhold_ambiguous_utc_and_colliding_local_dates() -> None:
+    first = date(2026, 9, 1)
+    second = first + timedelta(days=1)
+    third = second + timedelta(days=1)
+    raw = _chart({first: 100.0, second: 110.0, third: 120.0})
+    result = raw["chart"]["result"][0]
+    result["meta"] = {"exchangeTimezoneName": "Asia/Tokyo"}
+    # First and second UTC days both land on September 2 locally; the third
+    # UTC day has two identical closes but two different local dates.
+    result["timestamp"] = [result["timestamp"][0] + 16 * 3600,
+                           result["timestamp"][1], result["timestamp"][2],
+                           result["timestamp"][2] + 16 * 3600]
+    quote = result["indicators"]["quote"][0]
+    for key in ("open", "high", "low", "close"):
+        quote[key] = [*quote[key], 120.0]
+    quote["volume"].append(100)
+    accepted = daily_closes_with_conflicts(raw)[0]
+    local = yahoo_exchange_local_closes(raw, accepted)
+    assert local["status"] == "available"
+    assert local["closes"] == {}
+    assert local["ambiguous_utc_dates"] == 1
+    assert local["colliding_local_dates"] == 1
+
+
+def test_exchange_local_pair_never_falls_back_to_utc_dates() -> None:
+    unavailable = yahoo_exchange_local_closes(_chart({date(2026, 9, 1): 100.0}),
+                                              {date(2026, 9, 1): 100.0})
+    result = exchange_local_pair_comparison(unavailable, unavailable, period="1M")
+    assert result["status"] == "unavailable"
+    assert result["reason"] == "timezone_unavailable"
+    assert "points" not in result
+
+
+def test_exchange_local_pair_does_not_fill_crypto_weekends() -> None:
+    start = date(2026, 8, 24)
+    days = [start + timedelta(days=i) for i in range(32)]
+    weekday_days = [day for day in days if day.weekday() < 5]
+    crypto = _chart({day: 100.0 + i for i, day in enumerate(days)})
+    equity = _chart({day: 200.0 + i for i, day in enumerate(weekday_days)})
+    for raw in (crypto, equity):
+        raw["chart"]["result"][0]["meta"] = {"exchangeTimezoneName": "UTC"}
+    local_crypto = yahoo_exchange_local_closes(crypto, daily_closes_with_conflicts(crypto)[0])
+    local_equity = yahoo_exchange_local_closes(equity, daily_closes_with_conflicts(equity)[0])
+    result = exchange_local_pair_comparison(local_crypto, local_equity, period="1M")
+    assert result["status"] == "available"
+    assert result["observations"] == len(weekday_days) - 1
+    assert all(date.fromisoformat(point["date"]).weekday() < 5 for point in result["points"])
 
 
 def test_conflicting_same_utc_date_closes_are_withheld_but_identical_duplicates_survive() -> None:
@@ -505,7 +554,36 @@ def test_route_discloses_exchange_local_date_shift_without_realigning_returns() 
         "utc_date": "2026-09-24", "exchange_local_date": "2026-09-25",
     }
     assert row["comparison_exchange_dates"]["status"] == "unavailable"
+    assert row["exchange_local_pair"]["status"] == "unavailable"
+    assert row["exchange_local_pair"]["reason"] == "timezone_unavailable"
     assert row["start_date"] == "2026-08-25"
+
+
+def test_route_exposes_separate_exchange_local_pair_without_changing_primary() -> None:
+    start = date(2026, 8, 24)
+    days = [start + timedelta(days=i) for i in range(32)]
+    anchor_chart = _chart({day: 100.0 + i for i, day in enumerate(days)})
+    anchor_result = anchor_chart["chart"]["result"][0]
+    anchor_result["timestamp"] = [stamp + 22 * 3600 for stamp in anchor_result["timestamp"]]
+    anchor_result["meta"] = {"exchangeTimezoneName": "Asia/Tokyo"}
+    comparison_chart = _chart({day: 200.0 + i for i, day in enumerate(days)})
+    comparison_chart["chart"]["result"][0]["meta"] = {"exchangeTimezoneName": "UTC"}
+    client = _client({"AAPL": anchor_chart, "SPY": comparison_chart},
+                     feeds={"AAPL": "yahoo_chart", "SPY": "yahoo_chart"})
+    row = client.post("/api/market-context/compare", json={
+        "anchor": "AAPL", "comparisons": ["SPY"], "period": "1M",
+    }).json()["comparisons"][0]
+    assert row["start_date"] == "2026-08-25"
+    assert row["end_date"] == "2026-09-24"
+    local = row["exchange_local_pair"]
+    assert local["status"] == "available"
+    assert local["basis"] == "shared_exchange_local_calendar_date_provider_closes"
+    assert local["start_date"] == "2026-08-25"
+    assert local["end_date"] == "2026-09-24"
+    assert local["observations"] == 31
+    assert local["anchor_return_pct"] != row["anchor_return_pct"]
+    assert local["points"][0]["date"] == "2026-08-25"
+    assert local["anchor_exchange_timezone"] == "Asia/Tokyo"
 
 
 def test_route_discloses_only_yahoo_reported_actions_in_observed_window() -> None:

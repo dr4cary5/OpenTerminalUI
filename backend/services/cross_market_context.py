@@ -76,6 +76,74 @@ def yahoo_exchange_date_disclosure(raw: Any, accepted: dict[date, float]) -> dic
                          for utc_day, local_day in sorted(shifted, reverse=True)[:5]]}
 
 
+def yahoo_exchange_local_closes(raw: Any, accepted: dict[date, float]) -> dict[str, Any]:
+    """Relabel accepted Yahoo closes without claiming verified trading sessions.
+
+    Ambiguous UTC mappings and local dates reached by multiple UTC dates are
+    withheld, even when their prices agree.
+    """
+    unavailable = {"status": "unavailable", "exchange_timezone": None, "closes": {},
+                   "ambiguous_utc_dates": 0, "colliding_local_dates": 0}
+    if not isinstance(raw, dict) or not accepted:
+        return unavailable
+    chart = raw.get("chart")
+    results = chart.get("result") if isinstance(chart, dict) else None
+    result = results[0] if isinstance(results, list) and results and isinstance(results[0], dict) else None
+    meta = result.get("meta") if result else None
+    name = meta.get("exchangeTimezoneName") if isinstance(meta, dict) else None
+    if not isinstance(name, str):
+        return unavailable
+    try:
+        zone = ZoneInfo(name)
+    except (ValueError, ZoneInfoNotFoundError):
+        return unavailable
+    frame = _parse_yahoo_chart(raw)
+    if frame.empty or "Close" not in frame:
+        return unavailable
+    utc_to_local: dict[date, set[date]] = {}
+    for timestamp, value in frame["Close"].items():
+        try:
+            moment = pd.Timestamp(timestamp)
+            utc_day = moment.date()
+            if utc_day not in accepted or float(value) != accepted[utc_day]:
+                continue
+            local_day = moment.tz_convert(zone).date()
+        except (TypeError, ValueError, OverflowError):
+            continue
+        utc_to_local.setdefault(utc_day, set()).add(local_day)
+    local_to_utc: dict[date, set[date]] = {}
+    for utc_day, local_days in utc_to_local.items():
+        if len(local_days) == 1:
+            local_to_utc.setdefault(next(iter(local_days)), set()).add(utc_day)
+    collisions = {day for day, utc_days in local_to_utc.items() if len(utc_days) > 1}
+    closes = {day: accepted[next(iter(utc_days))] for day, utc_days in local_to_utc.items()
+              if day not in collisions}
+    return {"status": "available", "exchange_timezone": name, "closes": closes,
+            "ambiguous_utc_dates": sum(len(days) > 1 for days in utc_to_local.values()),
+            "colliding_local_dates": len(collisions)}
+
+
+def exchange_local_pair_comparison(anchor: dict[str, Any], comparison: dict[str, Any],
+                                   *, period: str) -> dict[str, Any]:
+    """An independent calendar-date view; never substitute for UTC alignment."""
+    base = {"basis": "shared_exchange_local_calendar_date_provider_closes",
+            "anchor_exchange_timezone": anchor["exchange_timezone"],
+            "comparison_exchange_timezone": comparison["exchange_timezone"],
+            "anchor_ambiguous_utc_dates": anchor["ambiguous_utc_dates"],
+            "comparison_ambiguous_utc_dates": comparison["ambiguous_utc_dates"],
+            "anchor_colliding_local_dates": anchor["colliding_local_dates"],
+            "comparison_colliding_local_dates": comparison["colliding_local_dates"]}
+    if anchor["status"] != "available" or comparison["status"] != "available":
+        return {**base, "status": "unavailable", "reason": "timezone_unavailable"}
+    result = compare_closes(anchor["closes"], comparison["closes"], period=period)
+    if result["status"] != "available":
+        return {**base, "status": "unavailable", "reason": result["reason"]}
+    return {**base, "status": "available", "reason": None,
+            **{key: result[key] for key in ("start_date", "end_date", "observations",
+                                               "anchor_return_pct", "comparison_return_pct",
+                                               "relative_return_pp", "points")}}
+
+
 def _record_daily_close(
     closes: dict[date, float], conflicts: set[date], day: date, close: float
 ) -> None:
@@ -297,7 +365,7 @@ def compare_closes(
     period: str,
     today: date | None = None,
 ) -> dict[str, Any]:
-    """Compare only closes observed on the same UTC calendar dates."""
+    """Compare closes on shared supplied dates; the primary caller supplies UTC dates."""
     if not anchor or not comparison:
         return {"status": "unavailable", "reason": "missing_history"}
 
