@@ -190,6 +190,10 @@ never silently faked.
   Equal local dates do not mean simultaneous closes or verified sessions. Its
   returns remain native-quote provider closes, not FX-normalized or adjustment-
   verified performance.
+  On those exact local pair dates, a separate Yahoo-adjusted view is available
+  only with complete adjusted-close coverage for both assets; partial coverage
+  is shown but produces no adjusted return. These retrospective values do not
+  verify adjustment quality or historical vintage.
   A Yahoo chart response with event metadata now discloses split/dividend
   markers reported in the observed pair window. No markers reported does not
   prove there were none; paths without event metadata remain unavailable.

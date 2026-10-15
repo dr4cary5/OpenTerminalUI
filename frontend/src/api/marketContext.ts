@@ -138,6 +138,10 @@ export interface MarketExchangeLocalPair {
   comparison_return_pct: number | null;
   relative_return_pp: number | null;
   points: MarketComparisonPoint[];
+  adjusted_coverage?: { anchor: MarketAdjustedCloseCoverage; comparison: MarketAdjustedCloseCoverage } | null;
+  adjusted_pair?: (Omit<MarketAdjustedPairComparison, "basis"> & {
+    basis: "shared_exchange_local_calendar_date_provider_adjusted_closes";
+  }) | null;
 }
 
 export interface MarketQuoteUnitDisclosure {

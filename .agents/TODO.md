@@ -628,6 +628,11 @@ intelligence promise, or claim that contradiction handling is solved.
           ambiguous UTC-to-local mappings and colliding local dates, and leave
           the original UTC result untouched. Same local date does not imply
           simultaneous closes, verified exchange sessions, or adjusted prices.
+    - [x] On that exact local-date pair, show Yahoo adjusted-close coverage per
+          asset and a separate adjusted pair path only when every shared local
+          date has an accepted adjusted value. Do not shrink to partial coverage
+          or change the primary UTC and provider-close local results. This is
+          retrospective Yahoo data, not verified adjustment quality or vintage.
 
 ## Current handoff boundary
 

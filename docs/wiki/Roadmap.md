@@ -383,6 +383,11 @@ when either selected path lacks valid Yahoo timezone metadata or sufficient
 local-date overlap. The original UTC comparison remains unchanged. Equal local
 dates do not establish simultaneous closes, verified trading sessions, comparable
 provider adjustments, or a decision-grade signal.
+On the same selected local dates, the panel now also reports Yahoo adjusted-close
+coverage per asset. Only complete two-sided coverage yields a separate adjusted
+local pair path and return difference; missing adjusted dates never shorten that
+path silently. Yahoo's retrospective adjusted values still do not prove the
+adjustment method, historical vintage, or decision-grade comparability.
 The comparison now also classifies the two selected close feeds as matching,
 mixed, unknown, or unavailable *reported* adjustment bases. Complete Yahoo-
 adjusted series show the adjusted-minus-provider return difference for each

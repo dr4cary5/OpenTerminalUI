@@ -7,6 +7,10 @@ adopt [Semantic Versioning](https://semver.org/spec/v2.0.0.html) from `1.0.0`.
 ## [Unreleased]
 
 ### Added
+- **Exchange-local adjusted-close view** — the separate Yahoo local-date pair
+  now reports exact-date adjusted coverage and, only when both paths are
+  complete, an adjusted return and indexed path beside provider closes.
+  Partial data never yields a shortened adjusted comparison.
 - **Separate exchange-local comparison** — selected Yahoo chart closes can now
   be compared on shared exchange-local calendar dates alongside, never in place
   of, the existing UTC result. Missing timezones or ambiguous date mappings

@@ -9,7 +9,7 @@ from fastapi.testclient import TestClient
 from backend.api.deps import get_unified_fetcher
 from backend.api.routes import market_context
 from backend.auth.deps import get_current_user
-from backend.services.cross_market_context import _daily_closes, adjusted_observations, compare_closes, daily_closes_with_conflicts, exchange_local_pair_comparison, yahoo_action_metadata_present, yahoo_adjusted_closes, yahoo_adjusted_closes_with_conflicts, yahoo_exchange_date_disclosure, yahoo_exchange_local_closes, yahoo_reported_actions, yahoo_reported_quote_unit
+from backend.services.cross_market_context import _daily_closes, adjusted_observations, compare_closes, daily_closes_with_conflicts, exchange_local_pair_comparison, yahoo_action_metadata_present, yahoo_adjusted_closes, yahoo_adjusted_closes_with_conflicts, yahoo_exchange_date_disclosure, yahoo_exchange_local_adjusted_closes, yahoo_exchange_local_closes, yahoo_reported_actions, yahoo_reported_quote_unit
 from backend.services.economic_data import get_economic_data_service
 
 
@@ -125,6 +125,25 @@ def test_exchange_local_pair_does_not_fill_crypto_weekends() -> None:
     assert result["status"] == "available"
     assert result["observations"] == len(weekday_days) - 1
     assert all(date.fromisoformat(point["date"]).weekday() < 5 for point in result["points"])
+
+
+def test_local_adjusted_value_must_belong_to_accepted_close_row() -> None:
+    day = date(2026, 9, 1)
+    raw = _chart({day: 100.0})
+    result = raw["chart"]["result"][0]
+    result["meta"] = {"exchangeTimezoneName": "UTC"}
+    result["timestamp"].append(result["timestamp"][0] + 3600)
+    quote = result["indicators"]["quote"][0]
+    for key in ("open", "high", "low", "close"):
+        quote[key] = [quote[key][0], None if key == "open" else 100.0]
+    quote["volume"].append(100)
+    result["indicators"]["adjclose"] = [{"adjclose": [None, 90.0]}]
+    provider = daily_closes_with_conflicts(raw)[0]
+    adjusted = yahoo_adjusted_closes_with_conflicts(raw)[0]
+    assert provider == {day: 100.0}
+    assert adjusted == {day: 90.0}
+    local = yahoo_exchange_local_closes(raw, provider)
+    assert yahoo_exchange_local_adjusted_closes(raw, local, adjusted) == {}
 
 
 def test_conflicting_same_utc_date_closes_are_withheld_but_identical_duplicates_survive() -> None:
@@ -566,8 +585,11 @@ def test_route_exposes_separate_exchange_local_pair_without_changing_primary() -
     anchor_result = anchor_chart["chart"]["result"][0]
     anchor_result["timestamp"] = [stamp + 22 * 3600 for stamp in anchor_result["timestamp"]]
     anchor_result["meta"] = {"exchangeTimezoneName": "Asia/Tokyo"}
+    anchor_result["indicators"]["adjclose"] = [{"adjclose": [90.0 + i for i in range(32)]}]
     comparison_chart = _chart({day: 200.0 + i for i, day in enumerate(days)})
-    comparison_chart["chart"]["result"][0]["meta"] = {"exchangeTimezoneName": "UTC"}
+    comparison_result = comparison_chart["chart"]["result"][0]
+    comparison_result["meta"] = {"exchangeTimezoneName": "UTC"}
+    comparison_result["indicators"]["adjclose"] = [{"adjclose": [180.0 + i for i in range(32)]}]
     client = _client({"AAPL": anchor_chart, "SPY": comparison_chart},
                      feeds={"AAPL": "yahoo_chart", "SPY": "yahoo_chart"})
     row = client.post("/api/market-context/compare", json={
@@ -584,6 +606,40 @@ def test_route_exposes_separate_exchange_local_pair_without_changing_primary() -
     assert local["anchor_return_pct"] != row["anchor_return_pct"]
     assert local["points"][0]["date"] == "2026-08-25"
     assert local["anchor_exchange_timezone"] == "Asia/Tokyo"
+    assert local["adjusted_coverage"]["anchor"]["available_observations"] == 31
+    assert local["adjusted_coverage"]["comparison"]["available_observations"] == 31
+    assert local["adjusted_pair"]["basis"] == "shared_exchange_local_calendar_date_provider_adjusted_closes"
+    assert local["adjusted_pair"]["points"][0]["date"] == local["points"][0]["date"]
+    assert local["adjusted_pair"]["anchor_return_pct"] != row["adjusted_pair"]["anchor_return_pct"]
+
+
+def test_local_adjusted_pair_withholds_incomplete_path_without_shrinking_dates() -> None:
+    start = date(2026, 8, 24)
+    days = [start + timedelta(days=i) for i in range(32)]
+    anchor_chart = _chart({day: 100.0 + i for i, day in enumerate(days)})
+    comparison_chart = _chart({day: 200.0 + i for i, day in enumerate(days)})
+    for raw in (anchor_chart, comparison_chart):
+        raw["chart"]["result"][0]["meta"] = {"exchangeTimezoneName": "UTC"}
+    anchor_chart["chart"]["result"][0]["indicators"]["adjclose"] = [{
+        "adjclose": [None if i == 15 else 90.0 + i for i in range(32)],
+    }]
+    comparison_chart["chart"]["result"][0]["indicators"]["adjclose"] = [{
+        "adjclose": [180.0 + i for i in range(32)],
+    }]
+    client = _client({"AAPL": anchor_chart, "SPY": comparison_chart},
+                     feeds={"AAPL": "yahoo_chart", "SPY": "yahoo_chart"})
+    row = client.post("/api/market-context/compare", json={
+        "anchor": "AAPL", "comparisons": ["SPY"], "period": "1M",
+    }).json()["comparisons"][0]
+    local = row["exchange_local_pair"]
+    assert local["status"] == "available"
+    assert local["observations"] == 31
+    assert local["adjusted_coverage"]["anchor"] == {
+        "status": "partial", "source": "yahoo_adjclose", "available_observations": 30,
+        "shared_observations": 31,
+    }
+    assert local["adjusted_coverage"]["comparison"]["status"] == "complete"
+    assert local["adjusted_pair"] is None
 
 
 def test_route_discloses_only_yahoo_reported_actions_in_observed_window() -> None:

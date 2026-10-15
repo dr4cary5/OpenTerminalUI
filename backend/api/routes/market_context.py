@@ -23,10 +23,12 @@ from backend.services.cross_market_context import (
     adjusted_observations,
     compare_closes,
     daily_closes_with_conflicts,
+    exchange_local_adjusted_comparison,
     exchange_local_pair_comparison,
     yahoo_adjusted_closes_with_conflicts,
     yahoo_action_metadata_present,
     yahoo_exchange_date_disclosure,
+    yahoo_exchange_local_adjusted_closes,
     yahoo_exchange_local_closes,
     yahoo_reported_actions,
     yahoo_reported_quote_unit,
@@ -283,6 +285,10 @@ class MarketExchangeDateDisclosure(BaseModel):
     examples: list[MarketExchangeDateExample]
 
 
+class MarketExchangeLocalAdjustedPair(MarketAdjustedPairComparison):
+    basis: Literal["shared_exchange_local_calendar_date_provider_adjusted_closes"]
+
+
 class MarketExchangeLocalPair(BaseModel):
     basis: Literal["shared_exchange_local_calendar_date_provider_closes"]
     status: Literal["available", "unavailable"]
@@ -300,6 +306,8 @@ class MarketExchangeLocalPair(BaseModel):
     comparison_return_pct: float | None = None
     relative_return_pp: float | None = None
     points: list[MarketComparisonPoint] = Field(default_factory=list)
+    adjusted_coverage: MarketPairAdjustedCloseCoverage | None = None
+    adjusted_pair: MarketExchangeLocalAdjustedPair | None = None
 
 
 class MarketComparisonRow(BaseModel):
@@ -587,6 +595,7 @@ async def compare_market_context(
     close_conflicts: dict[str, tuple[set[date], set[date]]] = {}
     exchange_dates: dict[str, dict[str, Any]] = {}
     local_closes: dict[str, dict[str, Any]] = {}
+    local_adjusted_closes: dict[str, dict[date, float]] = {}
     errors: set[str] = set()
     semaphore = asyncio.Semaphore(3)
 
@@ -625,6 +634,10 @@ async def compare_market_context(
                     "status": "unavailable", "exchange_timezone": None, "closes": {},
                     "ambiguous_utc_dates": 0, "colliding_local_dates": 0,
                 }
+                local_adjusted_closes[symbol] = (
+                    yahoo_exchange_local_adjusted_closes(raw, local_closes[symbol], adjusted_closes[symbol])
+                    if yahoo_evidence else {}
+                )
                 if yahoo_evidence and yahoo_action_metadata_present(raw):
                     action_metadata_available.add(symbol)
                     reported_actions[symbol] = yahoo_reported_actions(raw)
@@ -646,6 +659,7 @@ async def compare_market_context(
                                           "ambiguous_utc_date_count": 0, "examples": []}
                 local_closes[symbol] = {"status": "unavailable", "exchange_timezone": None,
                                         "closes": {}, "ambiguous_utc_dates": 0, "colliding_local_dates": 0}
+                local_adjusted_closes[symbol] = {}
 
     await asyncio.gather(*(load(symbol) for symbol in [anchor, *comparisons]))
 
@@ -749,6 +763,14 @@ async def compare_market_context(
                 }
         anchor_basis = _reported_adjustment_basis(feeds[anchor], bool(histories[anchor]))
         comparison_basis = _reported_adjustment_basis(feeds[symbol], bool(histories[symbol]))
+        local_pair = exchange_local_pair_comparison(local_closes[anchor], local_closes[symbol], period=payload.period)
+        local_adjusted = exchange_local_adjusted_comparison(
+            local_closes[anchor], local_closes[symbol],
+            local_adjusted_closes[anchor], local_adjusted_closes[symbol], local_pair
+        )
+        if local_adjusted is not None:
+            local_pair["adjusted_coverage"] = local_adjusted["coverage"]
+            local_pair["adjusted_pair"] = local_adjusted["adjusted_pair"]
         rows.append({
             "symbol": symbol,
             **result,
@@ -765,9 +787,7 @@ async def compare_market_context(
             "comparison_close_date_conflicts": conflict_disclosure(symbol),
             "anchor_exchange_dates": exchange_dates[anchor],
             "comparison_exchange_dates": exchange_dates[symbol],
-            "exchange_local_pair": exchange_local_pair_comparison(
-                local_closes[anchor], local_closes[symbol], period=payload.period
-            ),
+            "exchange_local_pair": local_pair,
         })
 
     if payload.reporting_currency:
