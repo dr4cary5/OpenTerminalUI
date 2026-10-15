@@ -126,6 +126,7 @@ export function SymbolSuggestions({ label, value, onChange, onPick, exclude = []
               type="button"
               role="option"
               aria-selected={index === selected}
+              onMouseDown={(event) => event.preventDefault()}
               onClick={() => pick(item)}
               className={`flex w-full items-center justify-between gap-2 px-2 py-2 text-left text-xs hover:bg-terminal-accent/10 ${index === selected ? "bg-terminal-accent/10" : ""}`}
             >

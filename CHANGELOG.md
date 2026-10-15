@@ -254,6 +254,9 @@ cross-market intelligence vision.
   answer as successful.
 
 ### Fixed
+- **Proxy suggestion clicks** — clicking a search suggestion now adds the proxy
+  as reliably as selecting it with Enter; pressing the option no longer blurs
+  the picker before the click can be handled.
 - **FRED key in Docker Compose** — forward `FRED_API_KEY` from `.env` into the
   backend container so on-demand US macro context can use a configured key.
   The panel now labels its series as US-wide rather than

@@ -428,9 +428,12 @@ describe("MarketContextPage", () => {
     expect(compareMock).toHaveBeenCalledTimes(1);
 
     fireEvent.change(screen.getByRole("combobox", { name: "Find a proxy to add" }), { target: { value: "SAP" } });
-    expect(await screen.findByRole("option", { name: /SAP.DE/ })).toBeInTheDocument();
+    const sapSuggestion = await screen.findByRole("option", { name: /SAP.DE/ });
     expect(screen.queryByRole("option", { name: /AAPL/ })).not.toBeInTheDocument();
-    fireEvent.click(screen.getByRole("option", { name: /SAP.DE/ }));
+    // A real mouse click starts with mouse-down; retaining input focus prevents
+    // blur from closing the list before its click handler can pick the symbol.
+    expect(fireEvent.mouseDown(sapSuggestion)).toBe(false);
+    fireEvent.click(sapSuggestion);
     expect(screen.getByRole("textbox", { name: "Comparison symbols" })).toHaveValue("SPY, BTC-USD, SAP.DE");
     expect(compareMock).toHaveBeenCalledTimes(1);
 
