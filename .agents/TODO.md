@@ -406,6 +406,26 @@ v2.x work, not an implicit queue of pre-release PRs.
       blocker when the UI reports it honestly. Tag and publish only after this
       acceptance and any required fixes.
 
+### v2.1 planned — filing-grounded US fundamentals
+
+This starts **after v2.0 release**, not as another v2.0 gate. Keep the existing
+SEC concept, form, and exact ticker/CIK limits; do not broaden provider coverage
+to make this milestone appear complete.
+
+- [ ] Add a bounded, on-demand check of selected Company Facts claims against
+      their own official filing artifact. Link the accession and show form,
+      filed date, acceptance time when available, exact concept/unit/period,
+      value, and an explicit corroborated, mismatched, ambiguous, missing,
+      unsupported, or provider-failed outcome. A submissions-index match is
+      not sufficient to mark a value corroborated.
+- [ ] Expose the check in the comparison journey without replacing current
+      Company Facts evidence on failure. Preserve distinct same-period values
+      and avoid inferred revisions, supersession, or price-move causation.
+- [ ] Test matching, amendment/different-value, absent/ambiguous, and failure
+      paths deterministically; perform one configured US-equity host check.
+      Retained historical vintages, full filing coverage, and a revision-aware
+      explanation contract remain separate later v2.x work.
+
 ### v2 next — first cross-market evidence slice
 
 - [x] Add an experimental, authenticated comparison API for one anchor and

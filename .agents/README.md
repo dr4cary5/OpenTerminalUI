@@ -94,6 +94,11 @@ release-level interpretation and safety boundaries.
   automatic relationship, portfolio-context, and AI-interpretation ambitions
   are later v2.x candidates (or v3 validation work), not implicit pre-release
   PRs. See the explicit v2.0 gate in `TODO.md` and `docs/wiki/Roadmap.md`.
+- **v2.1 is planned, not started:** the first post-release slice checks selected
+  US SEC Company Facts values against their source filing artifacts and shows
+  honest corroboration or failure states. It does not claim a full historical
+  vintage or make fundamentals explain past price moves. See the bounded v2.1
+  scope in `TODO.md` and `docs/wiki/Roadmap.md`.
 - **v2 opens with time-aware private memory.** Semantic similarity alone must
   not flatten current and historical beliefs. Second Brain evidence carries
   effective, recorded, and updated timestamps; retrieval may give bounded weight

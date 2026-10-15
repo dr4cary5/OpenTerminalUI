@@ -212,6 +212,33 @@ hidden v2.0 blockers. Each needs its own explicit scope and acceptance criteria
 before implementation. This boundary replaces treating every useful evidence
 prerequisite as another mandatory pre-release PR.
 
+## v2.1.0 — Filing-grounded US fundamentals (planned)
+
+After v2.0, the next bounded cross-market evidence increment is to let a user
+inspect whether a selected SEC Company Facts value is supported by its own
+filing. For the existing exact US ticker/CIK mapping, standard US-GAAP concept
+set, and 10-K/10-Q forms (including amendments), connect a displayed fact to
+the specific filing accession and an official filing artifact. Show the source
+link, form, filed date, acceptance time when available, fiscal period, concept,
+unit, and value. Compare differing values only for an exact concept, unit, and
+fiscal period; do not infer which filing supersedes another.
+
+The implementation must check the filing's own evidence before calling a value
+corroborated. An inaccessible, unparsable, ambiguous, absent, or mismatched
+filing must have a distinct, honest status; a submission-index match alone is
+not corroboration. Fetches remain opt-in, bounded, and subject to the existing
+SEC configuration and pacing rather than becoming a background archive crawl.
+The release check is deterministic coverage of matching, amended/differing,
+missing/ambiguous, and provider-failure cases, plus maintainer host inspection
+of at least one configured US equity filing journey.
+
+This milestone does **not** deliver a complete historical SEC vintage, a
+market-knowledge or dissemination timeline, non-US fundamentals, all XBRL
+concepts or filing types, cross-issuer normalization, or automatic explanations
+of past price moves. The broader revision-aware fundamentals contract and
+tested historical coverage below remain later work; they are not silently
+satisfied by corroborating selected filing facts.
+
 ## v2 opening principle — time-aware memory
 
 > **Intelligence begins with time-aware memory.** Before markets can explain one
