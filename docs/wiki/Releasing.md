@@ -12,9 +12,12 @@ broken links, no wrong-currency numbers. Feature growth resumes in `1.1+`.
 
 ## Versioning
 
-- **SemVer** from `1.0.0`: `MAJOR` = breaking change to the deployment/config
-  contract or DB schema requiring manual migration; `MINOR` = new
-  features/surfaces; `PATCH` = fixes.
+- **SemVer** from `1.0.0`: incompatible deployment/API contracts or a DB schema
+  requiring manual migration demand a `MAJOR` bump. The roadmap also uses a
+  major version for a reviewed product-generation milestone, such as the
+  accepted v2.0 cross-market context release; that does not imply a breaking
+  migration when none exists. `MINOR` adds features/surfaces within the current
+  generation; `PATCH` fixes behavior.
 - **Single source of truth.** Two values, kept in lockstep at the release
   version: backend `app_version` (`backend/config/settings.py`, overridable via
   `OPENTERMINALUI_APP_VERSION`) and `frontend/package.json`. The frontend derives
@@ -154,6 +157,30 @@ and nonzero fees. Host testing confirmed the repair but found the inline control
 too crowded, so PR #148 moved them to a rightmost row action and focused dialog.
 The maintainer verified the final behavior; tag and GitHub release `v1.7.0` were
 published from `0473307` on 2026-09-15.
+
+### v2.0.0 verification ledger (pending)
+
+The release gate is the **existing cross-market context feature**, not every
+future v2 evidence or relationship idea. Automated release preparation must
+re-run the regular CI checklist above; these feature-specific checks make the
+host acceptance concrete:
+
+| Contract | Evidence to verify |
+|---|---|
+| Authenticated comparison remains usable from equity, Security Hub, and crypto research | `backend/tests/test_market_context.py`, `frontend/src/__tests__/MarketContextPage.test.tsx`, host browser journey |
+| US, cross-currency/EU, and crypto-versus-weekday proxy pairs show actual overlap, source dates, native quote units, and appropriate optional FX context | Deterministic backend/frontend tests plus maintainer host cases |
+| UTC, exchange-local, Yahoo-adjusted, and own-date views stay separate; partial adjusted data cannot silently shorten a pair | `backend/tests/test_market_context.py`, host inspection of one representative pair |
+| Provider errors, missing keys/timezones, stale or insufficient history, and optional-panel failures stay explicit without sample or invented values | Route/UI tests and a degraded host case |
+| Completed time-aware Brain and Brain Log foundations remain functional | Regular backend/frontend suites and the general smoke matrix |
+
+Prepare the version/changelog/docs bump and full CI in a release PR first. After
+that merges, record host outcomes and fix any observed feature defect before
+marking this ledger complete. Unavailable optional-provider coverage is
+acceptable when the UI says so honestly. Complete deployment smoke
+verification before tagging and publishing the GitHub release.
+Automatic relationship discovery, portfolio-wide context, grounded AI market
+interpretation, and deeper historical evidence contracts are later milestones,
+not v2.0 release gates.
 
 ## Cutting the release
 
