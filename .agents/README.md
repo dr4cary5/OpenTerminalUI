@@ -85,6 +85,15 @@ release-level interpretation and safety boundaries.
   2026-09-15 after the maintainer's host/user verification.
   Keep `backend/config/settings.py` and `frontend/package.json` in lockstep when
   releasing.
+- **v2.0 scope is now bounded to the existing cross-market context feature.**
+  The maintainer accepts its current implementation as sufficient for a release
+  candidate, alongside the completed time-aware Brain and Brain Log foundations.
+  Remaining gates are host acceptance of representative real/degraded market
+  pairs and normal release preparation, not new relationship or evidence
+  features. The broader fundamentals-vintage, macro-release, technical-session,
+  automatic relationship, portfolio-context, and AI-interpretation ambitions
+  are later v2.x candidates (or v3 validation work), not implicit pre-release
+  PRs. See the explicit v2.0 gate in `TODO.md` and `docs/wiki/Roadmap.md`.
 - **v2 opens with time-aware private memory.** Semantic similarity alone must
   not flatten current and historical beliefs. Second Brain evidence carries
   effective, recorded, and updated timestamps; retrieval may give bounded weight

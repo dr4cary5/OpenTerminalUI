@@ -178,6 +178,40 @@ Journal SHORT entries remain journal-only until Portfolio supports short
 positions. This is an unscheduled decision-lifecycle item, **not** a prerequisite
 for the v2 time-aware-memory opening or a claim of broker execution support.
 
+## v2.0.0 — Cross-market context (release candidate)
+
+The v2.0 release scope is the **current cross-market context feature**, not the
+entire long-term cross-market intelligence vision. The feature lets a user open
+an asset's research context, select market proxies, and inspect actual dated
+co-movement, return paths, optional currency context, source and adjustment
+disclosures, and bounded on-demand evidence. It reports stale, missing, and
+provider-failed data instead of constructing a plausible answer. The time-aware
+Second Brain and Brain Log foundations built during this development cycle are
+included, but no further Brain capability is a release gate.
+
+The implementation is complete enough to enter release verification. The
+remaining v2.0 gates are:
+
+1. **Release-preparation PR**: version and changelog, documentation, CI and
+   generated-contract checks, plus the normal maintainer review. Its merge does
+   not authorize a tag by itself.
+2. **Maintainer host acceptance** of the existing browser/API journey with US,
+   cross-currency or EU, crypto/weekday-market, and degraded-history cases.
+   Verify that dates, quote units, provider paths, missing-data states, and
+   caveats remain comprehensible on real data. Fix observed defects before
+   release; honestly unavailable optional feeds are not defects by themselves.
+   Complete the deployment smoke matrix, then tag and publish the GitHub release.
+
+v2.0 does **not** promise causation, a recommendation, automatically selected
+market relationships, portfolio-wide context, grounded AI explanations, or
+decision-grade adjusted technical signals. Those are candidates for later v2.x
+increments, while multi-dimensional opportunity validation remains the v3
+promise. The unresolved historical fundamentals, macro release/vintage, and
+provider-session/adjustment contracts documented below are therefore not
+hidden v2.0 blockers. Each needs its own explicit scope and acceptance criteria
+before implementation. This boundary replaces treating every useful evidence
+prerequisite as another mandatory pre-release PR.
+
 ## v2 opening principle — time-aware memory
 
 > **Intelligence begins with time-aware memory.** Before markets can explain one

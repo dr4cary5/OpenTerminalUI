@@ -380,6 +380,32 @@ system does not automatically make model output an independent source, persist
 conversations, replace user-owned beliefs, make the full cross-market
 intelligence promise, or claim that contradiction handling is solved.
 
+### v2.0 release gate — cross-market context
+
+The maintainer accepts the current, experimental cross-market context feature as
+sufficient scope for v2.0. Time-aware Brain and Brain Log work are already part of
+the unreleased version, but no additional feature is a v2.0 gate. In particular,
+the unchecked evidence-quality and relationship ambitions below belong to later
+v2.x work, not an implicit queue of pre-release PRs.
+
+- [x] Provide an authenticated browser and API journey for an asset against
+      selected cross-market proxies, with dated price paths, native returns,
+      optional reporting-currency context, provenance, freshness, and explicit
+      unavailable/partial states. Keep local-date and adjusted Yahoo views
+      separately labelled and the primary UTC result unchanged.
+- [ ] Prepare a v2.0.0 release PR: update versions and release notes, verify
+      documentation, run the documented automated checks and smoke matrix where
+      available, and obtain normal maintainer review. Do not tag from the
+      preparation PR alone.
+- [ ] Complete maintainer host acceptance after release preparation merges:
+      exercise a
+      US/equity pair, a cross-currency or EU pair, a crypto/weekday-market pair,
+      and an unavailable/degraded history case. Check source dates, quote units,
+      provider and timezone caveats, and the available on-demand evidence panels. Record
+      any actual defect as a v2.0 blocker; missing provider coverage is not a
+      blocker when the UI reports it honestly. Tag and publish only after this
+      acceptance and any required fixes.
+
 ### v2 next — first cross-market evidence slice
 
 - [x] Add an experimental, authenticated comparison API for one anchor and
@@ -394,7 +420,8 @@ intelligence promise, or claim that contradiction handling is solved.
       anchor/proxy symbols and quick-add/remove proxy choices followed UX feedback;
       keep the comparison math experimental and price-only while wider evidence
       coverage matures.
-- [ ] Extend from price co-movement into cross-market explanation only when
+- [ ] **Later v2.x, not a v2.0 gate:** Extend from price co-movement into
+      cross-market explanation only when
       fundamentals, macro, sentiment, and technical evidence have their own
       freshness/provenance contracts. Do not infer causation from correlated
       price moves or treat native-quote returns as FX-normalized performance.
@@ -436,7 +463,7 @@ intelligence promise, or claim that contradiction handling is solved.
         only-in-later, and differing-value sets in the API and browser. Failed
         or empty captures are not comparable; observed differences are not
         verified provider revisions, retractions, or new market disclosures.
-  - [ ] Establish a versioned/revision-aware fundamentals evidence contract
+  - [ ] **Later v2.x:** Establish a versioned/revision-aware fundamentals evidence contract
         and tested historical coverage before using these candidates to explain
         old price moves or asserting what was known at a past point in time.
     - [x] Add a separate, opt-in SEC Company Facts API for exact US ticker/CIK
@@ -546,7 +573,7 @@ intelligence promise, or claim that contradiction handling is solved.
         source, provider flags, retrieval time, and partial failures without
         sample values or a false historical-vintage claim. Keep the US FRED
         panel independent and do not infer relevance from a ticker.
-    - [ ] Validate release timestamps and historical vintages before using
+    - [ ] **Later v2.x:** Validate release timestamps and historical vintages before using
           these euro-area values for point-in-time macro explanations; extend
           geography only with explicit series, coverage, and freshness checks.
       - [x] Add a narrowly scoped Eurostat unemployment-vintage check from the
@@ -609,7 +636,7 @@ intelligence promise, or claim that contradiction handling is solved.
         crypto weekends. Never shrink the window to available adjusted values;
         keep primary provider-close and pair-shared outputs unchanged. Provider
         adjustment correctness and session calendars remain unverified.
-  - [ ] Add a split/dividend-adjusted and provider-provenance contract before
+  - [ ] **Later v2.x:** Add a split/dividend-adjusted and provider-provenance contract before
         treating technical measures as decision-grade cross-market signals;
         separate native per-asset sessions from pair-shared sampling when
         users need standard daily indicators (notably crypto weekends). The
