@@ -20,6 +20,12 @@ adopt [Semantic Versioning](https://semver.org/spec/v2.0.0.html) from `1.0.0`.
   deadline and cancel when unmounted; no filing check runs merely from opening
   the facts panel or refocusing the window.
 
+### Fixed
+- **Live SEC filing formats** — accession labels split across SEC HTML elements
+  now parse correctly, and zero-padded string CIKs in submissions are validated
+  against the exact requested issuer. These provider formats previously blocked
+  source-filing checks before their XBRL evidence could be read.
+
 ## [2.0.0] - 2026-10-15
 
 The first v2 release makes **cross-market context** available as an explicit,

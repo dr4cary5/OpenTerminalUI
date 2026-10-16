@@ -7,6 +7,7 @@ from datetime import date
 from types import SimpleNamespace
 
 import httpx
+import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
@@ -191,7 +192,7 @@ def test_route_reports_provider_failure_without_leaking_upstream_url() -> None:
 
 
 def _submissions() -> dict:
-    return {"cik": 320193, "filings": {"recent": {
+    return {"cik": "0000320193", "filings": {"recent": {
         "accessionNumber": ["0000320193-25-000001", "0000320193-25-000002"],
         "form": ["10-Q", "10-Q/A"], "filingDate": ["2025-05-02", "2025-08-01"],
         "acceptanceDateTime": ["2025-05-02T15:30:00Z", "2025-08-01T17:00:00Z"],
@@ -227,6 +228,22 @@ def test_recent_submission_index_rejects_wrong_cik_and_broken_columns() -> None:
         assert False, "expected broken column rejection"
     except ValueError:
         pass
+
+
+@pytest.mark.parametrize("reported", [320193, "320193", "0000320193"])
+def test_submission_cik_accepts_exact_numeric_and_padded_string_forms(reported: int | str) -> None:
+    payload = {**_submissions(), "cik": reported}
+    assert "0000320193-25-000001" in recent_submission_index(payload, 320193)
+
+
+@pytest.mark.parametrize("reported,expected", [
+    (None, 320193), ("0000000042", 320193), (" 0000320193 ", 320193),
+    ("00000320193", 320193), ("3.20193e5", 320193), ("+320193", 320193),
+    (True, 1), (1.0, 1), ("١", 1),
+])
+def test_submission_cik_rejects_wrong_issuer_or_invalid_identifier_types(reported: object, expected: int) -> None:
+    with pytest.raises(ValueError, match="CIK mismatch"):
+        recent_submission_index({**_submissions(), "cik": reported}, expected)
 
 
 def test_continuation_selection_caps_requests_and_rejects_foreign_file_names() -> None:

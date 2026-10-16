@@ -449,6 +449,12 @@ to make this milestone appear complete.
       acceptance metadata. Check a differing disclosure if available and verify
       that a failed check preserves the original facts. Then complete normal
       release preparation and maintainer acceptance before tagging v2.1.
+      The first host NVDA test exposed accession-label markup and padded-string
+      submission CIK formats absent from the original fixtures. Both now have
+      regression coverage. A direct live check of accession
+      `0001045810-26-000075`, Revenues/USD for 2026-04-27 to 2026-07-26,
+      corroborates 96,221,000,000 with three matching instance facts. Repeat the
+      browser host check after deploying these fixes; this gate remains open.
       Retained historical vintages, full filing coverage, and a revision-aware
       explanation contract remain separate later v2.x work.
 
