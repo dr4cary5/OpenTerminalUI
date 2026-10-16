@@ -13,8 +13,8 @@ requirements are documented in [`wiki/Limitations.md`](wiki/Limitations.md).
 
 ## Contract summary
 
-- **466 operations** across **416 paths** and **87 families**.
-- Authentication: **421 bearer**, **5 read API-key**, **1 write API-key**, **39 unauthenticated** operations.
+- **467 operations** across **417 paths** and **87 families**.
+- Authentication: **422 bearer**, **5 read API-key**, **1 write API-key**, **39 unauthenticated** operations.
 - API keys are created and revoked by an authenticated user under `/api/settings/api-keys`.
 - `read_write` is required for `PUT /api/v1/notes/external`; market-data automation endpoints require `read` or `read_write`.
 
@@ -80,7 +80,7 @@ requirements are documented in [`wiki/Limitations.md`](wiki/Limitations.md).
 | `instruments` | `supported` | 1 |
 | `journal` | `supported` | 10 |
 | `kite` | `configuration-gated` | 6 |
-| `market-context` | `experimental` | 16 |
+| `market-context` | `experimental` | 17 |
 | `model-lab` | `hidden` | 12 |
 | `mutual-funds` | `supported` | 13 |
 | `news` | `supported` | 10 |
@@ -689,6 +689,7 @@ State: **experimental**
 | `POST` | `/api/market-context/macro-observations/euro-area/hicp-first-published` | Bearer token | Get Market Context Euro Area Hicp First Published |
 | `POST` | `/api/market-context/macro-observations/euro-area/unemployment-vintages` | Bearer token | Get Market Context Euro Area Unemployment Vintages |
 | `POST` | `/api/market-context/sec-filed-facts` | Bearer token | Sec File Facts |
+| `POST` | `/api/market-context/sec-filing-fact-check` | Bearer token | Sec Filing Fact Check |
 | `POST` | `/api/market-context/sec-submission-crosscheck` | Bearer token | Sec Submission Crosscheck |
 
 ### `model-lab`

@@ -4,9 +4,9 @@ This directory is the repository-owned handoff for AI coding agents and new
 maintainers. Read it before making changes. It records decisions that may have
 previously existed only in a maintainer's chat or local agent memory.
 
-Last release-prep audit: **2026-10-15**, from `main` at `d8eb932` (through
-v2.0/v2.1 scope PR #210). The latest tag and published GitHub release remain
-**v1.7.0** at `0473307` until host acceptance and the v2.0 tag.
+Last handoff update: **2026-10-16**, after **v2.0.0** was tagged and published
+from `7e467df` (through proxy-selector fix PR #212). v2.1 implementation has
+started with the filing-level SEC fact verification API described below.
 
 ## Read order and sources of truth
 
@@ -81,24 +81,25 @@ release-level interpretation and safety boundaries.
 
 ## Current release and development state
 
-- Current release: **v1.7.0**, tagged and published from `0473307` on
-  2026-09-15 after the maintainer's host/user verification.
+- Current release: **v2.0.0**, tagged and published from `7e467df` on
+  2026-10-15 after the maintainer's host/user verification.
   Keep `backend/config/settings.py` and `frontend/package.json` in lockstep when
   releasing.
-- **v2.0 scope is now bounded to the existing cross-market context feature.**
-  The maintainer accepts its current implementation as sufficient for a release
-  candidate, alongside the completed time-aware Brain and Brain Log foundations.
-  Remaining gates are host acceptance of representative real/degraded market
-  pairs and normal release preparation, not new relationship or evidence
-  features. The broader fundamentals-vintage, macro-release, technical-session,
+- **v2.0 shipped the bounded cross-market context feature**, alongside the
+  completed time-aware Brain and Brain Log foundations. Release preparation
+  and host acceptance are complete, including the final proxy-suggestion click
+  fix. The broader fundamentals-vintage, macro-release, technical-session,
   automatic relationship, portfolio-context, and AI-interpretation ambitions
   are later v2.x candidates (or v3 validation work), not implicit pre-release
   PRs. See the explicit v2.0 gate in `TODO.md` and `docs/wiki/Roadmap.md`.
-- **v2.1 is planned, not started:** the first post-release slice checks selected
-  US SEC Company Facts values against their source filing artifacts and shows
-  honest corroboration or failure states. It does not claim a full historical
-  vintage or make fundamentals explain past price moves. See the bounded v2.1
-  scope in `TODO.md` and `docs/wiki/Roadmap.md`.
+- **v2.1 is in progress:** `POST /api/market-context/sec-filing-fact-check`
+  checks one selected current Company Facts claim against an official,
+  archive-listed XBRL instance. It requires exact issuer/concept/unit/duration
+  evidence, returns source links and explicit failure/conflict states, and
+  bounds document size, parser complexity and request duration. Browser controls
+  and configured host acceptance remain. It does not claim a full historical
+  vintage or make fundamentals explain past price moves. See `TODO.md` and
+  `docs/wiki/Roadmap.md` for the bounded v2.1 scope.
 - **v2 opens with time-aware private memory.** Semantic similarity alone must
   not flatten current and historical beliefs. Second Brain evidence carries
   effective, recorded, and updated timestamps; retrieval may give bounded weight

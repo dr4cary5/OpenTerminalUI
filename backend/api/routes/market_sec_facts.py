@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import logging
 from datetime import date, datetime, timezone
 from typing import Any, Literal
@@ -11,15 +12,18 @@ from pydantic import BaseModel, Field
 
 from backend.api.routes.market_context import _symbol
 from backend.auth.deps import get_current_user
-from backend.core.sec_edgar_client import SecEdgarClient, get_sec_edgar_client
+from backend.core.sec_edgar_client import SecDocumentTooLarge, SecEdgarClient, get_sec_edgar_client
 from backend.models import User
 from backend.services.sec_filing_evidence import (
     CANDIDATE_DISPLAY_LIMIT,
     DISCLOSURES_PER_CANDIDATE_LIMIT,
     DISPLAY_LIMIT,
+    CONCEPT_UNITS,
+    contains_filed_fact,
     disclosure_difference_candidates,
     filed_facts,
 )
+from backend.services.sec_filing_verification import archive_base, filing_document, verify_instance
 from backend.services.sec_submission_evidence import (
     continuation_files, crosscheck_recent_submission, recent_submission_index, submission_index,
 )
@@ -37,14 +41,14 @@ class SecFiledFactsRequest(BaseModel):
 
 class SecFiledFact(BaseModel):
     filed_date: date
-    accession: str
+    accession: str = Field(pattern=r"^\d{10}-\d{2}-\d{6}$")
     taxonomy: Literal["us-gaap"]
     concept: str
     unit: str
     form: str
     period_start: date
     period_end: date
-    value: float
+    value: float = Field(allow_inf_nan=False)
 
 
 class SecDisclosureDifferenceCandidate(BaseModel):
@@ -111,6 +115,98 @@ class SecSubmissionCrosscheckResponse(BaseModel):
     checked_count: int = 0
     matched_count: int = 0
     results: list[SecSubmissionCrosscheckItem] = Field(default_factory=list)
+
+
+class SecFilingFactCheckRequest(BaseModel):
+    symbol: str = Field(min_length=1, max_length=40, examples=["AAPL"])
+    fact: SecFiledFact
+
+
+class SecFilingFactCheckResponse(BaseModel):
+    contract_version: Literal[1] = 1
+    symbol: str
+    cik: int | None = None
+    fact: SecFiledFact
+    retrieved_at: datetime
+    status: Literal["corroborated", "mismatched", "ambiguous", "missing", "unsupported", "unparseable",
+                    "configuration_required", "not_covered", "ambiguous_ticker", "provider_error"]
+    reason: Literal[
+        "unsupported_concept_unit_or_form", "claim_not_in_current_company_facts",
+        "invalid_filing_index", "filing_metadata_ambiguous", "filing_metadata_differs",
+        "unsupported_instance_link", "instance_not_listed", "multiple_instances",
+        "submission_metadata_conflicts", "invalid_xbrl_instance", "invalid_matching_fact",
+        "exact_fact_absent", "conflicting_exact_facts", "exact_fact_matches", "exact_value_differs",
+        "document_size_limit", "check_timed_out", "filing_check_failed",
+    ] | None = None
+    evidence_scope: Literal["filing_xbrl_exact_entity_concept_unit_duration"] = "filing_xbrl_exact_entity_concept_unit_duration"
+    filing_url: str | None = None
+    document_url: str | None = None
+    filing_form: str | None = None
+    filing_date: date | None = None
+    accepted_at: datetime | None = None
+    observed_values: list[float] = Field(default_factory=list)
+    matching_fact_count: int = 0
+    distinct_value_count: int = 0
+
+
+@router.post("/sec-filing-fact-check", response_model=SecFilingFactCheckResponse)
+async def sec_filing_fact_check(
+    payload: SecFilingFactCheckRequest,
+    _user: User = Depends(get_current_user),
+    client: SecEdgarClient = Depends(get_sec_edgar_client),
+) -> dict[str, Any]:
+    """Inspect one selected Company Facts claim against its filing's XBRL instance.
+
+    Downloads are opt-in, paced, bounded to one index and one instance, and
+    limited to 45 seconds overall. An index match cannot corroborate a value.
+    """
+    symbol = _symbol(payload.symbol)
+    claim = payload.fact.model_dump()
+    if not claim["period_start"] <= claim["period_end"] <= claim["filed_date"]:
+        raise HTTPException(status_code=422, detail="Fact period must be ordered and end by its filing date")
+    result: dict[str, Any] = {
+        "symbol": symbol, "fact": claim, "retrieved_at": datetime.now(timezone.utc),
+        "status": "configuration_required",
+    }
+    if CONCEPT_UNITS.get(claim["concept"]) != claim["unit"] or claim["form"] not in {"10-K", "10-Q", "10-K/A", "10-Q/A"}:
+        return {**result, "status": "unsupported", "reason": "unsupported_concept_unit_or_form"}
+    if not client.configured:
+        return result
+    try:
+        async with asyncio.timeout(45):
+            ciks = await client.ticker_ciks(symbol)
+            if not ciks:
+                return {**result, "status": "not_covered"}
+            if len(ciks) > 1:
+                return {**result, "status": "ambiguous_ticker"}
+            cik = ciks[0]
+            result["cik"] = cik
+            current = await client.company_facts(cik)
+            if not contains_filed_fact(current, claim):
+                return {**result, "status": "missing", "reason": "claim_not_in_current_company_facts"}
+            base = archive_base(cik, claim["accession"])
+            result["filing_url"] = base + f"{claim['accession']}-index.html"
+            selection = filing_document(await client.filing_index(cik, claim["accession"]), cik, claim)
+            result.update({key: value for key, value in selection.items() if key != "instance_name"})
+            if selection["status"] != "selected":
+                return result
+            # Acceptance is optional metadata, not evidence for the reported value.
+            recent = recent_submission_index(await client.recent_submissions(cik), cik)
+            metadata = crosscheck_recent_submission(recent, claim["accession"], claim["form"], claim["filed_date"])
+            if metadata["status"] == "matched":
+                result["accepted_at"] = metadata["accepted_at"]
+            elif metadata["status"] in {"metadata_mismatch", "ambiguous_in_recent_index"}:
+                return {**result, "status": "ambiguous", "reason": "submission_metadata_conflicts"}
+            content = await client.filing_instance(cik, claim["accession"], selection["instance_name"])
+            result.update(verify_instance(content, cik, claim))
+    except SecDocumentTooLarge:
+        result.update(status="unsupported", reason="document_size_limit")
+    except TimeoutError:
+        result.update(status="provider_error", reason="check_timed_out")
+    except Exception as exc:
+        logger.warning("SEC filing fact check failed for %s (%s)", symbol, type(exc).__name__)
+        result.update(status="provider_error", reason="filing_check_failed")
+    return result
 
 
 @router.post("/sec-filed-facts", response_model=SecFiledFactsResponse)

@@ -1,8 +1,9 @@
 # Current project state and backlog
 
-Last release-prep audit: **2026-10-15**, from `main` at `d8eb932` (through
-v2.0/v2.1 scope PR #210). The latest tag and published GitHub release remain
-**v1.7.0** at `0473307` until host acceptance and the v2.0 tag.
+Last handoff update: **2026-10-16**. **v2.0.0** is tagged and published from
+`7e467df` after maintainer acceptance and final proxy-selector fix PR #212.
+The bounded v2.1 filing verification API is implemented; browser integration
+and configured host acceptance remain.
 
 This is a handoff, not an immutable roadmap. Before taking an item, verify it
 against recent Git history, code, and tests. Move shipped work to the completed
@@ -382,9 +383,9 @@ intelligence promise, or claim that contradiction handling is solved.
 
 ### v2.0 release gate — cross-market context
 
-The maintainer accepts the current, experimental cross-market context feature as
-sufficient scope for v2.0. Time-aware Brain and Brain Log work are already part of
-the unreleased version, but no additional feature is a v2.0 gate. In particular,
+The maintainer accepted the experimental cross-market context feature as
+sufficient scope for v2.0, now released with time-aware Brain and Brain Log.
+No additional feature is a v2.0 gate. In particular,
 the unchecked evidence-quality and relationship ambitions below belong to later
 v2.x work, not an implicit queue of pre-release PRs.
 
@@ -393,11 +394,11 @@ v2.x work, not an implicit queue of pre-release PRs.
       optional reporting-currency context, provenance, freshness, and explicit
       unavailable/partial states. Keep local-date and adjusted Yahoo views
       separately labelled and the primary UTC result unchanged.
-- [ ] Prepare a v2.0.0 release PR: update versions and release notes, verify
+- [x] Prepare a v2.0.0 release PR: update versions and release notes, verify
       documentation, run the documented automated checks and smoke matrix where
       available, and obtain normal maintainer review. Do not tag from the
       preparation PR alone.
-- [ ] Complete maintainer host acceptance after release preparation merges:
+- [x] Complete maintainer host acceptance after release preparation merges:
       exercise a
       US/equity pair, a cross-currency or EU pair, a crypto/weekday-market pair,
       and an unavailable/degraded history case. Check source dates, quote units,
@@ -406,23 +407,33 @@ v2.x work, not an implicit queue of pre-release PRs.
       blocker when the UI reports it honestly. Tag and publish only after this
       acceptance and any required fixes.
 
-### v2.1 planned — filing-grounded US fundamentals
+### v2.1 in progress — filing-grounded US fundamentals
 
 This starts **after v2.0 release**, not as another v2.0 gate. Keep the existing
 SEC concept, form, and exact ticker/CIK limits; do not broaden provider coverage
 to make this milestone appear complete.
 
-- [ ] Add a bounded, on-demand check of selected Company Facts claims against
+- [x] Add a bounded, on-demand API check of selected Company Facts claims against
       their own official filing artifact. Link the accession and show form,
       filed date, acceptance time when available, exact concept/unit/period,
       value, and an explicit corroborated, mismatched, ambiguous, missing,
       unsupported, or provider-failed outcome. A submissions-index match is
       not sufficient to mark a value corroborated.
+      `POST /api/market-context/sec-filing-fact-check` accepts one symbol and
+      displayed fact, rechecks current Company Facts membership, and inspects
+      one archive-listed XBRL instance. Exact entity-wide concept/unit/duration
+      matches are required. Unparseable data is distinct from absent data.
+      Documents are limited to a 2 MiB index and 12 MiB instance, with a 45-second
+      request deadline and existing SEC pacing. Acceptance metadata is included
+      only when the current recent-submissions row matches; older absent rows
+      leave acceptance unknown. Amendments remain separate observations.
 - [ ] Expose the check in the comparison journey without replacing current
       Company Facts evidence on failure. Preserve distinct same-period values
       and avoid inferred revisions, supersession, or price-move causation.
-- [ ] Test matching, amendment/different-value, absent/ambiguous, and failure
-      paths deterministically; perform one configured US-equity host check.
+- [x] Test API matching, amendment/different-value, absent/ambiguous, and failure
+      paths deterministically, including namespace/unit/context and XML/download
+      limits.
+- [ ] Test the browser integration and perform one configured US-equity host check.
       Retained historical vintages, full filing coverage, and a revision-aware
       explanation contract remain separate later v2.x work.
 

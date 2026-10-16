@@ -6,6 +6,15 @@ adopt [Semantic Versioning](https://semver.org/spec/v2.0.0.html) from `1.0.0`.
 
 ## [Unreleased]
 
+### Added
+- **Filing-level SEC fact verification API** — a separately requested check
+  validates one selected Company Facts claim against the official filing's
+  listed XBRL instance, matching issuer, standard concept, unit and exact fiscal
+  duration. It returns source links and distinct corroborated, differing,
+  conflicting, absent, unsupported, unparseable and provider-failed outcomes.
+  Downloads are paced and bounded; browser controls and host acceptance follow
+  in the remaining v2.1 work.
+
 ## [2.0.0] - 2026-10-15
 
 The first v2 release makes **cross-market context** available as an explicit,
