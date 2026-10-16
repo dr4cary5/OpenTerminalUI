@@ -2,8 +2,8 @@
 
 Last handoff update: **2026-10-16**. **v2.0.0** is tagged and published from
 `7e467df` after maintainer acceptance and final proxy-selector fix PR #212.
-The bounded v2.1 filing verification API is implemented; browser integration
-and configured host acceptance remain.
+The bounded v2.1 filing verification API and browser integration are implemented;
+configured host acceptance remains.
 
 This is a handoff, not an immutable roadmap. Before taking an item, verify it
 against recent Git history, code, and tests. Move shipped work to the completed
@@ -427,13 +427,28 @@ to make this milestone appear complete.
       request deadline and existing SEC pacing. Acceptance metadata is included
       only when the current recent-submissions row matches; older absent rows
       leave acceptance unknown. Amendments remain separate observations.
-- [ ] Expose the check in the comparison journey without replacing current
+- [x] Expose the check in the comparison journey without replacing current
       Company Facts evidence on failure. Preserve distinct same-period values
       and avoid inferred revisions, supersession, or price-move causation.
+      Each fact/disclosure has a **Check source filing** action with exact values,
+      source links, dated results, loading/error states and explicit retries.
+      Fact identity (including accession, period, unit and value) scopes the
+      cached result. Browser requests allow 60 seconds for the backend's
+      45-second deadline, cancel on unmount and do not refetch on window focus
+      or reconnect. **Refresh SEC facts** can recover a claim no longer present
+      in the current Company Facts response.
 - [x] Test API matching, amendment/different-value, absent/ambiguous, and failure
       paths deterministically, including namespace/unit/context and XML/download
       limits.
-- [ ] Test the browser integration and perform one configured US-equity host check.
+- [x] Test the browser integration for opt-in requests, exact fact identity,
+      amendment/conflict isolation, source links, unavailable states, retry and
+      cancellation. A failed fresh check cannot retain a visible success badge.
+- [ ] Perform one configured US-equity host check: open an equity comparison,
+      show SEC filed facts, choose **Check source filing** under one fact, and
+      inspect its source links, exact concept/unit/period/value, result and
+      acceptance metadata. Check a differing disclosure if available and verify
+      that a failed check preserves the original facts. Then complete normal
+      release preparation and maintainer acceptance before tagging v2.1.
       Retained historical vintages, full filing coverage, and a revision-aware
       explanation contract remain separate later v2.x work.
 

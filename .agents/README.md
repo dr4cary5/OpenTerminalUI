@@ -96,8 +96,12 @@ release-level interpretation and safety boundaries.
   checks one selected current Company Facts claim against an official,
   archive-listed XBRL instance. It requires exact issuer/concept/unit/duration
   evidence, returns source links and explicit failure/conflict states, and
-  bounds document size, parser complexity and request duration. Browser controls
-  and configured host acceptance remain. It does not claim a full historical
+  bounds document size, parser complexity and request duration. The comparison
+  browser offers **Check source filing** below each fact and each same-period
+  differing disclosure. Exact values, source links, dated results and manual
+  retries are visible; the request has a 60-second browser timeout and cancels
+  on unmount. Checks remain opt-in without focus/reconnect refetches.
+  Configured host acceptance remains. It does not claim a full historical
   vintage or make fundamentals explain past price moves. See `TODO.md` and
   `docs/wiki/Roadmap.md` for the bounded v2.1 scope.
 - **v2 opens with time-aware private memory.** Semantic similarity alone must
