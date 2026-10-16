@@ -422,6 +422,31 @@ export interface SecFiledFact {
   value: number;
 }
 
+export interface SecFilingFactCheckResponse {
+  contract_version: 1;
+  symbol: string;
+  cik: number | null;
+  fact: SecFiledFact;
+  retrieved_at: string;
+  status: "corroborated" | "mismatched" | "ambiguous" | "missing" | "unsupported" | "unparseable"
+    | "configuration_required" | "not_covered" | "ambiguous_ticker" | "provider_error";
+  reason: "unsupported_concept_unit_or_form" | "claim_not_in_current_company_facts"
+    | "invalid_filing_index" | "filing_metadata_ambiguous" | "filing_metadata_differs"
+    | "unsupported_instance_link" | "instance_not_listed" | "multiple_instances"
+    | "submission_metadata_conflicts" | "invalid_xbrl_instance" | "invalid_matching_fact"
+    | "exact_fact_absent" | "conflicting_exact_facts" | "exact_fact_matches" | "exact_value_differs"
+    | "document_size_limit" | "check_timed_out" | "filing_check_failed" | null;
+  evidence_scope: "filing_xbrl_exact_entity_concept_unit_duration";
+  filing_url: string | null;
+  document_url: string | null;
+  filing_form: string | null;
+  filing_date: string | null;
+  accepted_at: string | null;
+  observed_values: number[];
+  matching_fact_count: number;
+  distinct_value_count: number;
+}
+
 export interface SecDisclosureDifferenceCandidate {
   concept: string;
   unit: string;
@@ -610,6 +635,20 @@ export async function fetchMarketSecFiledFacts(symbol: string, filedStart: strin
 
 export async function fetchSecSubmissionCrosscheck(cik: number, claims: SecSubmissionClaim[]): Promise<SecSubmissionCrosscheckResponse> {
   const response = await api.post<SecSubmissionCrosscheckResponse>("/market-context/sec-submission-crosscheck", { cik, claims, check_continuations: true });
+  return response.data;
+}
+
+export async function fetchSecFilingFactCheck(
+  symbol: string,
+  fact: SecFiledFact,
+  signal?: AbortSignal,
+): Promise<SecFilingFactCheckResponse> {
+  const response = await api.post<SecFilingFactCheckResponse>(
+    "/market-context/sec-filing-fact-check",
+    { symbol, fact },
+    // Leave room for the backend's 45-second deadline and response transit.
+    { timeout: 60_000, signal },
+  );
   return response.data;
 }
 

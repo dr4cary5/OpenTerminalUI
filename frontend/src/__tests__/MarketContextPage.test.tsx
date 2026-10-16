@@ -3,11 +3,11 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { captureMarketFundamentals, compareMarketContext, compareMarketFundamentalCaptures, fetchEuroAreaHicpFirstPublished, fetchEuroAreaMacroObservations, fetchEuroAreaUnemploymentVintages, fetchMarketContextFundamentalReleases, fetchMarketContextHeadlines, fetchMarketContextMacroEvents, fetchMarketContextMacroObservations, fetchMarketSecFiledFacts, fetchSecSubmissionCrosscheck, getMarketFundamentalCapture, listMarketFundamentalCaptures } from "../api/marketContext";
+import { captureMarketFundamentals, compareMarketContext, compareMarketFundamentalCaptures, fetchEuroAreaHicpFirstPublished, fetchEuroAreaMacroObservations, fetchEuroAreaUnemploymentVintages, fetchMarketContextFundamentalReleases, fetchMarketContextHeadlines, fetchMarketContextMacroEvents, fetchMarketContextMacroObservations, fetchMarketSecFiledFacts, fetchSecFilingFactCheck, fetchSecSubmissionCrosscheck, getMarketFundamentalCapture, listMarketFundamentalCaptures } from "../api/marketContext";
 import { searchSymbols } from "../api/marketData";
 import { MarketContextPage } from "../pages/MarketContextPage";
 
-vi.mock("../api/marketContext", () => ({ captureMarketFundamentals: vi.fn(), compareMarketContext: vi.fn(), compareMarketFundamentalCaptures: vi.fn(), fetchEuroAreaHicpFirstPublished: vi.fn(), fetchEuroAreaMacroObservations: vi.fn(), fetchEuroAreaUnemploymentVintages: vi.fn(), fetchMarketContextFundamentalReleases: vi.fn(), fetchMarketContextHeadlines: vi.fn(), fetchMarketContextMacroEvents: vi.fn(), fetchMarketContextMacroObservations: vi.fn(), fetchMarketSecFiledFacts: vi.fn(), fetchSecSubmissionCrosscheck: vi.fn(), getMarketFundamentalCapture: vi.fn(), listMarketFundamentalCaptures: vi.fn() }));
+vi.mock("../api/marketContext", () => ({ captureMarketFundamentals: vi.fn(), compareMarketContext: vi.fn(), compareMarketFundamentalCaptures: vi.fn(), fetchEuroAreaHicpFirstPublished: vi.fn(), fetchEuroAreaMacroObservations: vi.fn(), fetchEuroAreaUnemploymentVintages: vi.fn(), fetchMarketContextFundamentalReleases: vi.fn(), fetchMarketContextHeadlines: vi.fn(), fetchMarketContextMacroEvents: vi.fn(), fetchMarketContextMacroObservations: vi.fn(), fetchMarketSecFiledFacts: vi.fn(), fetchSecFilingFactCheck: vi.fn(), fetchSecSubmissionCrosscheck: vi.fn(), getMarketFundamentalCapture: vi.fn(), listMarketFundamentalCaptures: vi.fn() }));
 vi.mock("../api/marketData", () => ({ searchSymbols: vi.fn() }));
 
 const compareMock = vi.mocked(compareMarketContext);
@@ -20,6 +20,7 @@ const euroAreaVintageMock = vi.mocked(fetchEuroAreaUnemploymentVintages);
 const fundamentalsMock = vi.mocked(fetchMarketContextFundamentalReleases);
 const secFactsMock = vi.mocked(fetchMarketSecFiledFacts);
 const secSubmissionMock = vi.mocked(fetchSecSubmissionCrosscheck);
+const secFilingMock = vi.mocked(fetchSecFilingFactCheck);
 const captureMock = vi.mocked(captureMarketFundamentals);
 const compareCapturesMock = vi.mocked(compareMarketFundamentalCaptures);
 const listCapturesMock = vi.mocked(listMarketFundamentalCaptures);
@@ -48,6 +49,7 @@ describe("MarketContextPage", () => {
     fundamentalsMock.mockReset();
     secFactsMock.mockReset();
     secSubmissionMock.mockReset();
+    secFilingMock.mockReset();
     captureMock.mockReset();
     compareCapturesMock.mockReset();
     listCapturesMock.mockReset().mockResolvedValue([]);
@@ -877,6 +879,14 @@ describe("MarketContextPage", () => {
       evidence_scope: "sec_current_companyfacts_accession_tagged", cik: null,
       matched_count: 0, examined_count: 0, display_limit: 50, facts: [],
     });
+    secFilingMock.mockImplementation(async (symbol, fact) => ({
+      contract_version: 1, symbol, fact, cik: 320193, retrieved_at: "2026-09-11T10:02:00Z",
+      status: "corroborated", reason: "exact_fact_matches", evidence_scope: "filing_xbrl_exact_entity_concept_unit_duration",
+      filing_url: "https://www.sec.gov/Archives/edgar/data/320193/000032019326000002/0000320193-26-000002-index.html",
+      document_url: "https://www.sec.gov/Archives/edgar/data/320193/000032019326000002/issuer_htm.xml",
+      filing_form: fact.form, filing_date: fact.filed_date, accepted_at: null,
+      observed_values: [fact.value], matching_fact_count: 1, distinct_value_count: 1,
+    }));
     secSubmissionMock.mockResolvedValueOnce({
       contract_version: 1, cik: 320193, retrieved_at: "2026-09-11T10:02:00Z",
       status: "provider_error", index_scope: "sec_current_recent_submissions_only",
@@ -906,6 +916,15 @@ describe("MarketContextPage", () => {
     expect(screen.getByText(/2026-09-07 · 10-Q\/A · accession 0000320193-26-000002/)).toBeInTheDocument();
     expect(screen.getByText(/Different filed values are not verified revisions/)).toBeInTheDocument();
     expect(fundamentalsMock).not.toHaveBeenCalled();
+    expect(secSubmissionMock).not.toHaveBeenCalled();
+    expect(secFilingMock).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole("button", { name: /Check source filing for AAPL NetIncomeLoss 0000320193-26-000002/ }));
+    expect(await screen.findByText("Value corroborated in filing")).toBeInTheDocument();
+    expect(secFilingMock).toHaveBeenCalledWith("AAPL", expect.objectContaining({
+      accession: "0000320193-26-000002", form: "10-Q/A", filed_date: "2026-09-07", value: 1234568,
+      period_start: "2026-04-01", period_end: "2026-06-30", concept: "NetIncomeLoss", unit: "USD",
+    }), expect.any(AbortSignal));
+    expect(screen.getByRole("button", { name: "Refresh SEC facts for AAPL" })).toBeInTheDocument();
     expect(secSubmissionMock).not.toHaveBeenCalled();
     fireEvent.click(screen.getByRole("button", { name: "Check SEC submission metadata for AAPL" }));
     await waitFor(() => expect(secSubmissionMock).toHaveBeenCalledWith(320193, [

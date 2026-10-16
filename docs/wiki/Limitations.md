@@ -174,7 +174,7 @@ never silently faked.
   correction. If this check fails, the Company Facts result remains visible.
   Any SEC-reported acceptance timestamp is metadata, not proof of when a
   particular investor could have received the filing. [SEC submissions API](https://www.sec.gov/search-filings/edgar-application-programming-interfaces).
-- **Filing-level fact checks are a bounded API foundation.** Authenticated
+- **Filing-level fact checks have bounded coverage.** Authenticated
   `POST /api/market-context/sec-filing-fact-check` accepts one symbol and a
   selected Company Facts row. It requires the current exact ticker/CIK mapping
   and claim, validates form/date in the official filing index, and reads the
@@ -188,8 +188,14 @@ never silently faked.
   render arbitrary Inline XBRL, follow redirects, crawl filings, infer
   supersession or reconstruct historical provider vintages. Acceptance time is
   included only for a matching current recent-submissions row; it may remain
-  unknown for older filings. Browser controls and host verification are still
-  pending. Existing filed-facts results are unaffected by this separate check.
+  unknown for older filings. In the comparison's SEC panel, **Check source
+  filing** is available below each fact and differing disclosure. It shows
+  exact values and source links, and dates cached results so users can choose
+  when to check again; window focus/reconnect does not fetch filings. **Refresh SEC
+  facts** updates the current aggregate if a selected claim has disappeared.
+  The browser allows 60 seconds for the backend's response and cancels its
+  request when unmounted. Host verification remains pending. Existing
+  filed-facts results are unaffected by this separate check.
 - **Technical observations use shared provider closes.** Maximum observed
   drawdown and the gap from a 20-shared-close average are calculated only on
   the pair's actual common UTC dates; with fewer than 20 closes the average

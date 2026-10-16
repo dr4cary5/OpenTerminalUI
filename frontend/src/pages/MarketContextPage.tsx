@@ -6,6 +6,7 @@ import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YA
 import { captureMarketFundamentals, compareMarketContext, compareMarketFundamentalCaptures, fetchEuroAreaHicpFirstPublished, fetchEuroAreaMacroObservations, fetchEuroAreaUnemploymentVintages, fetchMarketContextFundamentalReleases, fetchMarketContextHeadlines, fetchMarketContextMacroEvents, fetchMarketContextMacroObservations, fetchMarketSecFiledFacts, fetchSecSubmissionCrosscheck, getMarketFundamentalCapture, listMarketFundamentalCaptures, type MarketContextPeriod, type MarketComparisonRow, type MarketMacroObservationSeries, type MarketQuoteUnitDisclosure, type MarketReportingCurrency, type SecFiledFactsResponse, type SecSubmissionClaim } from "../api/marketContext";
 import { extractApiErrorMessage } from "../api/base";
 import { SymbolSuggestions } from "../components/market/SymbolSuggestions";
+import { SecFilingFactCheck } from "../components/market/SecFilingFactCheck";
 import { TerminalPanel } from "../components/terminal/TerminalPanel";
 
 const SYMBOL_PATTERN = /^[A-Z0-9^._=-]{1,40}$/;
@@ -1098,12 +1099,16 @@ function SecFiledFactsForSymbol({ symbol, startDate, endDate }: { symbol: string
           <p className="mt-1 text-terminal-muted">
             SEC CIK {data.cik} · {data.matched_count} matching facts among {data.examined_count} examined · showing at most {data.display_limit}; checked {new Date(data.retrieved_at).toLocaleString()}.
           </p>
+          <button type="button" className="mt-1 text-terminal-accent underline disabled:opacity-50" disabled={query.isFetching} onClick={() => void query.refetch()}>
+            {query.isFetching ? `Refreshing SEC facts for ${symbol}…` : `Refresh SEC facts for ${symbol}`}
+          </button>
           <ul className="mt-2 max-h-80 space-y-2 overflow-y-auto">
             {data.facts.map((fact) => (
-              <li key={`${fact.accession}-${fact.concept}-${fact.period_start}-${fact.period_end}-${fact.value}`} className="rounded border border-terminal-border p-2 text-terminal-text">
+              <li key={`${fact.accession}-${fact.filed_date}-${fact.form}-${fact.concept}-${fact.unit}-${fact.period_start}-${fact.period_end}-${fact.value}`} className="rounded border border-terminal-border p-2 text-terminal-text">
                 <span className="font-medium">{fact.filed_date} · {fact.concept}</span>
-                <span className="ml-2">{new Intl.NumberFormat(undefined, { maximumFractionDigits: 4 }).format(fact.value)} {fact.unit}</span>
+                <span className="ml-2">{new Intl.NumberFormat(undefined, { maximumSignificantDigits: 21 }).format(fact.value)} {fact.unit}</span>
                 <p className="text-terminal-muted">{fact.form} · fiscal period {fact.period_start} to {fact.period_end} · accession {fact.accession} · {fact.taxonomy}</p>
+                <SecFilingFactCheck symbol={symbol} fact={fact} />
               </li>
             ))}
           </ul>
@@ -1125,7 +1130,8 @@ function SecFiledFactsForSymbol({ symbol, startDate, endDate }: { symbol: string
                   <ul className="mt-1 space-y-1">
                     {candidate.disclosures.map((fact) => (
                       <li key={`${fact.accession}-${fact.filed_date}-${fact.form}-${fact.value}`} className="text-terminal-text">
-                        {fact.filed_date} · {fact.form} · accession {fact.accession} · {new Intl.NumberFormat(undefined, { maximumFractionDigits: 4 }).format(fact.value)} {fact.unit}
+                        {fact.filed_date} · {fact.form} · accession {fact.accession} · {new Intl.NumberFormat(undefined, { maximumSignificantDigits: 21 }).format(fact.value)} {fact.unit}
+                        <SecFilingFactCheck symbol={symbol} fact={fact} />
                       </li>
                     ))}
                   </ul>

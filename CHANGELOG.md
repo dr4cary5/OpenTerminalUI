@@ -12,8 +12,13 @@ adopt [Semantic Versioning](https://semver.org/spec/v2.0.0.html) from `1.0.0`.
   listed XBRL instance, matching issuer, standard concept, unit and exact fiscal
   duration. It returns source links and distinct corroborated, differing,
   conflicting, absent, unsupported, unparseable and provider-failed outcomes.
-  Downloads are paced and bounded; browser controls and host acceptance follow
-  in the remaining v2.1 work.
+  Downloads are paced and bounded.
+- **Source-filing checks in market comparisons** — each displayed SEC fact and
+  same-period differing disclosure now offers an explicit source check, with
+  exact selected/observed values, filing links, acceptance metadata, dated
+  results and manual retries. Browser requests allow time for the backend's
+  deadline and cancel when unmounted; no filing check runs merely from opening
+  the facts panel or refocusing the window.
 
 ## [2.0.0] - 2026-10-15
 

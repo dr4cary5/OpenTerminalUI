@@ -234,8 +234,18 @@ values remain ambiguous. The response includes filing/instance links, observed
 values, and recent-index acceptance metadata when available. A 2 MiB index,
 12 MiB instance, XML complexity limits, a 45-second deadline and existing SEC
 pacing bound each opt-in check. Unsupported instance formats and unparseable
-documents have distinct outcomes. Browser integration and configured host
-acceptance are the next steps.
+documents have distinct outcomes.
+
+The comparison browser now exposes **Check source filing** under each SEC fact
+and each same-period differing disclosure. Its result shows the exact selected
+and observed values, fiscal period, accession, source links and available
+acceptance metadata, with an explicit check time. Results are scoped to the full
+fact identity; a failed retry cannot leave a previous success visible. Checks
+run only on demand, use a browser deadline longer than the backend's, and
+support cancellation on unmount. A **Refresh SEC facts** action handles claims
+that are no longer in the current aggregate. Deterministic UI tests cover
+these paths. Configured US-equity host acceptance and normal release
+preparation remain before v2.1 can be tagged.
 
 This milestone does **not** deliver a complete historical SEC vintage, a
 market-knowledge or dissemination timeline, non-US fundamentals, all XBRL
