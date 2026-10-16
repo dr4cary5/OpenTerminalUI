@@ -159,7 +159,7 @@ too crowded, so PR #148 moved them to a rightmost row action and focused dialog.
 The maintainer verified the final behavior; tag and GitHub release `v1.7.0` were
 published from `0473307` on 2026-09-15.
 
-### v2.0.0 verification ledger (pending)
+### v2.0.0 verification ledger
 
 The release gate is the **existing cross-market context feature**, not every
 future v2 evidence or relationship idea. Automated release preparation must
@@ -174,11 +174,11 @@ host acceptance concrete:
 | Provider errors, missing keys/timezones, stale or insufficient history, and optional-panel failures stay explicit without sample or invented values | Route/UI tests and a degraded host case |
 | Completed time-aware Brain and Brain Log foundations remain functional | Regular backend/frontend suites and the general smoke matrix |
 
-Prepare the version/changelog/docs bump and full CI in a release PR first. After
-that merges, record host outcomes and fix any observed feature defect before
-marking this ledger complete. Unavailable optional-provider coverage is
-acceptable when the UI says so honestly. Complete deployment smoke
-verification before tagging and publishing the GitHub release.
+Release preparation merged in PR #211. Maintainer testing found that clicking
+a proxy suggestion did not add it, although Enter worked; PR #212 corrected the
+interaction and passed host verification. The tag and GitHub release `v2.0.0`
+were published from `7e467df` on 2026-10-15. Unavailable optional-provider
+coverage remains acceptable when the UI says so honestly.
 Automatic relationship discovery, portfolio-wide context, grounded AI market
 interpretation, and deeper historical evidence contracts are later milestones,
 not v2.0 release gates.

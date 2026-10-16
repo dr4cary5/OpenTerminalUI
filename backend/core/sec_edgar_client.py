@@ -10,6 +10,11 @@ from typing import Any
 import httpx
 
 from backend.services.sec_submission_evidence import recent_submission_index, submission_index
+from backend.services.sec_filing_verification import archive_base, instance_filename
+
+
+class SecDocumentTooLarge(ValueError):
+    """A filing document exceeds the deliberately bounded inspection limit."""
 
 
 class SecEdgarClient:
@@ -93,6 +98,35 @@ class SecEdgarClient:
             self._continuation_cache.pop(next(iter(self._continuation_cache)))
         self._continuation_cache[name] = (now, payload)
         return payload
+
+    async def _document(self, url: str, limit: int) -> bytes:
+        if not self.configured:
+            raise RuntimeError("SEC user agent is not configured")
+        async with self._lock:
+            remaining = self.pace_seconds - (time.monotonic() - self._last_request)
+            if remaining > 0:
+                await asyncio.sleep(remaining)
+            self._last_request = time.monotonic()
+            async with httpx.AsyncClient(timeout=15, transport=self.transport, trust_env=False,
+                                         follow_redirects=False, headers={"User-Agent": self.user_agent,
+                                         "Accept": "text/html, application/xml"}) as client:
+                async with client.stream("GET", url) as response:
+                    response.raise_for_status()
+                    content = bytearray()
+                    async for chunk in response.aiter_bytes():
+                        if len(content) + len(chunk) > limit:
+                            raise SecDocumentTooLarge("SEC document size limit")
+                        content.extend(chunk)
+        # Documents and failed requests are never retained in a process cache.
+        return bytes(content)
+
+    async def filing_index(self, cik: int, accession: str) -> bytes:
+        return await self._document(archive_base(cik, accession) + f"{accession}-index.html", 2 * 1024 * 1024)
+
+    async def filing_instance(self, cik: int, accession: str, name: str) -> bytes:
+        if not instance_filename(name):
+            raise ValueError("Invalid SEC instance filename")
+        return await self._document(archive_base(cik, accession) + name, 12 * 1024 * 1024)
 
 
 _client = SecEdgarClient()

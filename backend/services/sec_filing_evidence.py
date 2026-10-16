@@ -73,6 +73,12 @@ def filed_facts(payload: dict[str, Any], start: date, end: date) -> tuple[list[d
     return records, len(ordered), examined
 
 
+def contains_filed_fact(payload: dict[str, Any], claim: dict[str, Any]) -> bool:
+    """Check the full eligible set, including facts beyond the display cap."""
+    ordered, _ = _eligible_facts(payload, claim["filed_date"], claim["filed_date"])
+    return any(_record(item) == claim for item in ordered)
+
+
 def disclosure_difference_candidates(payload: dict[str, Any], start: date, end: date) -> tuple[list[dict[str, Any]], int]:
     """Group exact-period differing values; source may be incomplete or revised later."""
     ordered, _ = _eligible_facts(payload, start, end)

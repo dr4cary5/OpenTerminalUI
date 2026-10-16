@@ -15522,6 +15522,7 @@
       "SecFiledFact": {
         "properties": {
           "accession": {
+            "pattern": "^\\d{10}-\\d{2}-\\d{6}$",
             "title": "Accession",
             "type": "string"
           },
@@ -15721,6 +15722,196 @@
           "status"
         ],
         "title": "SecFiledFactsResponse",
+        "type": "object"
+      },
+      "SecFilingFactCheckRequest": {
+        "properties": {
+          "fact": {
+            "$ref": "#/components/schemas/SecFiledFact"
+          },
+          "symbol": {
+            "examples": [
+              "AAPL"
+            ],
+            "maxLength": 40,
+            "minLength": 1,
+            "title": "Symbol",
+            "type": "string"
+          }
+        },
+        "required": [
+          "symbol",
+          "fact"
+        ],
+        "title": "SecFilingFactCheckRequest",
+        "type": "object"
+      },
+      "SecFilingFactCheckResponse": {
+        "properties": {
+          "accepted_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Accepted At"
+          },
+          "cik": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cik"
+          },
+          "contract_version": {
+            "const": 1,
+            "default": 1,
+            "title": "Contract Version",
+            "type": "integer"
+          },
+          "distinct_value_count": {
+            "default": 0,
+            "title": "Distinct Value Count",
+            "type": "integer"
+          },
+          "document_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Document Url"
+          },
+          "evidence_scope": {
+            "const": "filing_xbrl_exact_entity_concept_unit_duration",
+            "default": "filing_xbrl_exact_entity_concept_unit_duration",
+            "title": "Evidence Scope",
+            "type": "string"
+          },
+          "fact": {
+            "$ref": "#/components/schemas/SecFiledFact"
+          },
+          "filing_date": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Filing Date"
+          },
+          "filing_form": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Filing Form"
+          },
+          "filing_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Filing Url"
+          },
+          "matching_fact_count": {
+            "default": 0,
+            "title": "Matching Fact Count",
+            "type": "integer"
+          },
+          "observed_values": {
+            "items": {
+              "type": "number"
+            },
+            "title": "Observed Values",
+            "type": "array"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "enum": [
+                  "unsupported_concept_unit_or_form",
+                  "claim_not_in_current_company_facts",
+                  "invalid_filing_index",
+                  "filing_metadata_ambiguous",
+                  "filing_metadata_differs",
+                  "unsupported_instance_link",
+                  "instance_not_listed",
+                  "multiple_instances",
+                  "submission_metadata_conflicts",
+                  "invalid_xbrl_instance",
+                  "invalid_matching_fact",
+                  "exact_fact_absent",
+                  "conflicting_exact_facts",
+                  "exact_fact_matches",
+                  "exact_value_differs",
+                  "document_size_limit",
+                  "check_timed_out",
+                  "filing_check_failed"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "retrieved_at": {
+            "format": "date-time",
+            "title": "Retrieved At",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "corroborated",
+              "mismatched",
+              "ambiguous",
+              "missing",
+              "unsupported",
+              "unparseable",
+              "configuration_required",
+              "not_covered",
+              "ambiguous_ticker",
+              "provider_error"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "symbol": {
+            "title": "Symbol",
+            "type": "string"
+          }
+        },
+        "required": [
+          "symbol",
+          "fact",
+          "retrieved_at",
+          "status"
+        ],
+        "title": "SecFilingFactCheckResponse",
         "type": "object"
       },
       "SecSubmissionClaim": {
@@ -28688,6 +28879,60 @@
           }
         ],
         "summary": "Sec File Facts",
+        "tags": [
+          "market-context"
+        ],
+        "x-openterminalui-auth": {
+          "permission": "user",
+          "scheme": "bearer"
+        },
+        "x-openterminalui-feature-state": {
+          "market-context": "experimental"
+        }
+      }
+    },
+    "/api/market-context/sec-filing-fact-check": {
+      "post": {
+        "description": "Inspect one selected Company Facts claim against its filing's XBRL instance.\n\nDownloads are opt-in, paced, bounded to one index and one instance, and\nlimited to 45 seconds overall. An index match cannot corroborate a value.",
+        "operationId": "sec_filing_fact_check_api_market_context_sec_filing_fact_check_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SecFilingFactCheckRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SecFilingFactCheckResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Sec Filing Fact Check",
         "tags": [
           "market-context"
         ],
