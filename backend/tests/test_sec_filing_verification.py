@@ -30,7 +30,7 @@ def _claim(**changes: object) -> dict:
 
 def _index(*, instance: str = "issuer-20250331_htm.xml", extra: str = "", form: str = "10-Q",
            filed: str = "2025-05-02") -> bytes:
-    return f"""<html><div id="secNum">SEC Accession No. {ACCESSION}</div>
+    return f"""<html><div id="secNum"><strong><acronym title="Securities and Exchange Commission">SEC</acronym> Accession <acronym title="Number">No.</acronym></strong> {ACCESSION}</div>
     <div class="formGrouping"><div class="infoHead">Filing Date</div><div class="info">{filed}</div></div>
     <table class="tableFile" summary="Document Format Files">
     <tr><th>Seq</th><th>Description</th><th>Document</th><th>Type</th><th>Size</th></tr>
@@ -62,6 +62,24 @@ def test_index_selects_only_listed_instance_and_validates_filing_metadata() -> N
     assert filing_document(_index(form="10-Q/A"), CIK, _claim())["reason"] == "filing_metadata_differs"
     assert filing_document(_index(filed="2025-05-03"), CIK, _claim())["status"] == "mismatched"
     assert filing_document(_index().replace(ACCESSION.encode(), b"0000320193-25-999999"), CIK, _claim())["status"] == "unparseable"
+
+
+@pytest.mark.parametrize("label", [
+    b"SEC Accession No.",
+    b"SEC\n\t Accession \n No.",
+    b"SEC&nbsp;Accession&nbsp;No.",
+    b"<span>SEC</span>  Accession <strong>No.</strong>",
+])
+def test_index_normalizes_accession_label_whitespace_without_relaxing_identity(label: bytes) -> None:
+    wrapped = b'<acronym title="Securities and Exchange Commission">SEC</acronym> Accession <acronym title="Number">No.</acronym>'
+    raw = _index().replace(wrapped, label)
+    assert filing_document(raw, CIK, _claim())["status"] == "selected"
+    assert filing_document(raw, CIK, _claim(accession="0000320193-25-999999"))["reason"] == "invalid_filing_index"
+
+
+def test_index_rejects_conflicting_accession_labels_even_with_split_markup() -> None:
+    extra = b'<p>SEC <span>Accession</span> No. 0000320193-25-999999</p>'
+    assert filing_document(_index() + extra, CIK, _claim())["reason"] == "invalid_filing_index"
 
 
 @pytest.mark.parametrize("name", ["../foreign.xml", "test.xml?redirect=https://evil.example", "nested/test.xml"])
@@ -151,7 +169,7 @@ def _respond(request: httpx.Request) -> httpx.Response:
             "form": "10-Q", "val": 100,
         }]}}}}})
     if "/submissions/" in request.url.path:
-        return httpx.Response(200, json={"cik": CIK, "filings": {"recent": {
+        return httpx.Response(200, json={"cik": f"{CIK:010d}", "filings": {"recent": {
             "accessionNumber": [ACCESSION], "form": ["10-Q"], "filingDate": ["2025-05-02"],
             "acceptanceDateTime": ["2025-05-02T15:30:00Z"],
         }}})

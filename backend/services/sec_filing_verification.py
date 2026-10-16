@@ -89,7 +89,10 @@ def filing_document(index_html: bytes, cik: int, claim: dict[str, Any]) -> dict[
         parser.feed(index_html.decode("utf-8"))
     except (UnicodeError, ValueError):
         return {"status": "unparseable", "reason": "invalid_filing_index"}
-    accessions = set(re.findall(r"SEC Accession No\.\s*(\d{10}-\d{2}-\d{6})", " ".join(parser.text)))
+    # SEC wraps parts of the label in separate acronym elements. Normalize
+    # their surrounding whitespace before requiring the exact accession.
+    index_text = " ".join(" ".join(parser.text).split())
+    accessions = set(re.findall(r"SEC Accession No\.\s*(\d{10}-\d{2}-\d{6})", index_text))
     if accessions != {claim["accession"]}:
         return {"status": "unparseable", "reason": "invalid_filing_index"}
     dates = parser.metadata.get("Filing Date", [])

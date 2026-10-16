@@ -45,7 +45,12 @@ def submission_index(recent: Any) -> dict[str, dict[str, Any] | None]:
 
 
 def recent_submission_index(payload: dict[str, Any], cik: int) -> dict[str, dict[str, Any] | None]:
-    if payload.get("cik") != cik:
+    reported_cik = payload.get("cik")
+    # Submissions serialize CIKs as padded strings; Company Facts uses numbers.
+    # Normalize only the identifier's representation, retaining an exact match.
+    if isinstance(reported_cik, str) and re.fullmatch(r"[0-9]{1,10}", reported_cik):
+        reported_cik = int(reported_cik)
+    if type(reported_cik) is not int or not 1 <= reported_cik <= 9_999_999_999 or reported_cik != cik:
         raise ValueError("SEC submissions CIK mismatch")
     filings = payload.get("filings")
     return submission_index(filings.get("recent") if isinstance(filings, dict) else None)
