@@ -183,6 +183,39 @@ Automatic relationship discovery, portfolio-wide context, grounded AI market
 interpretation, and deeper historical evidence contracts are later milestones,
 not v2.0 release gates.
 
+### v2.1.0 verification ledger (release preparation)
+
+The bounded milestone checks selected current SEC Company Facts values against
+their own filing's XBRL instance, with exact issuer, concept, unit and fiscal
+duration. Retained historical vintages and inferred revision order remain later
+work. This release requires no database migration or new provider setting;
+existing `SEC_USER_AGENT` enables the on-demand requests.
+
+| Contract | Evidence |
+|---|---|
+| Exact value matches; amendments, conflicting values, missing evidence and provider failures remain distinct | `backend/tests/test_sec_filing_verification.py`, `backend/tests/test_market_sec_facts.py` |
+| Download/XML bounds, official source links and exact issuer matching survive live SEC formats | Same backend tests, including split accession-label markup and padded-string CIK regressions |
+| Browser checks are opt-in, preserve full fact identity, expose exact values and links, support retries/cancellation and allow the backend deadline | `frontend/src/__tests__/SecFilingFactCheck.test.tsx`, `frontend/src/__tests__/secFilingFactCheckApi.test.ts`, `frontend/src/__tests__/MarketContextPage.test.tsx` |
+| Configured US-equity filing journey works on the deployment host | Maintainer NVDA acceptance after PR #215 |
+
+Implementation merged in PRs #213–#214. The first host check exposed real SEC
+markup and CIK formats missing from the fixtures; PR #215 fixed both. A direct
+live verification of NVDA accession `0001045810-26-000075` corroborated
+Revenues/USD 96,221,000,000 for 2026-04-27 to 2026-07-26, with three matching
+facts, source links and SEC-reported acceptance metadata. The maintainer then
+merged and deployed the fix and confirmed the browser issue resolved.
+
+Local release preparation on 2026-10-18 passed 1,074 backend tests (one skipped)
+with 74.24% coverage, 389 frontend tests, the production build, three Chrome
+smoke tests, Python compilation, mock/surface/API-reference guards and Compose
+configuration validation. Local smoke used installed Chrome through
+`PLAYWRIGHT_EXECUTABLE_PATH`; CI keeps the bundled Chromium gate. Clean-install
+and disposable PostgreSQL contract verification remain CI jobs.
+
+Normal CI/PR review and explicit maintainer release authorization precede the
+tag and GitHub release; the published release remains v2.0.0 until those steps
+complete.
+
 ## Cutting the release
 
 ```bash

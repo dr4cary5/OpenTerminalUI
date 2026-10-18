@@ -1,9 +1,10 @@
 # Current project state and backlog
 
-Last handoff update: **2026-10-16**. **v2.0.0** is tagged and published from
-`7e467df` after maintainer acceptance and final proxy-selector fix PR #212.
-The bounded v2.1 filing verification API and browser integration are implemented;
-configured host acceptance remains.
+Last release-prep audit: **2026-10-18**, from `main` at `09f7add` (through
+PR #215). **v2.0.0** remains the latest published tag at `7e467df`.
+The bounded v2.1 filing verification API, browser integration, configured host
+acceptance and local release checks are complete; PR/CI review and publication
+remain.
 
 This is a handoff, not an immutable roadmap. Before taking an item, verify it
 against recent Git history, code, and tests. Move shipped work to the completed
@@ -407,7 +408,7 @@ v2.x work, not an implicit queue of pre-release PRs.
       blocker when the UI reports it honestly. Tag and publish only after this
       acceptance and any required fixes.
 
-### v2.1 in progress — filing-grounded US fundamentals
+### v2.1 release candidate — filing-grounded US fundamentals
 
 This starts **after v2.0 release**, not as another v2.0 gate. Keep the existing
 SEC concept, form, and exact ticker/CIK limits; do not broaden provider coverage
@@ -443,7 +444,7 @@ to make this milestone appear complete.
 - [x] Test the browser integration for opt-in requests, exact fact identity,
       amendment/conflict isolation, source links, unavailable states, retry and
       cancellation. A failed fresh check cannot retain a visible success badge.
-- [ ] Perform one configured US-equity host check: open an equity comparison,
+- [x] Perform one configured US-equity host check: open an equity comparison,
       show SEC filed facts, choose **Check source filing** under one fact, and
       inspect its source links, exact concept/unit/period/value, result and
       acceptance metadata. Check a differing disclosure if available and verify
@@ -453,10 +454,20 @@ to make this milestone appear complete.
       submission CIK formats absent from the original fixtures. Both now have
       regression coverage. A direct live check of accession
       `0001045810-26-000075`, Revenues/USD for 2026-04-27 to 2026-07-26,
-      corroborates 96,221,000,000 with three matching instance facts. Repeat the
-      browser host check after deploying these fixes; this gate remains open.
+      corroborates 96,221,000,000 with three matching instance facts. The
+      maintainer merged/deployed PR #215 and confirmed the issue fixed,
+      completing this host gate.
       Retained historical vintages, full filing coverage, and a revision-aware
       explanation contract remain separate later v2.x work.
+- [x] Prepare v2.1.0 metadata: bump backend/frontend versions together, update
+      release notes, regenerate the API reference and run local automated gates.
+      Backend: 1,074 passed/one skipped, 74.24% coverage. Frontend: 389 passed.
+      Production build, three Chrome smoke tests, compile, mock guard, surface
+      inventory, generated-contract check and Compose configuration all pass.
+- [ ] Complete normal release-prep PR/CI review, including CI's clean-install
+      and disposable PostgreSQL contract jobs, and merge the preparation PR.
+- [ ] After release-prep merge and explicit maintainer release authorization,
+      tag and publish v2.1.0. Do not treat metadata preparation as publication.
 
 ### v2 next — first cross-market evidence slice
 

@@ -204,7 +204,7 @@ hidden v2.0 blockers. Each needs its own explicit scope and acceptance criteria
 before implementation. This boundary replaces treating every useful evidence
 prerequisite as another mandatory pre-release PR.
 
-## v2.1.0 — Filing-grounded US fundamentals (in progress)
+## v2.1.0 — Filing-grounded US fundamentals (release candidate)
 
 After v2.0, the next bounded cross-market evidence increment is to let a user
 inspect whether a selected SEC Company Facts value is supported by its own
@@ -244,8 +244,11 @@ fact identity; a failed retry cannot leave a previous success visible. Checks
 run only on demand, use a browser deadline longer than the backend's, and
 support cancellation on unmount. A **Refresh SEC facts** action handles claims
 that are no longer in the current aggregate. Deterministic UI tests cover
-these paths. Configured US-equity host acceptance and normal release
-preparation remain before v2.1 can be tagged.
+these paths. Host testing found SEC accession labels split across HTML elements
+and padded-string CIKs in submissions; PR #215 fixed both formats. The
+maintainer confirmed the NVDA filing journey works after that fix, completing
+the feature acceptance gate. Normal release preparation, CI/PR review and
+maintainer release authorization remain before v2.1 can be tagged.
 
 This milestone does **not** deliver a complete historical SEC vintage, a
 market-knowledge or dissemination timeline, non-US fundamentals, all XBRL

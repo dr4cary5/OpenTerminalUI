@@ -6,6 +6,17 @@ adopt [Semantic Versioning](https://semver.org/spec/v2.0.0.html) from `1.0.0`.
 
 ## [Unreleased]
 
+## [2.1.0] - 2026-10-18
+
+Selected US fundamentals can now be checked against their official SEC filing
+evidence from the cross-market comparison screen. Checks preserve exact company,
+concept, unit and fiscal-period identity, expose source links and observed
+values, and distinguish corroboration from conflicts, missing coverage and
+provider failures. Host testing of NVDA found two live SEC format assumptions;
+both were fixed and the maintainer confirmed the filing journey works. This
+release adds no database migration and does not claim complete historical
+vintages or infer that a later filing supersedes an earlier disclosure.
+
 ### Added
 - **Filing-level SEC fact verification API** — a separately requested check
   validates one selected Company Facts claim against the official filing's
