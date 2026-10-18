@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-  <strong>The open-source financial terminal for traders, researchers, and quant teams.</strong>
+  <strong>A self-hosted financial research terminal with private memory and inspectable market evidence.</strong>
 </p>
 
 <p align="center">
@@ -14,778 +14,337 @@
   <img src="https://img.shields.io/badge/node-22-339933?logo=node.js&logoColor=white" alt="Node 22" />
   <img src="https://img.shields.io/badge/FastAPI-009688?logo=fastapi&logoColor=white" alt="FastAPI" />
   <img src="https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=black" alt="React 18" />
-  <img src="https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white" alt="TypeScript" />
-  <img src="https://img.shields.io/badge/Vite-6-646CFF?logo=vite&logoColor=white" alt="Vite 6" />
-  <img src="https://img.shields.io/badge/Docker-2496ED?logo=docker&logoColor=white" alt="Docker" />
   <img src="https://img.shields.io/badge/license-MIT-green" alt="MIT License" />
 </p>
 
 <p align="center">
   <a href="https://laanito.github.io/OpenTerminalUI/">Website</a> |
-  <a href="#features">Features</a> |
-  <a href="#screenshots">Screenshots</a> |
-  <a href="#architecture">Architecture</a> |
   <a href="#quick-start">Quick Start</a> |
+  <a href="#features">Features</a> |
+  <a href="docs/wiki/Research-Workflows.md">Research Guide</a> |
   <a href="docs/API_REFERENCE.md">API</a> |
-  <a href="CONTRIBUTING.md">Contributing</a>
+  <a href="docs/wiki/Roadmap.md">Roadmap</a>
 </p>
 
----
-
-OpenTerminalUI is a self-hosted, full-stack financial terminal that combines real-time market data, institutional-grade charting, derivatives analytics, portfolio management, and quant research into a single platform. Built with a terminal-style shell interface inspired by Bloomberg and Refinitiv, it delivers professional-grade workflows to anyone with a browser.
-
-Its supported core spans US/EU equities, crypto, portfolio and private-research
-workflows, charting, screening, alerts, news, and backtesting. India NSE/BSE F&O
-remains an intentional provider-gated market. Other data-heavy or inherited
-surfaces are explicitly classified as supported, configuration-gated,
-experimental, or hidden in the [product surface inventory](docs/wiki/Surface-Inventory.md)
-and [limitations](docs/wiki/Limitations.md).
-
-## Project direction
-
-> **North star.** An open, private terminal that helps an individual invest *without being fooled* &mdash; by markets, by hype, or by themselves &mdash; through **AI-native research you can grow privately**.
-
-This fork re-centres OpenTerminalUI toward **US / EU / crypto** markets on a **Postgres-first** stack with a **local, provider-agnostic LLM** (Ollama by default), and toward a clear mission: give a serious *individual* &mdash; not just an institution &mdash; the tools to understand markets and avoid being misled. Rather than chase Bloomberg-terminal parity (pursued only "just enough to be credible"), it leans into what a closed, five-figure-per-seat terminal structurally can't be:
-
-- **AI-native & private** &mdash; research, news sentiment, and an emotion gauge that run on *your* machine via a local LLM; nothing about what you search or hold leaves your hardware.
-- **A private "second brain" that grows** &mdash; an ask-anything research partner grounded *only* in your own trade journal, portfolio theses, and notes. It retrieves the relevant entries, synthesizes an answer with citations back to your own writing, and acts as a check against your biases ("what setups lose me money when I'm anxious?"). Local embeddings (Ollama `nomic-embed-text` by default, `sentence-transformers` fallback) and a dialect-aware vector store (pgvector on Postgres, numpy cosine on SQLite) keep it fully on-machine. Feed it from the Journal, the Portfolio Manager's portfolio-thesis and position-note fields, reusable note composers on research surfaces, or the standalone Notes hub &mdash; every entry is indexed into the brain.
-- **Don't-get-fooled by design** &mdash; features that separate real signal from hype (e.g. crypto fundamentals: supply dilution, on-chain TVL & fee revenue, plain-language "what to watch" cues) and that help you check your own behaviour.
-- **Open & configurable** &mdash; self-hosted, MIT-licensed, with bring-your-own
-  market-data and OpenAI-compatible model providers.
-- **Multi-asset, unified** &mdash; equities, ETFs, FX, and **crypto as a
-  first-class citizen**, with intentional provider-gated India derivatives and
-  a display-currency selector (USD/EUR/INR).
-
-**v1.4 — Surface truth** made the retained product intentional and honest:
-every primary destination and public API family is classified, dead and duplicate
-surfaces are removed, configuration gates are visible, and compatibility tools
-no longer present fabricated or cross-user state as production data.
-
-**v1.6 — Stable baseline** completed the coherent-fork arc with deterministic
-browser journeys, shared resilient LLM jobs, leaner initial routes, PostgreSQL
-parity checks, generated public API contracts, and clean-install verification.
-**v1.7 — Multi-currency portfolio accounting** completes v1 by normalizing
-ledger activity, valuation, P&L, allocation, and supported history into an
-explicit portfolio base currency. Missing evidence is withheld rather than
-guessed, and supported attribution separates security performance from FX.
-**v2.0 — Cross-market context** opens the next arc with an experimental,
-user-selected comparison of an asset and market proxies. It shows observed,
-dated price relationships and separately labelled optional evidence, with
-source and missing-data caveats. It does not automatically discover causal
-relationships or recommend trades; those wider intelligence goals remain on
-the [Roadmap](docs/wiki/Roadmap.md).
-
-NSE/BSE **F&O** stays supported. See the [Roadmap](docs/wiki/Roadmap.md) for what's shipped and what's next.
-
-## Screenshots
-
-These are interface snapshots, not the product-support contract. Navigation and
-availability follow the current application plus the
-[surface inventory](docs/wiki/Surface-Inventory.md); hidden compatibility pages
-are intentionally omitted here.
-
-### Workspace & Markets
-
-<p align="center">
-  <img src="assets/screenshots/home.png" alt="Home Dashboard" width="900" />
-</p>
-<p align="center"><em>Home / Mission Control — market context, AI Market Outlook, portfolio hub, system health, and the full feature launch grid.</em></p>
-
-<p align="center">
-  <img src="assets/screenshots/chart-workstation.png" alt="Chart Workstation" width="900" />
-</p>
-<p align="center"><em>Multi-panel chart workstation — a 6-chart grid with synchronized crosshairs, 70+ technical indicators, and drawing tools.</em></p>
-
-<p align="center">
-  <img src="assets/screenshots/market-view.png" alt="Market View" width="900" />
-</p>
-<p align="center"><em>Full-screen market view — candlestick price action with volume, multi-timeframe, and indicator overlays.</em></p>
-
-<p align="center">
-  <img src="assets/screenshots/stock-detail.png" alt="Security Hub" width="900" />
-</p>
-<p align="center"><em>Security Hub — quotes, fundamentals, price chart, analysis tabs, and the AI Catalyst &amp; Conviction panel.</em></p>
-
-<p align="center">
-  <img src="assets/screenshots/financial-analysis.png" alt="Financial Analysis" width="900" />
-</p>
-<p align="center"><em>Financial analysis — income statement, balance sheet, and cash-flow statements with multi-period trends.</em></p>
-
-<p align="center">
-  <img src="assets/screenshots/fno-option-chain.png" alt="F&O Option Chain" width="900" />
-</p>
-<p align="center"><em>Futures &amp; Options — live option chain with Greeks, OI build-up, and PCR signals.</em></p>
-
-<p align="center">
-  <img src="assets/screenshots/commodities.png" alt="Commodities" width="900" />
-</p>
-<p align="center"><em>Cross-asset coverage — commodities, forex, crypto, bonds, ETFs, and mutual funds.</em></p>
-
-### Research & Stock Picking
-
-<p align="center">
-  <img src="assets/screenshots/screener.png" alt="Advanced Screener" width="900" />
-</p>
-<p align="center"><em>Advanced screener with query builder, custom formula engine, composite factor scores, and "why ranked" insights.</em></p>
-
-<p align="center">
-  <img src="assets/screenshots/factor-dashboard.png" alt="Factor Dashboard" width="900" />
-</p>
-<p align="center"><em>Factor Dashboard — multi-factor (Value / Momentum / Quality / Low-Vol) idea lists and ranked picks for US &amp; Indian markets.</em></p>
-
-<p align="center">
-  <img src="assets/screenshots/news-sentiment.png" alt="News & Sentiment" width="900" />
-</p>
-<p align="center"><em>News &amp; Sentiment with the AI Emotion Indicator powered by a local LLM (Ollama by default).</em></p>
-
-<p align="center">
-  <img src="assets/screenshots/intelligence-timeline.png" alt="Intelligence Timeline" width="900" />
-</p>
-<p align="center"><em>Unified Intelligence Timeline — news, alerts, events, insider activity, earnings, and model signals in one feed.</em></p>
-
-### Portfolio, Risk & Backtesting
-
-<p align="center">
-  <img src="assets/screenshots/portfolio.png" alt="Portfolio" width="900" />
-</p>
-<p align="center"><em>Portfolio monitoring — holdings, movement &amp; historical return, risk metrics, and AI Risk Assessment.</em></p>
-
-<p align="center">
-  <img src="assets/screenshots/risk-dashboard.png" alt="Risk Dashboard" width="900" />
-</p>
-<p align="center"><em>Risk dashboard with statistical risk metrics, factor/exposure heatmaps, and AI Risk Insights powered by a local LLM.</em></p>
-
-<p align="center">
-  <img src="assets/screenshots/backtesting.png" alt="Backtesting Lab" width="900" />
-</p>
-<p align="center"><em>Backtesting workspace with strategy presets, execution-profile modeling, performance summary, and AI analysis.</em></p>
-
-<p align="center">
-  <img src="assets/screenshots/watchlist.png" alt="Watchlist" width="900" />
-</p>
-<p align="center"><em>Watchlists with live quotes, heatmap view, and one-click routing to charts, screener, and backtests.</em></p>
-
-## Features
-
-### Terminal Shell
-
-- **GO Bar** (`Ctrl+G`) &mdash; Bloomberg-style command bar with symbol lookup and route navigation
-- **Command Palette** (`Ctrl+K`) &mdash; fuzzy search across 25+ functions, tickers, and natural language queries
-- **Function Keys** (`F1`-`F9`) &mdash; rapid workspace switching with Bloomberg-style hotkeys
-- **Ticker Tape** &mdash; rolling market pulse with live quotes across exchanges
-- **Theme Engine** &mdash; Terminal Noir (default), classic, and light themes with custom accent support
-- **Desktop & Mobile Layouts** &mdash; responsive design with persistent workspace framing
-
-### Charting & Technical Analysis
-
-- **Multi-Panel Workstation** &mdash; up to 9 synchronized chart panels with crosshair linking
-- **70+ Technical Indicators** &mdash; SMA, EMA, RSI, MACD, Bollinger Bands, Keltner, Supertrend, ATR, VWAP, OBV, CMF, Stochastic, CCI, ADX, Donchian, and many more
-- **Multi-Timeframe** &mdash; 1m, 2m, 5m, 15m, 30m, 1h, 4h, 1D, 1W, 1M with extended hours toggle
-- **Drawing Tools** &mdash; persistent annotations with templates, save/restore
-- **Volume Profile** &mdash; VPOC + 70% value area overlay
-- **Replay Mode** &mdash; step through historical price action bar by bar
-- **Comparison Overlays** &mdash; multi-symbol normalized or raw price comparison
-- **Alternative Charts** &mdash; Renko, Kagi, Point & Figure, Line Break
-- **Chart Export** &mdash; PNG, SVG, and CSV data export
-- **OpenScript** &mdash; custom indicator scripting with script library
-
-### Equity Research & Security Hub
-
-- **8-Tab Security Analysis** &mdash; overview, financials, chart, news/sentiment, ownership, estimates, peers, ESG
-- **Fundamental Metrics** &mdash; P/E, P/B, ROE, ROA, dividend yield, earnings growth, debt ratios
-- **Earnings Calendar** &mdash; historical surprises, upcoming events, guidance tracking
-- **Shareholding History** &mdash; promoter/FII/DII/public breakdown with trend visualization
-- **Analyst Estimates** &mdash; consensus tracking, revisions, and target prices
-- **Corporate Actions** &mdash; splits, dividends, rights, bonuses timeline
-- **Peer Comparison** &mdash; relative valuation matrices across comparable companies
-- **Insider Trading Monitor** &mdash; recent insider trades, per-stock insider activity, top buyers/sellers leaderboard, and cluster-buy detection with minimum insider thresholds
-- **Trade Journal** &mdash; trade logging with equity curve, calendar heatmap,
-  performance statistics, and an on-demand completeness review that links missing
-  rationale, outcomes, emotions, setup labels, or stale thesis updates back to the
-  entry editor without inventing the absent facts
-
-### Advanced Screener
-
-- **Query Builder** &mdash; custom filters with preset formulas and arithmetic operations
-- **Custom Formula Engine** &mdash; write, save, and share custom formulas with server-side evaluation, formula library with descriptions and categories
-- **15+ Visualization Modes** &mdash; tables with sparklines, sector treemaps, heatmaps, scatter plots, radar charts, box plots, bubble charts, waterfall charts, RRG quadrants, gauge dials, distribution histograms, stacked area, and comparison bars
-- **Multi-Market Scanning** &mdash; NSE, BSE, NYSE, NASDAQ with technical and fundamental overlays
-- **Preset Management** &mdash; save, load, share, and browse community screens
-- **Score-Based Ranking** &mdash; deterministic scoring with stable ordering and explainable setup detection
-
-### Insight-Driven Stock Picking
-
-- **Multi-Factor Composite Scoring** &mdash; cross-sectional, sector-relative Value / Momentum / Quality / Low-Volatility z-scores combined into a weighted composite rank
-- **Ranked Idea Lists** &mdash; top-quintile picks per market and sector for both US (NYSE/NASDAQ) and Indian (NSE/BSE) universes
-- **Factor Dashboard** &mdash; per-symbol factor radar, factor chips, and conviction scoring with a US/India market toggle
-- **Catalyst & Conviction Engine** &mdash; LLM-extracted sentiment and upcoming catalysts from NSE/BSE and SEC filings, surfaced in the Security Hub
-- **Point-in-Time Fundamentals** &mdash; as-reported fundamental history that removes look-ahead bias from factor and fundamental backtests
-- **Why-Ranked Explanations** &mdash; composite scores, factor chips, and plain-language rationale on screener rows, with one-click routing to chart and backtest
-
-### Futures & Options (F&O)
-
-- **Option Chain** &mdash; full contract listing with live Greeks (Delta, Gamma, Theta, Vega, Rho)
-- **IV Analysis** &mdash; historical and implied volatility tracking, term structure visualization
-- **Strategy Builder** &mdash; multi-leg construction for spreads, butterflies, straddles, strangles
-- **OI Analysis** &mdash; open interest trends, buildup patterns, strike-level concentration
-- **PCR Tracking** &mdash; put-call ratio monitoring with overbought/oversold signals
-- **Heatmaps** &mdash; IV/volume/OI heatmaps across the strike grid
-- **Options Flow** &mdash; unusual activity scanner with volume/OI ratios, premium tracking, heat scores, and bullish/bearish sentiment classification
-- **Futures Analytics** &mdash; term structure, basis analysis, contract specifications
-- **Expiry Calendar** &mdash; contract schedules with roll suggestions
-
-### Portfolio & Risk Management
-
-- **Multi-Portfolio CRUD** &mdash; holdings management with cost basis and transaction tracking
-- **Allocation & Attribution** &mdash; sector allocation charts, contributor/detractor analysis
-- **Benchmark Overlay** &mdash; compare against indices with relative performance metrics
-- **Risk Engine** &mdash; VaR (95%), CVaR, EWMA volatility, rolling correlation, PCA factor exposures
-- **Factor Analytics** &mdash; multi-factor exposure radar, attribution waterfall, rolling factor history, and factor return comparison across market, size, value, momentum, quality, and low-volatility factors
-- **Stress Testing** &mdash; 6 predefined macro scenarios (GFC 2008, COVID 2020, rate shock, INR depreciation, tech rotation, commodity spike), custom shock builder, Monte Carlo simulation, and historical event replay
-- **Correlation Deep Dive** &mdash; correlation matrix, rolling correlation with regime detection, hierarchical clustering with dendrogram, and cross-asset dependency visualization
-- **Dividend Tracker** &mdash; income tracking with ex-date calendar
-- **Paper Trading** &mdash; virtual trading engine with realistic order fills, slippage modeling, and TCA analytics
-
-### Backtesting & Quant Research
-
-- **16+ Strategy Templates** &mdash; SMA/EMA crossover, mean reversion, breakout, RSI, MACD, Bollinger Bands, dual momentum, VWAP reversion, Awesome Oscillator, Heikin-Ashi, Parabolic SAR, Dual Thrust, shooting star reversal, and Bollinger W/M patterns
-- **Pair Trading Lab** &mdash; cointegration screening, hedge-ratio estimation, spread z-score diagnostics, half-life analysis, and mean-reversion trade simulations for statistical arbitrage workflows
-- **Intraday & Daily Testing** &mdash; 1m to monthly resolution with session-aware logic
-- **Vectorized Engine** &mdash; NumPy-based computation for fast large-dataset backtests
-- **Realistic Execution** &mdash; slippage, commission, partial fills, latency, and market impact simulation
-- **Result Visualization** &mdash; equity curves, drawdown charts, monthly return heatmaps, rolling Sharpe, 3D parameter surfaces, Monte Carlo paths, trade analysis
-- **Walk-Forward Analysis** &mdash; out-of-sample validation with sliding windows
-- **Parameter Sweep** &mdash; sensitivity analysis across hyperparameter ranges
-- **Monte Carlo Robustness** &mdash; trade/return resampling with confidence cones, terminal-wealth distribution, and probability-of-profit
-- **Liquidity-Aware Execution** &mdash; fixed-bps, volume-weighted, and square-root market-impact slippage models with percent-of-volume caps
-- **Strategy Tear-Sheets** &mdash; standardized HTML reports with equity, drawdown, rolling Sharpe, monthly returns, and benchmark overlay
-
-### Workspaces & Intelligence
-
-- **Unified Intelligence Timeline** &mdash; news, alerts, events, insider activity, earnings, corporate actions, model signals, and backtest runs in one chronological feed
-- **Exposure Heatmaps** &mdash; sector, factor, currency, and correlation exposure maps across supported portfolio and risk workflows
-- **Workspace Presets** &mdash; Trader / Quant / PM / Risk / Ops presets that reconfigure dashboards, panels, and quick links
-- **Saved Views** &mdash; capture and restore page, filters, ticker, tabs, columns, and chart layout across major workflows
-- **AI Insight Cards** &mdash; grounded LLM-powered insights across Home, Screener, Portfolio, and Security Hub, with explicit offline fallback
-
-### Cross-Asset & Macro
-
-- **Commodities** &mdash; energy, metals, agriculture with futures term structure and seasonal analysis
-- **Forex** &mdash; major pairs, cross rates matrix, central bank monitor (Fed, ECB, BoE, BoJ, RBI, and more)
-- **Cryptocurrency** &mdash; full workspace with markets, movers, sectors, DeFi, derivatives, heatmaps, correlation, and **per-coin fundamentals** (tokenomics & supply dilution, on-chain TVL & fee revenue, valuation ratios, with plain-language "what to watch" cues), powered by CoinGecko + DefiLlama with live spot ticks via Binance
-- **ETF Analytics** &mdash; holdings viewer, flow tracker, multi-ETF overlap analysis
-- **Mutual Funds** &mdash; search, comparison, rolling returns, SIP calculator, category rankings, fund overlap
-- **Yield Curve** &mdash; interactive US Treasury curve with historical comparison and 2s10s inversion detection
-- **Economics** &mdash; global event calendar with impact coding, macro indicators dashboard
-- **Sector Rotation** &mdash; Relative Rotation Graph (RRG) with 12-week trailing momentum paths
-
-### Alerts & Breakout Scanner
-
-- **Multi-Condition Alert Builder** &mdash; compound rules with AND/OR logic, multi-field conditions (price, volume, RSI, MACD, moving averages), and natural-language summary
-- **Multi-Channel Delivery** &mdash; in-app, email, webhook, Slack, and Telegram with per-channel configuration and delivery testing
-- **Alert Lifecycle** &mdash; cooldown periods, expiry dates, max trigger limits, trigger history with deduplication
-- **WebSocket Push** &mdash; real-time desktop notifications on alert trigger
-- **Breakout Scanner** &mdash; automated pattern detection with confidence scoring
-- **Alert History** &mdash; full timeline with delivery status and re-trigger tracking
-
-### News & Sentiment
-
-- **Ticker-Specific News** &mdash; per-symbol news feed with multi-period filtering, scoped strictly to the selected ticker
-- **Sentiment Analysis** &mdash; per-article bullish/bearish/neutral classification with confidence scores, from a local engine that prefers FinBERT, falls back to TextBlob, then a finance lexicon &mdash; no LLM or network call required (FinBERT is an optional extra, see [Sentiment engine](#sentiment-engine))
-- **Market-Wide Feed** &mdash; latest headlines with source attribution and sentiment trends
-- **AI Emotion Indicator** &mdash; per-stock fear/greed gauge powered by a local **LLM** (Ollama by default), surfacing a 0&ndash;100 emotion index, dominant emotion (panic &rarr; euphoria), emotion mix, and per-article bullish/bearish breakdown
-- **Local & Private** &mdash; LLM sentiment runs entirely on your own machine; gracefully falls back to the lexical/FinBERT engine when the LLM is offline
-
-### Experimental Scripting and Compatibility Plugins
-
-- **Local Plugin API** &mdash; hidden, administrator-only lifecycle controls for trusted Python modules installed by the host operator; there is no marketplace or remote installation
-- **Python Scripting** &mdash; experimental sandboxed execution with restricted imports
-- **OpenScript** &mdash; chart-based indicator scripting with library and sharing
-
-### Real-Time Data
-
-- **Multi-Provider WebSocket** &mdash; Finnhub (US), Binance (crypto), and Zerodha Kite (India F&O) real-time ticks
-- **Provider Waterfall** &mdash; automatic failover chain: primary → fallback → error
-- **Multi-Level Caching** &mdash; L1 SQLite + L2 Redis with TTL-based invalidation
-- **Candle Aggregation** &mdash; tick-by-tick to any interval with distributed bar construction
-- **Redis Pub/Sub** &mdash; horizontal scaling for multi-client quote fan-out
-
-## Architecture
-
-```
-+---------------------------------------------------+
-|                   CLIENT TIER                     |
-|   React 18 + TypeScript + Vite + Tailwind CSS    |
-|   TanStack Query + Zustand + Lightweight Charts   |
-|   Recharts + Three.js                             |
-+--------------------------+------------------------+
-                           | REST API + WebSocket
-+--------------------------+------------------------+
-|                   API GATEWAY                     |
-|   FastAPI + Uvicorn + JWT Auth + CORS Middleware  |
-|   Composed API Routers (Equity, F&O, Risk, RAG)  |
-+--------------------------+------------------------+
-                           |
-+--------------------------+------------------------+
-|                  SERVICE LAYER                    |
-|   Unified Fetcher + Screener + Portfolio + Brain |
-|   Risk Engine + Alert Scheduler + Quote Hub      |
-|   Provider Registry + Failover Chain             |
-+--------------------------+------------------------+
-                           |
-+--------------------------+------------------------+
-|                 DATA PROVIDERS                    |
-|   Finnhub | FMP | Yahoo Finance (US/EU)         |
-|   CoinGecko + Binance (crypto)                   |
-|   Zerodha Kite | NSEPython (NSE/BSE F&O)         |
-+--------------------------+------------------------+
-                           |
-+--------------------------+------------------------+
-|                  PERSISTENCE                      |
-|   PostgreSQL 16 (default) | SQLite (opt-in)      |
-|   Redis (cache + pub/sub + quote distribution)   |
-+---------------------------------------------------+
-```
-
-### Data Flow
-
-Market data flows through a unified pipeline:
-
-1. **Exchange ticks** arrive via WebSocket adapters (Finnhub, Binance, Kite)
-2. **Quote Hub** fans out ticks to connected clients via `/api/ws/quotes`
-3. **Bar Aggregator** constructs OHLCV candles at all supported intervals
-4. **OHLCV Cache** persists bars in SQLite (L1) and Redis (L2)
-5. **Unified Fetcher** serves chart requests with cache-first, provider-fallback semantics
-6. **Chart Engine** renders via Lightweight Charts v5 with indicator overlays
-
-### Provider Waterfall
-
-```
-Request → L1 Cache (SQLite) → L2 Cache (Redis) → Primary Provider → Fallback Provider → degraded
-             HIT → return         HIT → return       OK → cache+return    OK → cache+return
-```
-
-## System Requirements
-
-| Component | Minimum | Recommended |
-|-----------|---------|-------------|
-| OS | Linux, macOS, Windows 10+ | Ubuntu 22.04+ / macOS 13+ |
-| CPU | 2 cores | 4+ cores |
-| RAM | 4 GB | 8 GB+ |
-| Disk | 2 GB | 10 GB+ (historical data cache) |
-| Display | 1280 x 720 | 1920 x 1080+ |
-| Browser | Chrome 90+, Firefox 90+, Safari 15+, Edge 90+ | Latest Chrome or Firefox |
-
-### Software Dependencies
-
-| Software | Version | Notes |
-|----------|---------|-------|
-| Docker | 20.10+ | Required for containerized deployment |
-| Docker Compose | v2.0+ | Included with Docker Desktop |
-| Python | 3.11+ | Local development only |
-| Node.js | 22+ | Local frontend development only |
-| Git | 2.30+ | For cloning the repository |
+OpenTerminalUI combines US/EU equity and crypto research, charting, screening,
+portfolio accounting, news, alerts and backtesting in a terminal-style browser
+workspace. This fork is PostgreSQL-first, retains SQLite compatibility and
+intentional provider-gated India NSE/BSE F&O support, and lets you choose local
+or hosted OpenAI-compatible models.
+
+The north star is a private, AI-friendly, multi-asset decision terminal: a place
+to cross-check market context, fundamentals, technicals, sentiment and your own
+research. Today it supplies research tools, not automatic causal explanations,
+investment recommendations or broker execution.
+
+**Integrity over feature count:** missing data, unsupported coverage and provider
+failures must be visible. A route existing does not make it a supported product;
+the [surface inventory](docs/wiki/Surface-Inventory.md) and
+[limitations](docs/wiki/Limitations.md) define the retained contracts.
+
+## Current release
+
+[v2.1.0 — Filing-grounded US fundamentals](https://github.com/laanito/OpenTerminalUI/releases/tag/v2.1.0)
+was published on **2026-10-18**. From a cross-market comparison, request SEC filed
+facts and choose **Check source filing** under a selected value. The terminal
+checks that claim against the official filing's listed XBRL instance for the
+same company, concept, unit and exact fiscal period. Results distinguish
+corroboration, differing or ambiguous values, missing coverage and provider
+failures, with exact values, dates and source links.
+
+SEC requests require the existing `SEC_USER_AGENT` setting. This release requires
+**no database migration or new provider setting**. It does not reconstruct a
+complete historical information set or infer which disclosure supersedes another.
+
+v2.0 introduced the bounded cross-market context journey alongside time-aware
+Second Brain and Brain Log foundations. v1 completed fork consolidation and
+base-currency portfolio accounting. See the [changelog](CHANGELOG.md) for release
+history and the [roadmap](docs/wiki/Roadmap.md) for later work; no next minor
+release scope is implied by the broader backlog.
 
 ## Quick Start
 
-### Option 1: Docker (Recommended)
+### Docker recommended
+
+Install Docker with Compose v2, then:
 
 ```bash
 git clone https://github.com/laanito/OpenTerminalUI.git
 cd OpenTerminalUI
-cp .env.example .env      # add API keys if you have them
+cp .env.example .env
 docker compose up --build
 ```
 
-Open `http://localhost:8000` when the build completes.
+Open `http://localhost:8000`. The image serves both the UI and API. Compose starts
+the backend, Redis and pgvector-enabled PostgreSQL 16; it applies application
+migrations before starting the server. Change `APP_PORT` or `POSTGRES_PORT` in
+`.env` if the host ports are occupied.
 
-**Database backend:**
+Use the repository-root `.env` for configuration. Review database credentials
+and deployment security before exposing the service beyond your machine;
+the example values are not production secrets. See
+[installation](docs/INSTALLATION.md) for the full deployment procedure.
 
-```bash
-# Default: Backend + Frontend + Redis + PostgreSQL 16
-docker compose up --build
+For SQLite instead of PostgreSQL application storage, set:
 
-# To use SQLite instead, set in your .env:
-#   DATABASE_URL=sqlite+aiosqlite:////data/openterminal.db
+```dotenv
+DATABASE_URL=sqlite+aiosqlite:////data/openterminal.db
 ```
 
-If host port 5432 or 8000 is already in use, set `POSTGRES_PORT` / `APP_PORT`
-in `.env` (see `.env.example`).
+SQLite is also used for some provider sidecar caches even when the primary
+application database is PostgreSQL.
 
-### Option 2: Local Development
+### Local development
 
-**Backend:**
-
-```bash
-python3.11 -m venv .venv
-source .venv/bin/activate
-pip install -r backend/requirements.txt
-PYTHONPATH=. uvicorn backend.main:app --reload --host 127.0.0.1 --port 8000
-```
-
-**Frontend:**
+Use Python 3.11 and Node.js 22 to match CI. On macOS/Linux:
 
 ```bash
-cd frontend
-npm ci
-npm run dev
+make setup
+cp .env.example .env
 ```
 
-- Backend API: `http://127.0.0.1:8000`
-- Frontend dev server: `http://127.0.0.1:5173`
+The example database URL names the Compose service `postgres`. For a direct
+host process, use a reachable PostgreSQL URL or a writable SQLite URL, for example
+`DATABASE_URL=sqlite+aiosqlite:///./openterminal.db`.
 
-### Symbol Search Universe
-
-The instrument search universe (`instrument_master`, served by
-`GET /api/instruments/search`) is populated from free sources — US equities/ETFs
-from the Nasdaq Trader listing files, EU/UK equities from `pytickersymbols`
-(major index constituents), and crypto from CoinGecko. A freshly built container
-auto-seeds it on first boot (`OPENTERMINALUI_INSTRUMENT_AUTOSEED`, default on)
-and then refreshes it periodically (`OPENTERMINALUI_INSTRUMENT_REFRESH_HOURS`,
-default 24; 0 = boot only); build/refresh it manually with:
+In separate terminals:
 
 ```bash
-PYTHONPATH=. python -m backend.instruments.populate              # US + EU + crypto
-PYTHONPATH=. python -m backend.instruments.populate --no-eu      # skip EU
-PYTHONPATH=. python -m backend.instruments.populate --crypto-limit 100
+PYTHONPATH=. backend/.venv/bin/python -m uvicorn backend.main:app --reload --host 127.0.0.1 --port 8000
 ```
 
-Each source is refreshed independently, so a failed fetch never wipes the
-existing universe. Re-run periodically to pick up new listings.
+```bash
+npm run dev --prefix frontend
+```
 
-Search matches ticker and company name (accent-insensitive, e.g. `nestle` finds
-`Nestlé`) and ranks exact ticker → ticker-prefix → name-prefix → substring. For
-the long tail not in the seeded set, the search route falls back to Yahoo's
-symbol search and lazily caches the hits (`OPENTERMINALUI_INSTRUMENT_LIVE_SEARCH`,
-default on).
+The API runs at `http://127.0.0.1:8000`, Vite at `http://127.0.0.1:5173`.
+Windows users can create a Python environment manually, install
+`backend/requirements.txt`, and run `npm ci --prefix frontend`.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for contributor setup and checks.
 
-## Environment Variables
+## Features
 
-The platform runs without API keys using fallback providers. Add keys to unlock full data access:
+### Cross-market context and source checks
 
-| Variable | Purpose |
-|----------|---------|
-| `FMP_API_KEY` | Financial Modeling Prep &mdash; US equities, fundamentals, earnings |
-| `SEC_USER_AGENT` | Optional SEC EDGAR filed-facts API; identify the application and contact email |
-| `FINNHUB_API_KEY` | Finnhub &mdash; US real-time WebSocket ticks |
-| `FRED_API_KEY` | FRED (St. Louis Fed) &mdash; macro indicators and yield-curve series (US/EU/China); returns degraded data if unset |
-| `COINGECKO_API_KEY` | CoinGecko demo key &mdash; raises the keyless crypto rate limit (optional) |
-| `OPENTERMINALUI_BINANCE_WS_ENABLED` | Toggle live crypto spot ticks via Binance WebSocket (default `true`) |
-| `KITE_API_KEY` | Zerodha Kite &mdash; India NSE/BSE F&O real-time + historical |
-| `KITE_API_SECRET` | Zerodha Kite secret |
-| `KITE_ACCESS_TOKEN` | Zerodha Kite session token |
-| `OPENTERMINALUI_NSE_PUBLIC_ENABLED` | Optional direct `nseindia.com` compatibility access (default `false`; disables itself for the process after a 403) |
-| `JWT_SECRET_KEY` | JWT signing key for authentication |
-| `CACHE_SIGNING_KEY` | Cache integrity signing key |
-| `DATABASE_URL` | Database connection (Docker default: PostgreSQL; set a `sqlite+aiosqlite://` URL to use SQLite) |
-| `REDIS_URL` | Redis connection for caching and pub/sub |
-| `OPENTERMINALUI_CORS_ORIGINS` | Allowed CORS origins |
-| `OPENTERMINALUI_PREFETCH_ENABLED` | Enable background data prefetch |
-| `SMTP_HOST` / `SMTP_PORT` / `SMTP_USER` / `SMTP_PASSWORD` | Optional SMTP config for emailing scheduled reports. Without it, reports are still created and downloadable on demand; only scheduled email delivery is skipped. |
-| `LLM_BASE_URL` | OpenAI-compatible LLM endpoint (default `http://localhost:11434/v1` for Ollama; use `http://host.docker.internal:11434/v1` from Docker). Also works with LM Studio, OpenAI, OpenRouter, etc. |
-| `LLM_MODEL` | Model id served by the endpoint (default `llama3.1`) |
-| `LLM_API_KEY` | API key for hosted providers (OpenAI/OpenRouter/…); leave empty for local Ollama / LM Studio |
-| `LLM_ENABLED` | Toggle the LLM analysis (default `true`; falls back to lexical sentiment when off) |
+Open **Market context** from equity research, the Security Hub or crypto detail.
+Choose an anchor, add market proxies using symbol suggestions and inspect a
+one-, three- or six-month comparison.
 
-## What works out of the box (vs. needs keys)
+- Dated shared-close paths, native-quote returns and explicit overlap,
+  freshness, source and price-basis disclosures.
+- Separately labelled Yahoo exchange-local and adjusted-close views when the
+  required metadata and coverage exist.
+- Optional reporting-currency returns and full paths, with dated FX evidence;
+  endpoint attribution separates price, currency and their interaction.
+- On-demand news, descriptive technical measures, fundamentals, economic
+  calendar and US/euro-area macro evidence. Each panel has its own coverage
+  and failure state.
+- Selected US SEC facts can be checked against their own filing, not just an
+  aggregate feed or submissions-index entry.
 
-A core principle here is **integrity over feature count**: nothing fabricated is
-ever shown as live. When a feature has no live source (missing key, rate-limited
-provider, or no free feed), the API returns empty + a `degraded` marker and the UI
-shows a banner. Highlights:
+This contextual surface remains classified experimental. Shared dates are not
+proof of simultaneous sessions, co-movement is not causation, and current or
+revised provider data is not a complete historical vintage.
+[Research guide](docs/wiki/Research-Workflows.md#cross-market-context) ·
+[Detailed limitations](docs/wiki/Limitations.md)
 
-| Area | Keyless | Optional configuration |
+### Private Second Brain and Brain Log
+
+Notes, trade-journal entries, portfolio theses and position/transaction notes
+feed owner-scoped retrieval. Questions receive dated citations back to that
+private evidence, with source-type filters and progressive synthesis.
+
+Effective dates distinguish when information applies from when it was recorded.
+A bounded recency signal operates among relevant notes; older conflicting views
+remain available as history. Notes and reindexing expose loading and indexing
+progress rather than silently treating a queued write as searchable evidence.
+
+**Save answer** preserves a completed synthesis in the **Brain Log**, with
+citation snapshots and model provenance. Saved memos are not automatically
+reindexed as facts. **Promote to Note** creates a separate, reviewed, editable
+source; opening a memo also reports changed or missing cited records.
+
+An external agent such as Hermes can deliberately ingest summaries through the
+API-key-authenticated notes endpoint. This is not automatic web/news indexing
+or a general MCP server.
+[Research and ingestion guide](docs/wiki/Research-Workflows.md)
+
+### Portfolio and Journal
+
+Per-user portfolios combine holdings, transaction-derived cash, explicit
+transaction/cost/fee currencies and a reporting base currency. Backend accounting
+normalizes supported value, cost, income and realised/unrealised P&L with
+traceable current or dated FX. Missing denomination or rates produce partial
+results, not guessed totals. Portfolio Manager offers a focused currency-repair
+dialog for legacy records.
+
+Risk, benchmark and attribution history describes the **current open basket**,
+not full closed-position or cash-flow-adjusted ledger performance. Supported
+attribution separates security, FX and interaction returns.
+
+Portfolio theses and holding notes record your reasoning. **Journal** captures
+trade rationale, setup, emotions and review, with an on-demand completeness
+check. Journal trades and Portfolio transactions are currently separate; linking
+existing executions or creating missing ones from Journal is planned, not shipped.
+
+### Markets and workspaces
+
+- GO bar (`Ctrl+G`), command palette (`Ctrl+K`), ticker tape, saved views,
+  Launchpad panels and a linked chart workstation.
+- Security Hub research, multi-market screening, watchlists, alerts and
+  backtesting with explicit provider/history limits.
+- Crypto markets and fundamentals, including CoinGecko supply/valuation data
+  and DefiLlama usage measures; Binance provides available live spot ticks.
+- News with classical sentiment, explicit on-demand AI scoring of visible
+  headline batches, and a model-backed emotion view.
+- Provider-gated India F&O, macro and commodities; retained partial products
+  identify unavailable panels rather than filling them with plausible data.
+
+Hidden compatibility tools, experimental factor/model workflows and unavailable
+feeds are not a promise of live coverage. See the
+[feature guide](docs/wiki/Features.md) and [surface inventory](docs/wiki/Surface-Inventory.md).
+
+## Screenshots
+
+These snapshots illustrate the interface, not current provider availability or
+every navigation entry. The application and surface inventory remain authoritative.
+
+<p align="center">
+  <img src="assets/screenshots/home.png" alt="Home market and portfolio workspace" width="900" />
+</p>
+
+<p align="center">
+  <img src="assets/screenshots/chart-workstation.png" alt="Linked chart workstation" width="900" />
+</p>
+
+<p align="center">
+  <img src="assets/screenshots/portfolio.png" alt="Portfolio workspace snapshot" width="900" />
+</p>
+
+## Configuration and data availability
+
+"Keyless" means no provider API key is required, not guaranteed data availability.
+AI still needs a running model service. Hosted model configurations send the
+selected prompts and evidence to that provider; keep both chat and embeddings
+local if they must stay on your infrastructure.
+
+| Setting | Purpose |
+|---|---|
+| `DATABASE_URL` | PostgreSQL by default in Compose; SQLite remains supported |
+| `FMP_API_KEY` | Extends selected fundamentals, earnings, commodities and other provider-backed data |
+| `FINNHUB_API_KEY` | US live ticks and selected REST/calendar/FX fallback paths, subject to access |
+| `FRED_API_KEY` | FRED macro/yield data and optional US comparison observations |
+| `SEC_USER_AGENT` | SEC Company Facts and filing checks; identify the app/operator and a real contact email, e.g. `OpenTerminalUI operator@example.com` |
+| `COINGECKO_API_KEY` | Optional demo key for crypto provider access |
+| `KITE_API_KEY`, `KITE_API_SECRET`, `KITE_ACCESS_TOKEN` | Intentional India/Kite workflows |
+| `OPENTERMINALUI_NSE_PUBLIC_ENABLED` | Direct NSE scraping is off by default; first opted-in 403 opens a process circuit |
+| `LLM_BASE_URL`, `LLM_MODEL`, `LLM_API_KEY` | OpenAI-compatible chat provider; hosted keys are separate from terminal automation keys |
+| `SMTP_*` | Optional scheduled-report email delivery |
+
+Provider settings belong on the host, not in browser API-key management.
+The [environment template](.env.example), [provider guide](docs/wiki/Data-Providers.md)
+and [limitations matrix](docs/wiki/Limitations.md) describe the configuration
+boundary. Restart/recreate the backend after changing its runtime configuration.
+
+Charts/search have keyless paths through Yahoo, CoinGecko and Binance.
+Euro-area comparison context uses bounded keyless Eurostat/ECB sources. SEC
+needs identification but not an API key. FRED, commodities and India/Kite data
+are gated. Calendar coverage remains unreliable even with keys; comparison
+panels never substitute legacy sample events.
+
+Portfolio FX uses Yahoo daily history with a configured Finnhub fallback.
+Unavailable conversion is partial, not parity. Unsupported US/EU Level-2,
+ETF flows and other provider gaps remain explicitly unavailable.
+
+### Local models and embeddings
+
+For the default Ollama setup, obtain a chat model and the embedding model:
+
+```bash
+ollama pull llama3.1
+ollama pull nomic-embed-text
+```
+
+Local Python defaults to `http://localhost:11434/v1`. Compose defaults to
+`http://host.docker.internal:11434/v1`; ensure that address reaches the host's
+model service in your Docker environment. A different OpenAI-compatible service
+can use the same settings.
+
+| Variable | Default | Meaning |
 |---|---|---|
-| Charts & quotes (US/EU/crypto), symbol search | ✅ Yahoo / CoinGecko / Binance | — |
-| Cross-market context | ✅ selected price comparisons; optional evidence stays separately labelled | `FMP_API_KEY` / `FRED_API_KEY` for selected evidence; SEC requests also need `SEC_USER_AGENT` (not a key) |
-| Fundamentals, financials, earnings, commodities | partial (Yahoo) | `FMP_API_KEY` (full US fundamentals) |
-| Real-time US ticks | delayed quotes | `FINNHUB_API_KEY` (live WS) |
-| Macro indicators / yield curve | degraded banner | `FRED_API_KEY` |
-| AI insights, news emotion, second-brain RAG | ✅ local Ollama (on-device) | `LLM_API_KEY` only for hosted LLMs |
-| Crypto fundamentals (tokenomics/TVL/fees) | ✅ CoinGecko + DefiLlama | — |
-| India NSE/BSE F&O | degraded banner | `KITE_*` |
+| `LLM_ENABLED` | `true` | Enable model analysis |
+| `LLM_MODEL` | `llama3.1` | Served chat model identifier |
+| `LLM_TIMEOUT_SECONDS` | `240` | Shared insight operation deadline |
+| `LLM_STRUCTURED_OUTPUT` | `auto` | Structured-output mode: `auto`, `json_schema`, `json`, `none` |
+| `LLM_EMBED_MODEL` | `nomic-embed-text` | Embedding model |
+| `BRAIN_EMBED_DIM` | `768` | pgvector dimension hint; keep compatible with the embedding model |
+| `BRAIN_EMBED_FALLBACK` | `true` | Allow installed local sentence-transformers fallback |
 
-The full feature matrix, honest **Limitations** (no live econ-calendar source;
-dividend forward dates are estimates; RS / bonds / hotlists / insider / tape are
-hidden compatibility surfaces; US/EU L2 depth has no free source; crypto
-liquidations remain degraded until the WS runner is wired), and **upgrade notes**
-(the pgvector image swap) live in the
-[Limitations](docs/wiki/Limitations.md) wiki page.
+PostgreSQL uses pgvector when available; SQLite uses in-process cosine search.
+Model/provider failure is labelled, not a licence to fabricate an answer.
+Shared AI insight jobs support bounded retries, cancellation and streaming;
+Brain synthesis has its own streaming and fallback contract.
 
-## AI News Sentiment & Insights (local LLM)
+The default per-article sentiment engine prefers optional FinBERT, then
+TextBlob, then a finance lexicon. **AI sentiment** on News deliberately requests
+model scoring for visible batches and identifies fallback results. Optional ML
+dependencies can be installed from `backend/requirements-ml.txt`; first model
+use may download weights.
 
-OpenTerminalUI talks to any **OpenAI-compatible** chat endpoint, so the AI features
-&mdash; the per-stock **AI Emotion Indicator** and the **AI Insight Cards** (briefings,
-backtest explainers, risk insights) &mdash; run against whatever provider you point
-them at. The default is a local **[Ollama](https://ollama.com/)** server, so inference
-stays on your own machine and no news or prompt data leaves your hardware; the same
-config also works with **LM Studio**, **OpenAI**, **OpenRouter**, **Groq**, **vLLM**,
-**llama.cpp**, etc.
+## API and external agents
 
-For the Emotion Indicator, the model reads recent headlines for a ticker and returns a
-structured judgement &mdash; sentiment, confidence, and a market emotion &mdash; which
-the backend aggregates into a 0&ndash;100 fear/greed index, a dominant emotion, an
-emotion mix, and per-article bullish/bearish signals.
+The running backend exposes Swagger UI at `/docs` and the full schema at
+`/openapi.json`. The checked-in [API reference](docs/API_REFERENCE.md) lists
+authentication and support state; [OpenAPI JSON](docs/openapi.json) is suitable
+for agents without a running terminal.
 
-### How it works
+Browser APIs generally require a user JWT. Automation API keys are a distinct,
+scoped boundary, not interchangeable JWTs. For deliberate external notes, create
+a key in **Settings → API Keys** with **Read + external notes**
+(`read_write`) permission and call `PUT /api/v1/notes/external`.
+Stable source/external IDs make retries update the same owner-scoped record.
+Supply `effective_at` when source time differs from ingestion time.
 
-```
-News (DB / Yahoo / Google RSS)
-        │
-        ▼
-backend/services/stock_emotion.py ──▶ backend/services/llm_client.py
-   (batch prompt + JSON schema)          (OpenAI-compatible /v1/chat/completions)
-        │                                          │
-        │                                          ▼
-        │                            Ollama / LM Studio / OpenAI / …
-        ▼
-GET /api/sentiment/emotion/{ticker}  ──▶  Emotion Indicator (News page)
-```
+See the [ingestion example and limits](docs/wiki/Research-Workflows.md#external-note-ingestion).
+Brain Log and source-filing endpoints retain their documented JWT boundary;
+a notes-ingestion key does not grant arbitrary access to every research API.
+General MCP and autonomous execution remain later work.
 
-- All articles for a ticker are analyzed in a **single batched request** (local models
-  are slow &mdash; per-article calls would pay the latency N times over).
-- JSON requests use **structured output** with a graceful ladder: strict `json_schema`
-  → `json_object` → plain text, stepping down whenever a provider doesn't support a
-  given form (Ollama's strict-schema support varies by version; OpenAI/LM Studio support it).
-- If the LLM is disabled or unreachable, the feature **falls back** to the built-in
-  lexical / FinBERT sentiment engine, so the endpoint always returns a result.
+## Architecture
 
-### Integration procedure (Ollama, the default)
+React/TypeScript/Vite uses TanStack Query and Zustand for the browser shell.
+FastAPI composes owner-checked route modules and domain services. PostgreSQL 16
+is the primary Compose store, SQLite supports local/test and sidecar uses, and
+Redis supplies shared cache/pub-sub/quote distribution. Market adapters and the
+OpenAI-compatible model client preserve labelled degradation on failure.
 
-1. **Install Ollama** &mdash; download from [ollama.com](https://ollama.com/) (macOS,
-   Windows, Linux). It serves an OpenAI-compatible API at `http://localhost:11434/v1`.
-2. **Pull a model** &mdash; e.g. `ollama pull llama3.1` (or `qwen2.5`, `gemma2`, …).
-   A smaller model responds faster; a larger one is more capable.
-3. **Configure OpenTerminalUI**:
-   - **Local development** &mdash; defaults already point at localhost; override in `.env`
-     only if needed:
-     ```bash
-     LLM_BASE_URL=http://localhost:11434/v1
-     LLM_MODEL=llama3.1
-     LLM_ENABLED=true
-     ```
-   - **Docker** &mdash; the container must reach Ollama on the *host*; set
-     `LLM_BASE_URL=http://host.docker.internal:11434/v1`.
-4. **Restart the backend** (or `docker compose up -d`) so the new settings load.
-5. **Verify** &mdash; open the **News** workspace, select any ticker, and check the
-   *Emotion Indicator* badge:
-   - `<model id>` &mdash; the model is live and analyzing.
-   - `Lexical fallback` &mdash; the LLM was unreachable; the built-in engine was used.
+See the [architecture guide](docs/wiki/Architecture.md) for request flow,
+persistence and key files, and the [documentation map](docs/README.md) for
+current versus historical references.
 
-### Using a different provider
-
-Point the same three variables at any OpenAI-compatible endpoint (hosted providers
-also need `LLM_API_KEY`):
-
-```bash
-# OpenAI
-LLM_BASE_URL=https://api.openai.com/v1
-LLM_MODEL=gpt-4o-mini
-LLM_API_KEY=sk-...
-
-# LM Studio (local) — start its server, then:
-LLM_BASE_URL=http://localhost:1234/v1
-LLM_MODEL=<loaded-model-id>
-```
-
-### Configuration
-
-| Variable | Default | Purpose |
-|----------|---------|---------|
-| `LLM_BASE_URL` | `http://localhost:11434/v1` | OpenAI-compatible endpoint. Use `http://host.docker.internal:11434/v1` from Docker. |
-| `LLM_MODEL` | `llama3.1` | Model id served by the endpoint. |
-| `LLM_API_KEY` | _(empty)_ | API key for hosted providers; local servers ignore it. |
-| `LLM_ENABLED` | `true` | Master toggle for LLM analysis. |
-| `LLM_TIMEOUT_SECONDS` | `240` | Per-request timeout for the model call. |
-| `LLM_STRUCTURED_OUTPUT` | `auto` | JSON request mode: `auto` \| `json_schema` \| `json` \| `none`. |
-| `LLM_EMBED_MODEL` | `nomic-embed-text` | Embedding model for the second-brain RAG (same OpenAI-compatible endpoint). For OpenAI use e.g. `text-embedding-3-small`. |
-| `BRAIN_EMBED_DIM` | `768` | Vector dimension hint for the pgvector column (`nomic-embed-text` is 768). |
-| `BRAIN_EMBED_FALLBACK` | `true` | If the endpoint has no `/embeddings` route, fall back to a local `sentence-transformers` model (requires `requirements-ml.txt`). |
-
-The second brain needs an embedding model. With the default Ollama setup, pull it
-once: `ollama pull nomic-embed-text`. On Postgres the index uses **pgvector**
-(`CREATE EXTENSION vector` is attempted automatically; it falls back to numpy
-cosine if unavailable); on SQLite it uses an in-process numpy cosine search.
-
-These can also be set under `app:` in `backend/config/settings.yaml`. The legacy
-`LM_STUDIO_*` / `OLLAMA_BASE_URL` / `OPENAI_API_KEY` variables are still honored.
-
-### External note ingestion
-
-Automations can feed selected summaries into the private Second Brain without a
-browser JWT. Create an API key in **Settings → API Keys** with **Read + external
-notes** permission, then idempotently upsert a note:
-
-```bash
-curl -X PUT http://localhost:8000/api/v1/notes/external \
-  -H "X-API-Key: otui_..." \
-  -H "Content-Type: application/json" \
-  -d '{
-    "source": "youtube",
-    "external_id": "dQw4w9WgXcQ",
-    "title": "Video title",
-    "body": "Hermes-generated summary with the source URL and key points.",
-    "effective_at": "2026-09-15T14:30:00Z",
-    "tags": ["youtube", "hermes"]
-  }'
-```
-
-Retries with the same `source` and `external_id` update the same owner-scoped
-note. Successful writes schedule the normal incremental Second Brain reindex.
-`source` is limited to 16 URL-safe characters, `external_id` to 38 characters,
-and `body` to 10,000 characters. `effective_at` is optional but strongly
-recommended: it records when the source information applies or was published,
-which may differ from when Hermes ingested it. General MCP tooling remains
-deferred.
-
-### Brain Log research memos
-
-Authenticated clients can explicitly preserve a completed Second Brain answer
-through `POST /api/brain/memos`. The saved research memo snapshots the question,
-answer, selected evidence scope, dated citations and content hashes, generation
-time, and non-secret model provenance. `GET /api/brain/memos` lists the caller's
-own memos (with optional `symbol` and `pinned` filters), and
-`GET`, `PATCH`, or `DELETE /api/brain/memos/{memo_id}` read, organize, or remove
-one memo.
-
-The synthesis snapshot is immutable: `PATCH` accepts only title, tags,
-annotation, symbol, and pin state. Brain memos are not added to the Second Brain
-index, so model output cannot silently reinforce itself as source evidence. The
-Second Brain page offers **Save answer** after a completed synthesis
-and a Brain Log for reading, organizing, pinning, and explicitly deleting saved
-memos. **Promote to Note** opens an editable draft with a confirmation step; only
-the reviewed Note is indexed as evidence. Authenticated clients can use
-`POST /api/brain/memos/{memo_id}/promote-to-note` for the same owner-scoped
-transition. The Note retains its source memo ID and the Notes UI links back to
-the memo. Portfolio theses and Journal are not promotion targets yet.
-
-Opening a saved memo checks its cited chunk identities against the owner's
-current source records through `GET /api/brain/memos/{memo_id}/evidence-status`.
-The browser marks matching, changed, unavailable, and unverifiable citations;
-it never rewrites the historical answer. This check does not establish whether
-the answer's claims are correct, and it does not depend on a completed reindex.
-
-To evaluate retrieval against a private, dated corpus without invoking the chat
-model or changing the index, see the [Brain retrieval evaluation guide](docs/wiki/Brain-Retrieval-Evaluation.md).
-
-The generated [API reference](docs/API_REFERENCE.md) indexes every backend
-operation with its authentication and product-support state. Agents and other
-clients can consume the complete checked-in
-[OpenAPI document](docs/openapi.json) without starting the application.
-
-> **Performance:** large models are slow on consumer hardware &mdash; the first
-> analysis for a ticker can take a minute or more (results are then cached). For a
-> snappier experience, use a smaller instruct model and point `LLM_MODEL` at it.
-
-## Sentiment engine
-
-The **per-article** sentiment shown on the News feed (the bullish/bearish/neutral
-badge and confidence score) is computed by a small **local** engine
-(`backend/services/sentiment_engine.py`) &mdash; **not** the LLM. It is a graceful
-three-tier ladder, picking the best tier whose dependency is available:
-
-1. **FinBERT** (`ProsusAI/finbert`) &mdash; a finance-tuned transformer classifier.
-   Highest accuracy. Requires the optional ML extras (`transformers` + `torch`).
-2. **TextBlob** &mdash; lightweight polarity analysis, nudged by a finance lexicon.
-   Installed by default; this is the realistic default tier.
-3. **Lexicon fallback** &mdash; pure keyword counting over a small finance term set.
-   Always available, no dependencies; used only if the tiers above are absent.
-
-Scores are **persisted** with the ingested article, so analysis runs once per
-article rather than on every request.
-
-To enable the top FinBERT tier, install the optional extras on top of the core
-requirements:
-
-```bash
-pip install -r backend/requirements.txt -r backend/requirements-ml.txt
-```
-
-First use downloads the FinBERT weights (~440 MB) from Hugging Face and caches
-them locally. Without these extras the engine simply uses TextBlob.
-
-> Routing per-article sentiment through the local LLM (reusing the Emotion
-> Indicator pipeline) is on the [roadmap](docs/wiki/Roadmap.md) as a nice-to-have.
-
-## Testing
-
-### Backend
-
-```bash
-PYTHONPATH=. python -m compileall backend
-PYTHONPATH=. pytest backend/tests -q --cov=backend --cov-fail-under=45
-```
-
-### Frontend
-
-```bash
-cd frontend
-npm run build
-npx vitest run
-```
-
-### End-to-End
-
-```bash
-cd frontend
-npx playwright install chromium
-npm run test:e2e
-```
-
-### Gate (all checks)
+## Testing and contributing
 
 ```bash
 make gate
 ```
 
-## Repository Layout
+This runs integrity/API guards, backend compile and coverage tests, frontend
+build and Vitest. The deterministic browser smoke set runs separately locally:
 
-```
-backend/                 FastAPI app, adapters, services, routes, tests
-  adapters/              Market data provider adapters
-  api/routes/            Route modules composed by backend/api/router.py
-  core/                  Unified fetcher, failover, service status
-  services/              Business logic and provider orchestration
-  db/                    SQLAlchemy ORM, migrations, caching
-  auth/                  JWT authentication and middleware
-  config/                Settings, environment, security
-  tests/                 Backend unit and integration tests
-frontend/                React + Vite + TypeScript SPA
-  src/pages/             Route-level page components
-  src/components/        UI components, terminal design system
-  src/fno/               F&O workspace modules
-  src/store/             Zustand state management
-  src/__tests__/         Vitest component and unit tests
-  tests/e2e/             Playwright E2E specs
-plugins/                 Trusted local plugin loader and example manifests
-docs/                    Wiki, architecture specs, and contributor docs
-  site/                  GitHub Pages website
-  wiki/                  Getting started, contributing guides
-data/                    Local SQLite databases and test fixtures
-docker-compose.yml       Container orchestration (backend + Redis + Postgres)
-Dockerfile               Multi-stage build (Node builder + Python runtime)
-Makefile                 Development commands (setup, test, gate)
+```bash
+npm run test:e2e:smoke --prefix frontend
 ```
 
-## Keyboard Shortcuts
+Use an installed Chrome with `PLAYWRIGHT_EXECUTABLE_PATH`, or install the
+Playwright Chromium browser if none is available. The
+[browser test guide](frontend/tests/e2e/README.md) documents local options and
+legacy fixtures. CI runs smoke tests on every PR, plus disposable PostgreSQL
+contracts and a fresh-install check. The clean-install teardown script is
+CI-only: do not run it against a deployment host.
 
-| Shortcut | Action |
-|----------|--------|
-| `Ctrl+G` | GO Bar &mdash; symbol lookup and navigation |
-| `Ctrl+K` | Command Palette &mdash; fuzzy search across all features |
-| `F1`-`F9` | Function keys for workspace switching |
-| `1`-`7` | Timeframe hotkeys in chart views |
-| `Esc` | Close active panel or dialog |
-
-## Contributing
-
-We welcome contributions. See [CONTRIBUTING.md](CONTRIBUTING.md) for the full guide.
-
-1. Fork the repo and create a branch: `feat/your-feature` or `fix/your-fix`
-2. Write tests first (TDD encouraged)
-3. Run `make gate` to pass all checks
-4. Open a PR with a clear description
+See [CONTRIBUTING.md](CONTRIBUTING.md) for contribution requirements and
+[Releasing](docs/wiki/Releasing.md) for release gates.
 
 ## License
 
-[MIT](LICENSE) &mdash; free to use, modify, and distribute.
+[MIT](LICENSE).

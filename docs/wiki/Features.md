@@ -1,84 +1,101 @@
 # Features
 
-## Terminal Shell
+This is a workflow overview for **v2.1.0**, not a promise that every inherited
+route has live data. The [surface inventory](Surface-Inventory.md) defines
+supported, gated, experimental and hidden areas; [Limitations](Limitations.md)
+records provider gaps.
 
-- Command Bar (GO) with command parsing, fuzzy lookup, and keyboard shortcuts
-- TickerTape for rolling market pulse
-- MarketStatusBar with clock/status/connection telemetry
-- Theme engine (Terminal Noir, classic, light, custom accent)
+## Cross-market research
 
-## Launchpad
+The contextual **Market context** page lets you choose an asset and market
+proxies, then inspect actual shared-close paths, returns, coverage and source
+metadata. It is separate from the chart Compare tool. Optional exchange-local,
+Yahoo-adjusted and reporting-currency views preserve their own date/unit limits.
 
-- Multi-panel grid workspace
-- Panel linking for shared symbol context and chart sync
-- Layout presets + popout support
+On-demand panels add dated news, descriptive technical measures, fundamentals,
+economic-calendar and US/euro-area macro observations. They do not automatically
+explain a move. v2.1 adds **Check source filing** for selected SEC facts, matching
+the official filing instance's exact issuer, concept, unit and fiscal duration.
+Conflicts, absent coverage and provider failures remain distinct.
 
-## Security Hub
+Follow [Research Workflows](Research-Workflows.md) for entry points, source-check
+outcomes and configuration. Cross-market context remains classified experimental;
+it is not automatic relationship discovery or a full historical information set.
 
-- Tabbed DES-style ticker view
-- Overview, Financials, Chart, News, Ownership, Estimates, Peers, ESG
-- Lazy-loading tab data + dense rendering
+## Notes and private Second Brain
 
-## Charting
+- Owner-scoped Notes, Journal, portfolio theses and position/transaction notes
+  feed retrieval with source-type filters and dated citations.
+- Effective dates distinguish when information applies from when it was recorded.
+  Bounded recency weighting operates among semantically relevant candidates.
+- Progressive synthesis, explicit fallback states and visible reindex progress
+  keep model and indexing availability inspectable.
+- **Brain Log** saves completed answers as immutable, cited memos with editable
+  organization fields. Memos are not reindexed by default.
+- **Promote to Note** creates a separately reviewed source; memo evidence checks
+  report source changes without rewriting the saved answer.
+- Scoped API keys support deliberate Hermes-style note upserts, not a general
+  MCP server or automatic external-corpus ingestion.
 
-- Unified chart components for stock/workstation/comparison/security views
-- Crosshair sync groups
-- Volume profile overlay (VPOC + value area)
-- Drawing persistence and template APIs
-- Right-click quick action: Add to Portfolio
+## Portfolio and Journal
 
-## Screener
+Portfolio Manager supplies per-user holdings and transactions, ledger-derived
+cash, explicit native/cost/fee currencies and a reporting base currency. Shared
+backend accounting uses dated FX evidence and marks dependent results partial
+when denomination or rates are unavailable. Legacy unknown currencies can be
+repaired through focused row actions.
 
-- Multi-market scan (NSE/NYSE/NASDAQ)
-- Presets + formula mode
-- DenseTable-backed result grid
-- Actions: Add to Watchlist / Add to Portfolio
+Supported historical risk, benchmark and attribution views model the current
+open basket. They are not complete closed-position or cash-flow-adjusted ledger
+performance. Attribution separates security, FX and interaction returns.
 
-## Portfolio
+Journal records rationale, setup, emotion, outcomes and an explicitly requested
+gap review. It currently remains separate from Portfolio transactions; execution
+linking/creation is planned, not shipped.
 
-- Multi-portfolio CRUD
-- Holdings + transactions
-- Analytics endpoint with allocation, PnL, annualized return, Sharpe, max drawdown
-- Manager UI with summary cards and tables
+## Terminal shell and charts
 
-## News & Alerts
+GO bar, command palette, ticker tape, saved views and Launchpad panels organize
+the terminal. Security Hub provides ticker-centric research; the chart workstation
+supports linked panels, indicators, drawings and volume profile. Screens, quotes
+and history follow selected markets and available providers.
 
-- Realtime/news ingestion services
-- Sentiment labels and trend visualization
-- Scanner alert rules + scheduler-backed evaluation
+## Markets, news and alerts
 
-## Economics & Macro
+US/EU equity and crypto workflows combine instrument search, charts, screening,
+watchlists, news and alerts. Crypto fundamentals add CoinGecko supply/valuation
+and DefiLlama usage evidence; Binance supplies available live spot ticks.
 
-- **Economic Calendar**: Month/week view of global events with impact coding and country filtering.
-- **Macro Dashboard**: Cross-region tracking (US, India, EU, China) for GDP, CPI, unemployment, and rates.
-- **Yield Curve**: Interactive US Treasury yield curve dashboard with historical overlays and inversion detection.
+News retains classical sentiment and offers explicit model scoring of visible
+headline batches with labelled fallback. Model-backed emotion and AI insight
+cards require a compatible running service, local or hosted.
 
-## AI & Research
+India F&O needs configured providers. Macro/yield and commodities have their own
+key gates. Calendar coverage may remain unavailable even with keys; comparison
+panels never substitute legacy sample events. ETF holdings/overlap are retained
+while fund flows remain unavailable. Hidden compatibility feeds are not live
+product promises.
 
-- **AI Research Copilot**: NLQ engine supporting natural language questions for data lookup, comparisons, and chart commands.
-- **Screener Integration**: AI-driven filter generation based on natural language queries.
-- **Research Panel**: Persistent AI chat interface in the Launchpad.
+## Backtesting and quantitative tools
 
-## Sector Analysis
+Backtesting offers strategy jobs, result views and analytics over available
+history. Pair Trading and Statistical Lab retain real-data computation contracts;
+experimental factor/model tools keep their narrower classification. Historical
+data availability, adjustments and execution assumptions constrain interpretation;
+this is not a blanket guarantee of look-ahead-free fundamentals or broker fills.
 
-- **Sector Rotation (RRG)**: Visual Relative Rotation Graph implementation for tracking sector leadership cycles.
-- **Trailing Paths**: Visual trails showing rotation momentum over the last 12 weeks.
+## Platform and verification
 
-## Advanced Data Handling
+FastAPI and React/Vite run in a combined Docker image with PostgreSQL/pgvector,
+SQLite compatibility and Redis cache/quote distribution. OpenAI-compatible model
+configuration supports local or hosted inference; only local chat and embedding
+configuration keeps that inference on the operator's infrastructure.
 
-- **Redis Quote Bus**: Pub/Sub architecture for horizontally scalable realtime quote distribution.
-- **Distributed Aggregation**: Shared 1-min bar construction role with Redis distributed locking.
-- **Multi-Watchlist System**: Named watchlist management with dynamic **Heatmap** treemap mode.
+CI checks backend compile/tests/coverage, integrity and generated-API guards,
+frontend build/Vitest, deterministic browser smoke, disposable PostgreSQL
+contracts and a fresh Compose installation. Locally, `make gate` and the separate
+browser smoke command are documented in [Contributing](Contributing.md).
 
-## Backtesting
-
-- **Intraday Backtesting**: High-resolution (1m, 5m, 1h) testing with session-aware logic.
-- **Vectorized Engine**: Performance-first NumPy implementation for processing large historical datasets.
-
-## Platform
-
-- FastAPI backend + React/Vite frontend
-- Docker compose deployment
-- CI with backend compile/pytest, integrity guards, frontend build, and Vitest;
-  Playwright is currently manual-only
-- **Redis Integration**: Required for quote distribution and bar aggregation.
+The backend serves Swagger UI at `/docs` and its schema at `/openapi.json`.
+Use the [generated API reference](../API_REFERENCE.md) for per-operation
+authentication and support state.

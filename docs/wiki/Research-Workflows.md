@@ -1,0 +1,154 @@
+# Research workflows
+
+This guide covers the shipped v2.1 research journey: compare market context,
+inspect selected SEC evidence, ask questions of private notes, and save an
+answer without turning generated prose into an unquestioned source. It does
+not describe automatic trading or a complete historical archive.
+
+## Cross-market context
+
+Open **Market context** from equity research, the Security Hub or crypto detail.
+The contextual page is `/equity/market-context`, distinct from the older
+`/equity/compare` chart comparison. Select an anchor, choose a one-, three- or
+six-month window, and add market proxies through ticker suggestions.
+
+Inspect actual shared-close dates, sources, quote units and overlap before
+interpreting return differences. The main indexed path uses actual shared
+dates, not interpolated observations. Crypto weekends, exchange timezones and
+price-adjustment coverage can change what a comparison means. Separate
+exchange-local, Yahoo-adjusted and reporting-currency views do not replace the
+primary native-quote result; unavailable evidence stays unavailable.
+
+Request optional news, fundamentals, technical, calendar or macro evidence
+independently. These panels can fail without invalidating an available price
+comparison. US FRED observations require `FRED_API_KEY`; the bounded euro-area
+Eurostat/ECB context is keyless. Macro reference months are not publication
+dates, and global observations are not automatically relevant to a ticker.
+
+The page supplies descriptive context, not causation, a recommendation or an
+automatically selected relationship. See [Limitations](Limitations.md) for the
+evidence contracts and [Surface Inventory](Surface-Inventory.md) for its
+experimental classification.
+
+## Check a selected SEC fact
+
+The host must set `SEC_USER_AGENT` to identify its application/operator and a
+real contact email, for example `OpenTerminalUI operator@example.com`. This is
+identification, not a paid provider key. Compose passes it to the backend;
+recreate the backend after changing its environment. The
+[environment template](../../.env.example) includes the setting.
+
+1. Open an equity comparison and request its SEC filed facts.
+2. Choose **Check source filing** under a fact or same-period differing
+   disclosure. Opening the facts panel alone does not run these checks.
+3. Inspect selected and observed values, exact fiscal period, unit, form and
+   accession. Follow **Open SEC filing** or **Open XBRL source** for evidence.
+4. Read the outcome and check time. **Check again** or **Retry source check**
+   starts a fresh check; **Refresh SEC facts** handles claims no longer present
+   in the current Company Facts response.
+
+The JWT-authenticated API is `POST /api/market-context/sec-filing-fact-check`.
+It rechecks exact ticker/CIK identity and current aggregate membership, then
+reads the official filing index and its listed XBRL instance. XBRL is the
+machine-readable tagged financial data accompanying a filing. Coverage is
+bounded to selected standard US-GAAP concepts and 10-K/10-Q forms, including
+amendments, with document-size and parsing limits.
+
+**Corroborated** means the checked instance supports the value for the exact
+company-wide concept, unit and fiscal duration. Differing or conflicting values,
+no exact fact, unsupported format, unreadable data, missing identity/configuration
+and provider failure have distinct results. A failed check leaves the original
+claim unverified, not disproved. An index entry alone is not corroboration.
+
+Checks may take up to a minute. The browser allows 60 seconds for a backend
+operation bounded to 45 seconds; unmounting cancels the browser request.
+Focus/reconnect events do not silently re-run it. SEC acceptance metadata may
+be unknown and is not proof of dissemination time. No outcome establishes
+revision order or what investors knew at a past trading time.
+
+## Ask the private Second Brain
+
+Capture sources in **Notes** (`/equity/notes`), **Journal** (`/equity/journal`),
+or Portfolio Manager's thesis and holding/transaction note fields. Set a Note's
+effective date when information applies to a different time than capture.
+Ingestion time is not source time.
+
+Open **Second Brain** (`/equity/brain`), inspect indexing status, select source
+types if needed and ask a question. Incremental indexing is queued after note
+writes; a successful save does not mean the text is already embedded. Manual
+reindexing exposes progress and final chunk counts.
+
+Retrieval considers semantic relevance before applying a bounded recency signal.
+Dated citations distinguish current views from previous theses. Chronology helps
+synthesis handle conflicts, but does not prove a newer note is correct or
+formally supersedes every older source. Model availability and quality still
+matter. The [retrieval evaluation guide](Brain-Retrieval-Evaluation.md) describes
+read-only evaluation against a private corpus.
+
+Brain retrieval uses the owner's recorded research, including deliberate
+external-note imports. Comparison evidence panels do not automatically become
+its corpus or a unified cross-market AI explanation.
+
+## Save an answer in the Brain Log
+
+Choose **Save answer** after synthesis completes. A memo preserves the question,
+answer, source scope, dated citation/content snapshots and model provenance.
+Title, tags, annotation, symbol and pin state can be organized; the synthesis
+snapshot is immutable.
+
+Opening a memo compares cited chunk identities against current source records
+and marks matching, changed, unavailable or unverifiable evidence. It does not
+rewrite the answer or fact-check its conclusions, and does not require a
+completed reindex.
+
+Memos stay out of retrieval by default. **Promote to Note** opens a separate,
+editable draft for review and confirmation; only that Note becomes evidence
+and retains its source-memo link. Theses and Journal remain user-owned records,
+not automatic destinations for generated answers.
+
+JWT-authenticated clients use `/api/brain/memos`, including per-memo
+`/evidence-status` and `/promote-to-note` operations. Use the generated schema
+for exact payloads; external-note keys do not grant general Brain access.
+
+## External note ingestion
+
+In **Settings → API Keys**, create a key with **Read + external notes**
+(`read_write`) permission. Save its secret when shown. Provider credentials
+and SEC identification are managed separately on the host.
+
+```bash
+curl -X PUT http://localhost:8000/api/v1/notes/external \
+  -H "X-API-Key: otui_..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "source": "youtube",
+    "external_id": "video-example-001",
+    "title": "Selected video summary",
+    "body": "Summary, source URL and key points selected for private research.",
+    "effective_at": "2026-10-18T14:30:00Z",
+    "tags": ["youtube", "hermes"]
+  }'
+```
+
+The same owner, `source` and `external_id` update the same note on retries.
+`source` allows up to 16 URL-safe characters, `external_id` up to 38, and `body`
+up to 10,000. Supply a timezone-aware `effective_at` when known rather than
+treating arrival time as publication time. Successful writes schedule normal
+incremental indexing. This is deliberate ingestion, not an automatic crawler
+or general MCP interface.
+
+## Keep execution records and interpretation separate
+
+Portfolio transactions are the ledger for quantities, cash, fees and currencies.
+Journal records strategy, rationale, emotions and review; today it does not
+automatically create or match Portfolio transactions. Selecting executions and
+creating missing ones from Journal is an unscheduled [roadmap bridge](Roadmap.md).
+A Brain memo is a dated synthesis, not an execution record.
+
+## API reference
+
+The backend serves Swagger UI at `/docs` and its schema at `/openapi.json`.
+The checked-in [API reference](../API_REFERENCE.md) and
+[OpenAPI JSON](../openapi.json) include authentication and surface classification.
+Use each operation's JWT or scoped API-key contract; a notes-ingestion key is
+not permission to call arbitrary browser APIs.

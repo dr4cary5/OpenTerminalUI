@@ -76,7 +76,7 @@ never silently faked.
   `^NSEI`, …) shows price / chart / performance + notes; issuer fundamentals
   (P/E, financials, peers, shareholding) are intentionally hidden because they
   don't apply to an index.
-- **Cross-market comparison is experimental and price-only.** The read-only
+- **Cross-market comparison is experimental and descriptive.** The read-only
   comparison API aligns each selected proxy with an anchor on common UTC daily
   close dates and exposes stale, missing, and insufficient-overlap states. It
   returns native-quote percentage moves, without FX normalization or a claim
@@ -101,8 +101,8 @@ never silently faked.
   An optional reporting-currency result uses only the shared start/end closes
   and historical FX rates when both selected Yahoo chart quote units are
   supported currencies. It discloses four dated rates and withholds results for
-  unknown/subunit units or missing rates. This is not a converted daily path,
-  verified currency denomination, or adjusted/portfolio performance.
+  unknown/subunit units or missing rates. That endpoint-only result is not a
+  converted daily path, verified denomination, or adjusted/portfolio performance.
   A separate inspectable FX-converted indexed path is available only with
   rates on every original shared date. Missing interior rates withhold the
   full path without dropping dates, even if endpoint returns remain available;
@@ -245,7 +245,8 @@ never silently faked.
   The selected Yahoo chart's reported quote unit is displayed when present,
   including non-ISO units. Other feeds or missing metadata remain unknown.
   The label does not verify the price denomination or supply an FX rate; the
-  comparison still does not calculate base-currency performance.
+  quote label alone does not calculate base-currency performance; the optional
+  FX views have their own dated-rate and supported-unit requirements.
   A separate provider-close own-date view uses each asset's available UTC closes
   within that same pair window and reports dates beyond pair overlap, including
   crypto weekends. It does not alter the paired comparison or certify that

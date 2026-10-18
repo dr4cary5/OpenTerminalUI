@@ -30,11 +30,15 @@ npm run dev --prefix frontend
 make gate
 ```
 
-The gate matches the regular CI contract: production-mock, surface-inventory,
+The local gate runs production-mock, surface-inventory,
 and generated API-reference guards, backend compile and pytest with the 45%
-coverage floor, frontend build, Vitest, and the deterministic Chromium `@smoke`
-set. Broader inherited Playwright journeys stay manual while their fixtures are
-rewritten:
+coverage floor, frontend build and Vitest. Run browser smoke separately with
+`npm run test:e2e:smoke --prefix frontend`; installed Chrome can be selected with
+`PLAYWRIGHT_EXECUTABLE_PATH` (see the [browser guide](../../frontend/tests/e2e/README.md)).
+CI additionally runs smoke, disposable PostgreSQL contracts and a fresh-install
+gate. Do not repurpose the CI-only teardown script against a deployment host.
+
+Broader inherited Playwright journeys stay manual while fixtures are rewritten:
 
 ```bash
 npm run test:e2e --prefix frontend

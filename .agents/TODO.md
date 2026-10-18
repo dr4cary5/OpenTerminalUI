@@ -1,10 +1,11 @@
 # Current project state and backlog
 
-Last release-prep audit: **2026-10-18**, from `main` at `09f7add` (through
-PR #215). **v2.0.0** remains the latest published tag at `7e467df`.
-The bounded v2.1 filing verification API, browser integration, configured host
-acceptance and local release checks are complete; PR/CI review and publication
-remain.
+Last post-release audit: **2026-10-18**, against **v2.1.0** at `a1efc0c`.
+The bounded filing-verification API, browser journey, configured host acceptance,
+local checks and all release-prep CI jobs are complete. PR #216 merged and the
+maintainer authorized tag/GitHub publication. No v2.1 release task remains.
+README/wiki reconciliation is the post-release follow-up; later v2.x scope
+still needs an explicit selection rather than automatic backlog execution.
 
 This is a handoff, not an immutable roadmap. Before taking an item, verify it
 against recent Git history, code, and tests. Move shipped work to the completed
@@ -408,7 +409,7 @@ v2.x work, not an implicit queue of pre-release PRs.
       blocker when the UI reports it honestly. Tag and publish only after this
       acceptance and any required fixes.
 
-### v2.1 release candidate — filing-grounded US fundamentals
+### v2.1.0 released — filing-grounded US fundamentals
 
 This starts **after v2.0 release**, not as another v2.0 gate. Keep the existing
 SEC concept, form, and exact ticker/CIK limits; do not broaden provider coverage
@@ -464,12 +465,19 @@ to make this milestone appear complete.
       Backend: 1,074 passed/one skipped, 74.24% coverage. Frontend: 389 passed.
       Production build, three Chrome smoke tests, compile, mock guard, surface
       inventory, generated-contract check and Compose configuration all pass.
-- [ ] Complete normal release-prep PR/CI review, including CI's clean-install
-      and disposable PostgreSQL contract jobs, and merge the preparation PR.
-- [ ] After release-prep merge and explicit maintainer release authorization,
-      tag and publish v2.1.0. Do not treat metadata preparation as publication.
+- [x] Complete normal release-prep PR/CI review, including CI's clean-install
+      and disposable PostgreSQL contract jobs, and merge preparation PR #216.
+- [x] After explicit maintainer release authorization, tag and publish v2.1.0
+      from `a1efc0c` on 2026-10-18.
+- [x] Reconcile the README, current wiki and agent handoff with the published
+      release, including research entry points, API/auth boundaries, provider
+      configuration, portfolio limitations and actual local/CI test commands.
 
-### v2 next — first cross-market evidence slice
+### v2 evidence implementation ledger — shipped work and later gaps
+
+The completed entries below shipped in v2.0/v2.1. Unchecked entries remain later
+v2.x candidates, not an approved v2.2 plan. Agree the next bounded outcome and
+its acceptance gate with the maintainer before starting feature work.
 
 - [x] Add an experimental, authenticated comparison API for one anchor and
       selected market proxies. It aligns daily closes by shared UTC dates,
