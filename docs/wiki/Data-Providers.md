@@ -1,137 +1,106 @@
-# Data Providers
+# Data providers
 
-OpenTerminalUI uses a **multi-provider waterfall architecture** — each data request tries the highest-quality provider first, and falls back automatically on failure. This ensures resilience against rate limits, scraping breakage, and API outages.
+Provider selection is workflow- and instrument-specific; not every panel uses
+the same fallback chain. Available history, entitlement, throttling and upstream
+formats can all limit coverage. Keyless access is not an availability guarantee,
+and knowing a provider does not establish price accuracy or historical vintage.
 
-Generic equity requests follow the user's selected market. When no usable
-market is supplied, the fork-wide fallback is **US/NASDAQ** with USD and SPY
-benchmark semantics. India remains an explicit **NSE/BSE** context with INR and
-NIFTY semantics; India-specific F&O routes are unaffected by the global
-fallback.
+Generic equity workflows default to US/NASDAQ when no usable market is supplied.
+Explicit India selections retain NSE/BSE, INR and their intended benchmarks.
+EU/UK Yahoo suffixes such as `.L`, `.DE` and `.PA` bypass the India path.
 
----
+## Markets and search
 
-## India Providers
+| Provider/source | Retained role | Configuration |
+|---|---|---|
+| Nasdaq Trader listings, pytickersymbols, CoinGecko | US, EU/UK and crypto instrument universe, with Yahoo long-tail search | Keyless paths; optional CoinGecko demo key |
+| Yahoo Finance | Quotes, chart/history fallbacks and corporate actions; EU symbols retain exchange suffixes | No provider key; unofficial access may fail or throttle |
+| FMP | Selected equity history, fundamentals, earnings, commodities and calendar paths | `FMP_API_KEY`; coverage depends on endpoint/plan |
+| Finnhub | US live ticks and selected REST/calendar/candle fallbacks | `FINNHUB_API_KEY`; subscriptions and access are provider-dependent |
+| CoinGecko | Crypto search, market/valuation/supply data and candle paths | Optional `COINGECKO_API_KEY` |
+| Binance | Available public crypto spot streams and selected derivatives/depth data | `OPENTERMINALUI_BINANCE_WS_ENABLED` controls spot ticks |
+| DefiLlama | Crypto usage context such as TVL and fees | Keyless |
+| Zerodha Kite | Intentional India real-time/history/F&O workflows | `KITE_API_KEY`, `KITE_API_SECRET`, `KITE_ACCESS_TOKEN` |
+| Direct NSE website | Opt-in compatibility for selected India data | `OPENTERMINALUI_NSE_PUBLIC_ENABLED=1` |
 
-| Provider | Role | Data Types | Rate Limit | SLA | Auth Required |
-|---|---|---|---|---|---|
-| **Zerodha Kite** | Primary | Real-time ticks, OHLCV historical (all intervals) | ~3 req/s REST; ~60,000 ticks/day WS | Yes — Zerodha brokerage account | `KITE_API_KEY`, `KITE_API_SECRET`, `KITE_ACCESS_TOKEN` |
-| **yfinance** | Fallback | OHLCV historical (`RELIANCE.NS`, `TCS.NS` format) | ~2,000 calls/day per IP (unofficial) | None — scraping-based | None |
-| **Direct NSE website** | Opt-in compatibility | F&O, OI, PCR, selected corporate actions through NSEPython/direct clients | Undocumented and frequently blocked | None — scraping-based | `OPENTERMINALUI_NSE_PUBLIC_ENABLED=1` |
+Direct unauthenticated NSE requests are off by default. The first opted-in
+HTTP 403 opens a process-level circuit; do not keep refreshing a blocked
+session. Prefer configured Kite or applicable Yahoo `.NS`/`.BO` data.
 
-Direct unauthenticated NSE access is disabled by default and opens a
-process-level circuit after the first HTTP 403. India workflows should prefer
-configured Kite or Yahoo `.NS` data where applicable.
+The instrument universe auto-seeds and periodically refreshes according to
+`OPENTERMINALUI_INSTRUMENT_AUTOSEED` and
+`OPENTERMINALUI_INSTRUMENT_REFRESH_HOURS`. Sources refresh independently so a
+failed source does not wipe existing listings. Search suggestions do not
+guarantee a provider can supply usable chart history.
 
----
+## Comparison fundamentals and macro evidence
 
-## US & EU Providers
+| Source | Bounded comparison role | Configuration and limits |
+|---|---|---|
+| SEC EDGAR | Current Company Facts, submission metadata and v2.1 selected source-filing checks | `SEC_USER_AGENT` identifies app/operator and real contact email; exact ticker/CIK and selected concepts/forms only |
+| FMP fundamentals | Source-dated current-feed candidates and explicit owner captures | `FMP_API_KEY`; not a complete revision archive |
+| FRED | US reference-period observations and optional pair-end daily real-time checks | `FRED_API_KEY`; daily provider intervals are not intraday dissemination records |
+| Eurostat | Selected current euro-area HICP/unemployment, first-published HICP and bounded unemployment archive checks | Keyless; archive gaps, flags and composition changes remain explicit |
+| ECB | Selected euro-area deposit facility rate | Keyless; observation dates do not establish asset-specific causation |
+| Finnhub/FMP calendar | Explicit requests for events in the pair window | Keys and usable provider coverage required; no sample substitution |
 
-| Provider | Role | Data Types | Rate Limit | SLA | Auth Required |
-|---|---|---|---|---|---|
-| **FMP (Financial Modeling Prep)** | Primary historical | OHLCV, fundamentals, earnings, news | 250 calls/day (free tier); paid plans available | Yes — REST API with documented uptime | `FMP_API_KEY` |
-| **Finnhub** | Real-time WS + REST fallback | Real-time ticks (WebSocket), OHLCV, news | 60 calls/min REST; 50 symbol WS (free tier) | Yes — commercial API | `FINNHUB_API_KEY` |
-| **yfinance** | Last resort | OHLCV historical | ~2,000 calls/day per IP | None — scraping-based | None |
+SEC requests are opt-in and process-locally paced, not a deployment-wide archive
+crawler. A source-filing check reads the official filing index and listed XBRL
+instance, with 2 MiB/12 MiB document limits, XML complexity limits and a 45-second
+deadline. Corroboration requires exact company-wide concept, unit, fiscal
+duration and value; an accession appearing in an index is insufficient.
+[Research Workflows](Research-Workflows.md) explains the UI and API outcomes.
 
-EU/UK equities route through **yfinance** using home-exchange Yahoo suffixes
-(`.L` LSE, `.DE` XETRA, `.PA` Euronext Paris, `.SW` SIX, `.MI` Borsa Italiana,
-etc.); these symbols are classified deterministically and bypass the India path,
-so no broker account is needed for European coverage.
+Macro context is global, not automatically selected for the ticker. A reference
+month, filing date, acceptance timestamp and terminal retrieval time are
+different evidence. None alone proves what an investor knew at a past time.
+See [Limitations](Limitations.md) for precise panel coverage.
 
----
+## FX valuation
 
-## Crypto Providers
+Portfolio accounting resolves USD, EUR, GBP, JPY, CHF, AUD, CAD and INR pairs from
+Yahoo daily FX charts, trying the inverse pair when necessary. Configured
+Finnhub/OANDA candles are the fallback. Dated valuation chooses the last close
+on or before the requested date, accepting gaps up to seven days; historical
+analytics batch required dates per pair. Missing conversion makes dependent
+totals partial rather than assuming parity.
 
-| Provider | Role | Data Types | Rate Limit | SLA | Auth Required |
-|---|---|---|---|---|---|
-| **CoinGecko** | Primary | Universe + market caps, symbol search, OHLC candles | ~30 calls/min (keyless free tier); higher with a demo key | None — public REST | Optional `COINGECKO_API_KEY` (demo key) |
-| **Binance** | Real-time WS | Live spot ticks (`<pair>@ticker` — 24h price + change %) | Public WS, no key | None — public WebSocket | None |
-| **yfinance** | Candle fallback | OHLCV for majors (`BTC-USD` format) | ~2,000 calls/day per IP | None — scraping-based | None |
+Comparison reporting-currency views are separate: they require supported quote
+units and dated rates on the relevant endpoints or every original shared date
+for a full path. They are not a replacement for portfolio ledger accounting.
 
-Crypto symbols use the `BASE-USD` convention (e.g. `BTC-USD`). CoinGecko backs the
-universe, symbol search, and the long-tail candle fallback; Binance provides the
-live spot ticks (toggle with `OPENTERMINALUI_BINANCE_WS_ENABLED`, default on).
+## Caches and resilience
 
----
+Chart caches reduce repeated provider calls. Some are SQLite sidecars even on a
+PostgreSQL application deployment; Redis provides shared cache/quote distribution.
+TTL, backoff, circuit breakers and explicit degradation must be preserved when
+changing adapters. Do not cache provider 429/5xx responses as successful data.
 
-## FX valuation providers
+Set `OPENTERMINALUI_PREFETCH_ENABLED=1` only when deliberate cache warming is
+wanted. Quotas, delays, commercial terms and entitlement change by provider:
+check the operator's actual plan rather than treating a hard-coded free-tier
+quota or an old QC report as an SLA.
 
-Portfolio accounting resolves USD, EUR, GBP, JPY, CHF, AUD, CAD, and INR pairs
-from Yahoo daily FX charts, trying the inverse pair when necessary. Configured
-Finnhub/OANDA candles are the fallback. Historical valuation selects the last
-close on or before the requested date, accepts normal weekend/holiday gaps up to
-seven days, and caches each chart. Historical analytics batch all required dates
-for a currency pair into one chart lookup. If no supported rate is available,
-dependent portfolio totals and analytics are marked partial rather than using
-parity or a seeded rate.
+## Model providers and privacy
 
----
+The shared client uses an OpenAI-compatible endpoint, defaulting to local Ollama.
+Chat and embeddings must both be local to keep that inference on the operator's
+infrastructure. Hosted configuration sends selected prompts/evidence to the
+configured provider. Embeddings and synthesis have distinct capability/fallback
+requirements; model unavailability is not permission to invent a result.
 
-## Provider Risk Register
+## Operator notes
 
-Condensed from `QC_MASTER_PLAN.md`:
+Configure market/model credentials in the host environment, not browser
+automation-key settings. Copy the [environment template](../../.env.example),
+replace example credentials, and recreate/restart the backend as appropriate.
 
-| Provider | Risk | Severity | Mitigation |
-|---|---|---|---|
-| Kite | Daily access token expiry | High | Automate morning token refresh; app logs clear auth error |
-| Kite | Rate limit (3 req/s) | Medium | Retry with exponential backoff; OHLCV cache absorbs repeated requests |
-| Finnhub WS | 50-symbol free tier cap | Medium | Subscribe only to active watchlist symbols; upgrade plan for more |
-| Finnhub WS | WebSocket schema change | Low | Version-pin client; CI smoke test covers WS message parsing |
-| FMP | 250 calls/day free tier | High | Cache all responses (TTL 900s default); switch to paid plan for production |
-| FMP | 15-minute delayed data | Medium | Document delay; use Kite/Finnhub for real-time use cases |
-| yfinance | No SLA, scraping-based | High | Only used as last resort; log when activated; do not depend on for production |
-| yfinance | ~2K calls/day per IP | Medium | Only triggered on fallback; add IP rotation if needed for batch jobs |
-| Direct NSE website | Scraping-based, geoblocked, or schema-changing | High | Disabled by default; first 403 opens a process circuit; keep CI network-free with mocks |
-| CoinGecko | Keyless free-tier rate limit (~30/min) | Medium | Cache universe + candles; add `COINGECKO_API_KEY` demo key to raise limit |
-| Binance WS | Public-endpoint schema/geo changes | Low | Polling fallback when WS down; disable via `OPENTERMINALUI_BINANCE_WS_ENABLED=false` |
+Kite access tokens expire regularly; renewing credentials is a host/operator
+workflow, not a supplied autonomous broker integration. Never commit tokens,
+contact secrets or `.env` contents. General provider acquisition, live economic
+calendar reliability and paid US/EU Level-2 adapters remain unscheduled gaps.
 
----
-
-## OHLCV Cache
-
-All chart data responses are cached to reduce upstream API load:
-
-- **Primary cache:** SQLite via `backend/db/ohlcv_cache.py` — per-symbol, per-interval cache with configurable TTL (default 900 seconds via `CHART_CACHE_TTL` env var)
-- **L2 cache (optional):** Redis — set `REDIS_URL` in `.env` to enable. Falls back to SQLite if Redis is unavailable.
-- **Cache invalidation:** TTL-based expiry. Live candles from the WebSocket stream update in-memory state without touching the cache.
-- **Cache warming:** Set `OPENTERMINALUI_PREFETCH_ENABLED=1` to enable background prefetch for configured symbols on startup.
-
----
-
-## Adding a New Provider
-
-1. Create a class in `backend/providers/` implementing the provider interface:
-
-```python
-class MyProvider:
-    async def get_ohlcv(
-        self,
-        symbol: str,
-        interval: str,        # "1m", "5m", "1h", "1d", etc.
-        from_ts: int,
-        to_ts: int,
-    ) -> list[OHLCVBar]:
-        ...
-```
-
-2. Register it in `backend/providers/chart_data.py` in the appropriate waterfall chain (India, US/EU, or crypto).
-
-3. Add a mock for CI in `backend/tests/mocks/mock_<provider>.py` following the pattern in `mock_kite.py`.
-
-4. Write at least one test in `backend/tests/test_chart_data_provider.py` covering the new provider's happy path and error/fallback path.
-
----
-
-## Kite Token Refresh
-
-Zerodha Kite access tokens expire daily at midnight IST. To refresh:
-
-1. Log in to [kite.trade](https://kite.trade) and complete the OAuth flow.
-2. Copy the new `access_token` from the redirect URL or your Kite developer app dashboard.
-3. Update `KITE_ACCESS_TOKEN` in your `.env` file.
-4. Restart the backend (`docker compose restart backend` or restart uvicorn).
-
-The backend will log a clear `KiteException: TokenExpired` error if the token has expired, so monitoring is straightforward.
-
-Automated credential refresh is deployment-specific and is not supplied by this
-repository. Keep any host automation outside source control and never commit the
-resulting token or `.env` file.
+For a new adapter, inspect the actual consumer and tests first: fallback
+contracts differ across charting, comparisons, accounting and optional evidence.
+Update [surface classification](Surface-Inventory.md), configuration docs and
+generated API contracts when public behavior changes.

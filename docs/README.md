@@ -9,6 +9,7 @@ contract.
 | Need | Source |
 |---|---|
 | Product overview and quick start | [`../README.md`](../README.md) |
+| Comparison/SEC checks, Second Brain, Brain Log and external ingestion | [`wiki/Research-Workflows.md`](wiki/Research-Workflows.md) |
 | Fresh Docker installation | [`INSTALLATION.md`](INSTALLATION.md) |
 | Contributor setup and checks | [`../CONTRIBUTING.md`](../CONTRIBUTING.md) |
 | Architecture | [`wiki/Architecture.md`](wiki/Architecture.md) |

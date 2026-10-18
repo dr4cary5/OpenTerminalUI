@@ -183,7 +183,7 @@ Automatic relationship discovery, portfolio-wide context, grounded AI market
 interpretation, and deeper historical evidence contracts are later milestones,
 not v2.0 release gates.
 
-### v2.1.0 verification ledger (release preparation)
+### v2.1.0 verification ledger (released)
 
 The bounded milestone checks selected current SEC Company Facts values against
 their own filing's XBRL instance, with exact issuer, concept, unit and fiscal
@@ -212,9 +212,11 @@ configuration validation. Local smoke used installed Chrome through
 `PLAYWRIGHT_EXECUTABLE_PATH`; CI keeps the bundled Chromium gate. Clean-install
 and disposable PostgreSQL contract verification remain CI jobs.
 
-Normal CI/PR review and explicit maintainer release authorization precede the
-tag and GitHub release; the published release remains v2.0.0 until those steps
-complete.
+Release-prep PR #216 passed `build-and-test`, `clean-install` and
+`postgres-contract`, then merged. After explicit maintainer release authorization,
+the annotated tag and [GitHub release v2.1.0](https://github.com/laanito/OpenTerminalUI/releases/tag/v2.1.0)
+were published from `a1efc0c` on 2026-10-18. Publication is complete; the broader
+v2.x evidence backlog is not part of this release gate.
 
 ## Cutting the release
 

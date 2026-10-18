@@ -97,6 +97,9 @@ responses rather than fabricate values.
 
 ## AI and private research
 
+The [research workflow guide](Research-Workflows.md) documents the browser entry
+points and how source records, derived memos and external ingestion differ.
+
 `backend/services/llm_client.py` talks to OpenAI-compatible endpoints. The
 default is local Ollama; LM Studio and hosted providers can be selected through
 configuration. Notes, journal entries, portfolio theses, holding notes, and
@@ -115,8 +118,28 @@ Explicitly saved answers use the separate `brain_memos` store behind
 `/api/brain/memos`. A memo is an immutable snapshot of the question, answer,
 evidence scope, dated citations/content identities, generation time, and model
 provenance; only owner-managed organization fields can change. This table is not
-an indexing source. A later reviewed promotion may create a Note, but saving a
-memo alone never feeds derived model prose back into retrieval.
+an indexing source. An explicitly reviewed promotion can create a Note, but saving a
+memo alone never feeds derived model prose back into retrieval. The browser's
+reviewed **Promote to Note** action now implements that transition; memo
+`/evidence-status` checks compare cited identities against current records without
+requiring the embedding index or rewriting the historical answer.
+
+## Cross-market evidence
+
+`backend/api/routes/market_context.py` composes the selected comparison, with
+separate evidence routes such as `market_sec_facts.py`. Price paths and optional
+news, technical, fundamentals and macro panels retain distinct dates, units and
+coverage. They are not automatically indexed into private Brain retrieval.
+
+The v2.1 SEC filing check is a JWT-authenticated, opt-in request. It revalidates
+the current selected Company Facts claim and exact issuer, then
+`sec_filing_verification.py` coordinates official index/instance retrieval and
+`sec_filing_evidence.py` parses exact concept/unit/fiscal-context evidence.
+`sec_edgar_client.py` enforces SEC identification and request pacing. Document
+size, XML complexity and a 45-second operation deadline bound the work.
+`SecFilingFactCheck.tsx` exposes the result with source links, a 60-second browser
+deadline, cancellation and manual retries. No filing-check persistence, new
+database migration or complete historical-vintage archive is introduced.
 
 ## Frontend structure
 
@@ -146,6 +169,8 @@ because a direct route still exists.
 | LLM client | `backend/services/llm_client.py` |
 | Second Brain | `backend/services/brain/` |
 | Brain Log persistence | `backend/models/brain_memo.py`, `backend/api/routes/brain_memos.py` |
+| Cross-market comparison | `backend/api/routes/market_context.py`, `frontend/src/pages/MarketContextPage.tsx` |
+| SEC filing checks | `backend/services/sec_filing_verification.py`, `backend/services/sec_filing_evidence.py` |
 | Frontend routes | `frontend/src/App.tsx` |
 | Primary navigation | `frontend/src/components/layout/` |
 | Surface contract | `docs/surface-inventory.json`, `docs/openapi.json`, `docs/API_REFERENCE.md` |

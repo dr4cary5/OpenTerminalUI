@@ -69,7 +69,9 @@
   your trade journal, portfolio theses, and position/transaction notes, embeds
   them locally, and answers questions with inline citations back to the source
   notes (e.g. "what setups lose me money when I'm anxious?"). Designed as a check
-  against your own biases, not a cheerleader, and it never leaves the machine.
+  against your own biases, not a cheerleader. Chat and embedding inference stay
+  on-machine when both are configured with local providers; hosted providers
+  receive the selected prompts and evidence.
   Embeddings use the same provider-agnostic OpenAI-compatible endpoint as chat
   (Ollama `nomic-embed-text` by default), with a local `sentence-transformers`
   fallback. Storage is dialect-aware: **pgvector** (ANN cosine index) on Postgres,
@@ -204,9 +206,9 @@ hidden v2.0 blockers. Each needs its own explicit scope and acceptance criteria
 before implementation. This boundary replaces treating every useful evidence
 prerequisite as another mandatory pre-release PR.
 
-## v2.1.0 — Filing-grounded US fundamentals (release candidate)
+## v2.1.0 — Filing-grounded US fundamentals (released 2026-10-18)
 
-After v2.0, the next bounded cross-market evidence increment is to let a user
+The next bounded cross-market evidence increment after v2.0 lets a user
 inspect whether a selected SEC Company Facts value is supported by its own
 filing. For the existing exact US ticker/CIK mapping, standard US-GAAP concept
 set, and 10-K/10-Q forms (including amendments), connect a displayed fact to
@@ -247,8 +249,9 @@ that are no longer in the current aggregate. Deterministic UI tests cover
 these paths. Host testing found SEC accession labels split across HTML elements
 and padded-string CIKs in submissions; PR #215 fixed both formats. The
 maintainer confirmed the NVDA filing journey works after that fix, completing
-the feature acceptance gate. Normal release preparation, CI/PR review and
-maintainer release authorization remain before v2.1 can be tagged.
+the feature acceptance gate. Release-prep PR #216 passed all CI jobs and merged;
+the maintainer authorized publication, and tag/GitHub release `v2.1.0` were
+published from `a1efc0c` on 2026-10-18.
 
 This milestone does **not** deliver a complete historical SEC vintage, a
 market-knowledge or dissemination timeline, non-US fundamentals, all XBRL
@@ -256,6 +259,16 @@ concepts or filing types, cross-issuer normalization, or automatic explanations
 of past price moves. The broader revision-aware fundamentals contract and
 tested historical coverage below remain later work; they are not silently
 satisfied by corroborating selected filing facts.
+
+## After v2.1 — scope the next bounded increment
+
+No v2.2 scope has been approved. The unfinished evidence contracts below are
+candidates for later v2.x releases, not a queue of automatically authorized PRs.
+Select one useful outcome, its user journey, provider limits and acceptance
+checks before implementation. Full historical fundamentals/revision evidence,
+deeper macro timing, automatic relationships, portfolio-wide context and AI
+interpretation remain distinct undertakings. Multi-dimensional opportunity
+validation remains the v3 promise; broker execution is not implied.
 
 ## v2 opening principle — time-aware memory
 

@@ -4,10 +4,11 @@ This directory is the repository-owned handoff for AI coding agents and new
 maintainers. Read it before making changes. It records decisions that may have
 previously existed only in a maintainer's chat or local agent memory.
 
-Last release-prep audit: **2026-10-18**, from `main` at `09f7add` (through live
-SEC format fix PR #215). v2.1 implementation and maintainer host acceptance are
-complete; local release checks pass. PR/CI review remains; the latest published
-tag is **v2.0.0** at `7e467df` until the v2.1 release is authorized and published.
+Last post-release audit: **2026-10-18**, against published **v2.1.0** at
+`a1efc0c` (release preparation PR #216). Implementation, maintainer host
+acceptance, all release-prep CI jobs, tag and GitHub publication are complete.
+README and maintained wiki describe the shipped workflows; broader v2.x items
+remain backlog, not an implicitly authorized next minor release.
 
 ## Read order and sources of truth
 
@@ -30,8 +31,9 @@ architecture proposals, and QC records are historical unless `docs/README.md`
 marks them current; do not copy their assumptions without checking the current
 code, Docker Compose, README, and maintained wiki pages.
 
-There is no repository-level `AGENTS.md` or `CLAUDE.md` at this snapshot. Local
-tool settings under `.claude/` are not a substitute for project documentation.
+Repository-level `AGENTS.md` and `CLAUDE.md` currently point to local PRO-LONG
+session history. That history is supporting context, not a substitute for this
+maintained handoff or an authority over the current code and user instructions.
 
 ## Why this fork exists
 
@@ -82,8 +84,8 @@ release-level interpretation and safety boundaries.
 
 ## Current release and development state
 
-- Current release: **v2.0.0**, tagged and published from `7e467df` on
-  2026-10-15 after the maintainer's host/user verification.
+- Current release: **v2.1.0**, tagged and published from `a1efc0c` on
+  2026-10-18 after maintainer host acceptance and green release-prep CI.
   Keep `backend/config/settings.py` and `frontend/package.json` in lockstep when
   releasing.
 - **v2.0 shipped the bounded cross-market context feature**, alongside the
@@ -93,7 +95,7 @@ release-level interpretation and safety boundaries.
   automatic relationship, portfolio-context, and AI-interpretation ambitions
   are later v2.x candidates (or v3 validation work), not implicit pre-release
   PRs. See the explicit v2.0 gate in `TODO.md` and `docs/wiki/Roadmap.md`.
-- **v2.1 is in release preparation:** `POST /api/market-context/sec-filing-fact-check`
+- **v2.1 shipped filing-grounded US fundamentals:** `POST /api/market-context/sec-filing-fact-check`
   checks one selected current Company Facts claim against an official,
   archive-listed XBRL instance. It requires exact issuer/concept/unit/duration
   evidence, returns source links and explicit failure/conflict states, and
@@ -103,8 +105,9 @@ release-level interpretation and safety boundaries.
   retries are visible; the request has a 60-second browser timeout and cancels
   on unmount. Checks remain opt-in without focus/reconnect refetches.
   The maintainer confirmed the NVDA filing journey after PR #215 fixed SEC
-  label markup and padded CIK formats. Local release checks pass; PR/CI review
-  and publication remain. It does not claim a full historical
+  label markup and padded CIK formats. PR #216 passed all three CI jobs and
+  merged; explicit maintainer authorization preceded the published tag/release.
+  It does not claim a full historical
   vintage or make fundamentals explain past price moves. See `TODO.md` and
   `docs/wiki/Roadmap.md` for the bounded v2.1 scope.
 - **v2 opens with time-aware private memory.** Semantic similarity alone must
@@ -222,8 +225,12 @@ release-level interpretation and safety boundaries.
 The v1.3 collaboration retrospective was merged into `praderasblog` as PR #104,
 series order 10: **“When a Second Brain Learns to Grow.”** The v1.4 retrospective
 followed in PR #108, series order 11: **“The Release That Learned to Say No.”**
-The bilingual v1.5 retrospective is open as `praderasblog` PR #109, series order
-12: **“The Terminal Learns Where It Stands.”**
+The bilingual v1.5 retrospective followed as `praderasblog` PR #109, series order
+12: **“The Terminal Learns Where It Stands.”** The series continued through
+v1.6/v1.7, the Second Brain goals essay and the published v2.0 retrospective,
+series order 16: **“A Market Comparison That Knows Its Limits.”** New release
+articles belong in the sibling `../praderasblog` repository under its own
+authoring instructions; confirm its current series order before adding a post.
 These are narrative context, not engineering sources of truth; deployment is
 handled separately on the blog host after merge.
 
@@ -316,9 +323,10 @@ cd frontend && npm ci && npm run build && npx vitest run
 ```
 
 For an existing checkout with dependencies installed, `make gate` runs the
-surface-inventory guard, backend compile/tests, and the frontend build. Run
-focused tests during development, then the broadest relevant checks before
-handing off.
+mock/surface/API guards, backend compile/tests with coverage, frontend build and
+Vitest. Browser smoke runs separately locally and in regular CI; CI also runs
+disposable PostgreSQL contracts and a fresh-install job. Run focused tests during
+development, then the broadest relevant checks before handing off.
 
 The maintainer's macOS workstation has Chrome installed at
 `/Applications/Google Chrome.app/Contents/MacOS/Google Chrome` and exposes a

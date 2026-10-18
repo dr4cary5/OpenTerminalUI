@@ -6,6 +6,13 @@ adopt [Semantic Versioning](https://semver.org/spec/v2.0.0.html) from `1.0.0`.
 
 ## [Unreleased]
 
+### Documentation
+- Reconcile the README, wiki and external-agent handoff with published v2.1.0;
+  add a research workflow guide for market context, source-filing checks,
+  time-aware private memory, Brain Log and scoped external-note ingestion.
+  Correct stale privacy, historical-data and local-versus-CI test claims, and
+  document the existing SEC identification setting in the environment template.
+
 ## [2.1.0] - 2026-10-18
 
 Selected US fundamentals can now be checked against their official SEC filing
