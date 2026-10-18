@@ -4,9 +4,10 @@ This directory is the repository-owned handoff for AI coding agents and new
 maintainers. Read it before making changes. It records decisions that may have
 previously existed only in a maintainer's chat or local agent memory.
 
-Last handoff update: **2026-10-16**, after **v2.0.0** was tagged and published
-from `7e467df` (through proxy-selector fix PR #212). v2.1 implementation has
-started with the filing-level SEC fact verification API described below.
+Last release-prep audit: **2026-10-18**, from `main` at `09f7add` (through live
+SEC format fix PR #215). v2.1 implementation and maintainer host acceptance are
+complete; local release checks pass. PR/CI review remains; the latest published
+tag is **v2.0.0** at `7e467df` until the v2.1 release is authorized and published.
 
 ## Read order and sources of truth
 
@@ -92,7 +93,7 @@ release-level interpretation and safety boundaries.
   automatic relationship, portfolio-context, and AI-interpretation ambitions
   are later v2.x candidates (or v3 validation work), not implicit pre-release
   PRs. See the explicit v2.0 gate in `TODO.md` and `docs/wiki/Roadmap.md`.
-- **v2.1 is in progress:** `POST /api/market-context/sec-filing-fact-check`
+- **v2.1 is in release preparation:** `POST /api/market-context/sec-filing-fact-check`
   checks one selected current Company Facts claim against an official,
   archive-listed XBRL instance. It requires exact issuer/concept/unit/duration
   evidence, returns source links and explicit failure/conflict states, and
@@ -101,7 +102,9 @@ release-level interpretation and safety boundaries.
   differing disclosure. Exact values, source links, dated results and manual
   retries are visible; the request has a 60-second browser timeout and cancels
   on unmount. Checks remain opt-in without focus/reconnect refetches.
-  Configured host acceptance remains. It does not claim a full historical
+  The maintainer confirmed the NVDA filing journey after PR #215 fixed SEC
+  label markup and padded CIK formats. Local release checks pass; PR/CI review
+  and publication remain. It does not claim a full historical
   vintage or make fundamentals explain past price moves. See `TODO.md` and
   `docs/wiki/Roadmap.md` for the bounded v2.1 scope.
 - **v2 opens with time-aware private memory.** Semantic similarity alone must
@@ -316,6 +319,14 @@ For an existing checkout with dependencies installed, `make gate` runs the
 surface-inventory guard, backend compile/tests, and the frontend build. Run
 focused tests during development, then the broadest relevant checks before
 handing off.
+
+The maintainer's macOS workstation has Chrome installed at
+`/Applications/Google Chrome.app/Contents/MacOS/Google Chrome` and exposes a
+Chrome CDP endpoint at `http://127.0.0.1:9222` for interactive checks. For the
+existing smoke runner, set `PLAYWRIGHT_EXECUTABLE_PATH` to the installed Chrome
+binary; it uses an isolated temporary profile. Check this available browser
+before downloading Playwright's bundled Chromium. See
+`frontend/tests/e2e/README.md` for the local command. CI uses bundled Chromium.
 
 The deterministic Playwright `@smoke` subset is part of every PR gate. The rest
 of the browser suite remains manual and is classified in

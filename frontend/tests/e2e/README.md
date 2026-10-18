@@ -18,6 +18,21 @@ Backtesting submit/poll/result journey. Because those requests are fully
 intercepted, the smoke command runs the built frontend without starting backend
 jobs or contacting upstream providers.
 
+### Use an installed browser locally
+
+The runner supports `PLAYWRIGHT_EXECUTABLE_PATH` when a compatible Chrome is
+already installed. On the maintainer's macOS workstation:
+
+```bash
+PLAYWRIGHT_EXECUTABLE_PATH="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" npm run test:e2e:smoke --prefix frontend
+```
+
+Playwright starts an isolated temporary profile for this run. A separate
+bundled Chromium download is unnecessary with this option. CI continues to
+install and test Playwright's bundled Chromium. The workstation's Chrome CDP
+endpoint on port 9222 is also available for interactive checks; the smoke
+command above uses the executable override.
+
 Authentication state is written directly by `global-setup.ts` with a stable test
 identity and bounded token lifetime. Backend-backed full-suite runs get a
 process-scoped SQLite database, so stale records from an earlier run cannot

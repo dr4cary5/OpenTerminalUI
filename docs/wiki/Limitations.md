@@ -194,8 +194,8 @@ never silently faked.
   when to check again; window focus/reconnect does not fetch filings. **Refresh SEC
   facts** updates the current aggregate if a selected claim has disappeared.
   The browser allows 60 seconds for the backend's response and cancels its
-  request when unmounted. Host verification remains pending. Existing
-  filed-facts results are unaffected by this separate check.
+  request when unmounted. Existing filed-facts results are unaffected by this
+  separate check.
 - **Technical observations use shared provider closes.** Maximum observed
   drawdown and the gap from a 20-shared-close average are calculated only on
   the pair's actual common UTC dates; with fewer than 20 closes the average
