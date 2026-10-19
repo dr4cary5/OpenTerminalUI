@@ -141,6 +141,21 @@ size, XML complexity and a 45-second operation deadline bound the work.
 deadline, cancellation and manual retries. No filing-check persistence, new
 database migration or complete historical-vintage archive is introduced.
 
+## Comparison briefing generation in development
+
+`comparison_briefing.py` adds bounded completion-based synthesis to the selected
+shared-UTC evidence packet. It validates structure, snapshot identity, reference
+existence and pair coverage, not semantic truth. Every response preserves the
+exact packet/caveats when available and labels this distinction explicitly.
+The model receives no optional-provider or private-research context.
+
+`POST /api/market-context/briefing` returns the typed result; `/briefing/stream`
+reuses `insight_lifecycle.py` for cancellable progress and final-result delivery.
+No raw provider tokens are published before validation. Preparation is bounded
+to 45 seconds; health, completion and one repair share `LLM_TIMEOUT_SECONDS`.
+No provider token-stream capability, persistence, migration or Brain indexing is
+required. Browser integration and host acceptance remain pending.
+
 ## Frontend structure
 
 - `frontend/src/pages/` contains route-level screens.

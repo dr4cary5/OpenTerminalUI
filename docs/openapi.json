@@ -1873,6 +1873,33 @@
         "title": "BriefingReturnEvidence",
         "type": "object"
       },
+      "BriefingStatement": {
+        "additionalProperties": false,
+        "properties": {
+          "citation_ids": {
+            "items": {
+              "pattern": "^(P[1-6]|SCOPE)$",
+              "type": "string"
+            },
+            "maxItems": 7,
+            "minItems": 1,
+            "title": "Citation Ids",
+            "type": "array"
+          },
+          "text": {
+            "maxLength": 600,
+            "minLength": 10,
+            "title": "Text",
+            "type": "string"
+          }
+        },
+        "required": [
+          "text",
+          "citation_ids"
+        ],
+        "title": "BriefingStatement",
+        "type": "object"
+      },
       "CapexPoint": {
         "properties": {
           "capex": {
@@ -3075,6 +3102,141 @@
           "comparisons"
         ],
         "title": "ComparisonBriefingEvidenceRequest",
+        "type": "object"
+      },
+      "ComparisonBriefingFailure": {
+        "properties": {
+          "code": {
+            "enum": [
+              "no_evidence",
+              "disabled",
+              "provider_unavailable",
+              "provider_error",
+              "invalid_response",
+              "timeout",
+              "evidence_timed_out"
+            ],
+            "title": "Code",
+            "type": "string"
+          },
+          "message": {
+            "title": "Message",
+            "type": "string"
+          },
+          "retryable": {
+            "title": "Retryable",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "retryable"
+        ],
+        "title": "ComparisonBriefingFailure",
+        "type": "object"
+      },
+      "ComparisonBriefingResult": {
+        "properties": {
+          "citation_validation": {
+            "const": "references_only_not_fact_checked",
+            "default": "references_only_not_fact_checked",
+            "title": "Citation Validation",
+            "type": "string"
+          },
+          "engine": {
+            "enum": [
+              "llm",
+              "unavailable"
+            ],
+            "title": "Engine",
+            "type": "string"
+          },
+          "evidence": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ComparisonBriefingEvidence"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "failure": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ComparisonBriefingFailure"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "generated_at": {
+            "format": "date-time",
+            "title": "Generated At",
+            "type": "string"
+          },
+          "limitations": {
+            "items": {
+              "$ref": "#/components/schemas/BriefingStatement"
+            },
+            "title": "Limitations",
+            "type": "array"
+          },
+          "model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model"
+          },
+          "observations": {
+            "items": {
+              "$ref": "#/components/schemas/BriefingStatement"
+            },
+            "title": "Observations",
+            "type": "array"
+          },
+          "scope_citation_id": {
+            "const": "SCOPE",
+            "default": "SCOPE",
+            "title": "Scope Citation Id",
+            "type": "string"
+          },
+          "scope_notice": {
+            "default": "AI-generated interpretation of shared-UTC native provider-close returns only. Optional panels and private research were not included. Citation references are checked, not the truth of the prose. This is not a causal explanation or investment advice; inspect the exact evidence, dates and caveats.",
+            "title": "Scope Notice",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "complete",
+              "unavailable"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "unknowns": {
+            "items": {
+              "$ref": "#/components/schemas/BriefingStatement"
+            },
+            "title": "Unknowns",
+            "type": "array"
+          }
+        },
+        "required": [
+          "status",
+          "engine",
+          "model",
+          "generated_at",
+          "evidence"
+        ],
+        "title": "ComparisonBriefingResult",
         "type": "object"
       },
       "CompileError": {
@@ -28437,6 +28599,60 @@
         }
       }
     },
+    "/api/market-context/briefing": {
+      "post": {
+        "description": "Prepare fresh evidence and generate a citation-linked descriptive briefing.\n\nStructure, snapshot identity and references are validated, not the truth of\nmodel prose. Evidence and its mandatory caveats remain attached on failure.\nThis invokes no optional provider panels and saves/indexes nothing.",
+        "operationId": "create_comparison_briefing_api_market_context_briefing_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ComparisonBriefingEvidenceRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ComparisonBriefingResult"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Create Comparison Briefing",
+        "tags": [
+          "market-context"
+        ],
+        "x-openterminalui-auth": {
+          "permission": "user",
+          "scheme": "bearer"
+        },
+        "x-openterminalui-feature-state": {
+          "market-context": "experimental"
+        }
+      }
+    },
     "/api/market-context/briefing-evidence": {
       "post": {
         "description": "Fetch a fresh comparison and project citable, bounded evidence only.\n\nThis does not generate a briefing, persist a snapshot or reuse the browser's\nprevious response. Optional provider panels and private notes are excluded.",
@@ -28482,6 +28698,61 @@
           }
         ],
         "summary": "Prepare Comparison Briefing Evidence",
+        "tags": [
+          "market-context"
+        ],
+        "x-openterminalui-auth": {
+          "permission": "user",
+          "scheme": "bearer"
+        },
+        "x-openterminalui-feature-state": {
+          "market-context": "experimental"
+        }
+      }
+    },
+    "/api/market-context/briefing/stream": {
+      "post": {
+        "description": "Stream progress and a final checked response; disconnect cancels work.\n\nUses completion requests, not provider token streaming, so providers without\nstreaming support work too. Unvalidated model text never enters this stream.\nSee the synchronous briefing endpoint for the final result schema.",
+        "operationId": "stream_comparison_briefing_api_market_context_briefing_stream_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ComparisonBriefingEvidenceRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/x-ndjson": {
+                "schema": {
+                  "description": "NDJSON lifecycle: start (with evidence/model deadline budgets), progress (preparing_evidence/checking_model/generating/validating/retrying), and one final result containing a ComparisonBriefingResult, or an unexpected error. No raw prose deltas.",
+                  "type": "string"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Stream Comparison Briefing",
         "tags": [
           "market-context"
         ],

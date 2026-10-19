@@ -490,13 +490,25 @@ context or automatic relationship discovery. Keep this release bounded.
       This first packet is shared-UTC native provider-close returns only. Its
       explicit exclusions are not claims of absent data. No model, optional
       provider fan-out, persistence, UI or Brain indexing is added in this slice.
-- [ ] Add bounded, cancellable on-demand synthesis with per-statement references
+- [x] Add bounded, cancellable on-demand synthesis with per-statement references
       validated against the exact packet; unknown/missing references and malformed
       responses must fail honestly. Citation validity is not truth verification.
+      `POST /api/market-context/briefing` and `/briefing/stream` prepare their own
+      fresh packet; clients cannot supply evidence or packet assertions. The
+      stream sends progress and a final checked result, not unvalidated provider
+      tokens. Health, completion and one repair share the configured model
+      deadline. All-unavailable evidence skips inference; typed failures retain
+      the packet/caveats where available. Cancellation closes preparation and
+      generation. This is reference/structure checking, not semantic verification
+      of numbers, causal wording or recommendations in model prose; prompt rules
+      constrain those claims and the output explicitly carries that limitation.
 - [ ] Add the browser action, lifecycle states, exact evidence scope and
       inspectable citations. Prevent selection changes, failed retries and
       interrupted work from retaining misleading old results. Do not claim
       optional evidence panels informed the answer unless included explicitly.
+      Render model text as untrusted plain text; citation navigation must resolve
+      through the attached packet, not model-provided links. Display the fixed
+      scope notice and mandatory packet caveats alongside the prose.
 - [ ] Complete deterministic API/UI coverage and configured host acceptance of
       a useful briefing plus degraded evidence/model cases before release prep.
 

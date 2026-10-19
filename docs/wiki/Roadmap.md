@@ -294,9 +294,24 @@ records only within that packet. The hash is an identity, not a signature or
 durable archive. A page's earlier comparison may differ from this new fetch.
 The packet excludes optional news/fundamentals/SEC/macro, technical, FX,
 adjusted/local-date views and private research; it must not imply those were
-checked, absent or incorporated. This first slice performs no synthesis, exposes
-no briefing UI and saves/indexes nothing. Later slices must show precisely what
-their packet includes, rather than implying all visible panels informed prose.
+checked, absent or incorporated. The evidence-preparation endpoint itself performs
+no synthesis and saves/indexes nothing.
+
+The generation API now adds `POST /api/market-context/briefing` and
+`/briefing/stream`, each preparing its own fresh packet. Per-statement references
+must resolve to that snapshot; observations cover available pairs, and references
+for materially limited/unavailable pairs and omitted scope cannot be left out.
+Those structural checks do not prove that the text correctly describes a number,
+states a limitation faithfully or obeys the no-advice/no-causation prompt rules.
+The response explicitly labels this as reference validation, not fact-checking,
+and always retains the unmodified evidence/caveat snapshot when one exists.
+The stream sends progress and only the final checked result, never raw provider
+tokens; non-streaming model providers work through completion calls. Health,
+completion and one repair share the configured model deadline after the bounded
+preparation stage. Evidence/model failures remain typed; cancellation stops work.
+The browser integration and configured host acceptance are still pending. The
+future UI must show the exact scope rather than imply all visible panels informed
+the prose; no saving/indexing is introduced by these APIs.
 
 **Release gate:** citations resolve to the supplied snapshot; incomplete, stale,
 conflicting, unavailable and mixed-basis inputs remain explicit; malformed,
