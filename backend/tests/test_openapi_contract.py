@@ -46,3 +46,18 @@ def test_comparison_briefing_evidence_is_mounted_and_bearer_scoped() -> None:
     request = schema["components"]["schemas"]["ComparisonBriefingEvidenceRequest"]
     assert request["additionalProperties"] is False
     assert set(request["properties"]) == {"anchor", "comparisons", "period"}
+
+
+def test_comparison_briefing_generation_and_stream_contracts() -> None:
+    schema = app.openapi()
+    for path in ("/api/market-context/briefing", "/api/market-context/briefing/stream"):
+        operation = schema["paths"][path]["post"]
+        assert operation["security"] == [{"HTTPBearer": []}]
+        assert operation["x-openterminalui-auth"] == {"scheme": "bearer", "permission": "user"}
+    stream = schema["paths"]["/api/market-context/briefing/stream"]["post"]
+    assert set(stream["responses"]["200"]["content"]) == {"application/x-ndjson"}
+    result = schema["components"]["schemas"]["ComparisonBriefingResult"]
+    assert result["properties"]["citation_validation"]["const"] == "references_only_not_fact_checked"
+    statement = schema["components"]["schemas"]["BriefingStatement"]
+    assert statement["additionalProperties"] is False
+    assert set(statement["required"]) == {"text", "citation_ids"}

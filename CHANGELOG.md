@@ -7,6 +7,13 @@ adopt [Semantic Versioning](https://semver.org/spec/v2.0.0.html) from `1.0.0`.
 ## [Unreleased]
 
 ### Added
+- **Citation-linked comparison briefing APIs (v2.2)** — explicit synchronous and
+  progress-streaming requests build fresh server evidence and generate bounded
+  observations, limitations and unknowns. Structure, packet identity and citation
+  coverage are checked before publishing any prose, with one bounded repair,
+  health/generation deadlines, cancellation and typed unavailable states. The
+  original packet/caveats remain inspectable. Reference checks are explicitly
+  not semantic fact-checking; no browser action or saving/indexing is added yet.
 - **Comparison briefing evidence foundation (v2.2)** — a JWT-authenticated,
   on-demand endpoint builds bounded server-derived shared-date return evidence
   with packet-local citations, a content fingerprint, source/unit/date metadata,

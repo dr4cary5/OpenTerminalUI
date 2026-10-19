@@ -166,8 +166,43 @@ not an authenticity signature, persisted archive or historical knowledge claim.
 The explicit `not_included` list covers optional news, fundamentals, SEC checks,
 macro, technical measures, FX/adjusted/local-date views and private research.
 Exclusion does not establish that evidence is absent or that a provider failed.
-This first slice generates no answer and has no browser action or persistence;
-the remaining v2.2 work adds validated generation and the briefing journey.
+The preparation endpoint generates no answer. Separate generation APIs below
+now build on that contract; there is still no browser action or persistence.
+
+### v2.2 comparison briefing APIs in development
+
+JWT-authenticated `POST /api/market-context/briefing` accepts the same selection
+and returns a complete or unavailable result. `POST /api/market-context/briefing/stream`
+uses the same body but returns newline-delimited JSON lifecycle events. These
+calls prepare fresh server evidence themselves; they do not accept a client
+packet, reuse an earlier page response or run other optional panels.
+
+The stream sends `start` with `deadlines.evidence_seconds` and
+`deadlines.model_seconds`, `progress` (preparing evidence, checking the model,
+generating, validating or retrying), then a final `result`; unexpected failures
+produce an `error` event. It does not expose raw token deltas. Closing the stream
+cancels preparation/inference. Completion-only providers are supported, without
+requiring their token-streaming capability.
+
+The final result contains `observations`, `limitations` and `unknowns`, each with
+per-statement `citation_ids`, plus the exact evidence snapshot and fixed scope
+notice. Pair IDs resolve inside that packet. `SCOPE` refers only to its method,
+basis and `not_included` metadata, never an independently checked provider panel.
+Structure, packet identity, reference existence and pair-reference coverage are
+validated. **These checks do not verify the truth of model prose**, its arithmetic
+or its compliance with no-advice/no-causation prompt rules. The response says
+`references_only_not_fact_checked`; inspect its source values and mandatory
+packet caveats rather than reading a completion as a verification badge.
+
+All-unavailable comparisons skip inference. Disabled, unreachable, failed,
+malformed and timed-out model work produce `status: unavailable`, empty prose
+arrays and a typed failure; available evidence is retained, not erased. A
+preparation timeout has no packet to retain. The generation endpoints return
+expected unavailable states as HTTP 200 results, unlike the preparation-only
+endpoint's HTTP 504 on its own deadline. Health, completion and one repair share
+`LLM_TIMEOUT_SECONDS` (default 240 seconds), after up to 45 seconds of evidence
+preparation. Clients must allow both stages; heartbeats do not extend the server
+budget. No rejected/partial answer is published as a completed briefing.
 
 ### Complete contract
 

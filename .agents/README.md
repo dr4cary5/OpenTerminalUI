@@ -89,9 +89,13 @@ release-level interpretation and safety boundaries.
   on-demand cited synthesis of a selected comparison, with observations, possible
   context, conflicts and unknowns kept distinct. No causal explanations, trade
   advice, automatic discovery or portfolio-wide context. The first API slice
-  builds fingerprinted shared-UTC provider-close evidence on the server; it
-  invokes no model, includes no optional panels, and does not save/index anything.
-  Validated generation and browser integration remain next, not already shipped.
+  builds fingerprinted shared-UTC provider-close evidence on the server. Separate
+  `/briefing` and `/briefing/stream` APIs now add on-demand synthesis with strict
+  structure, snapshot identity and citation-reference checks, bounded health/
+  generation/repair and cancellable progress streaming. Reference validity is
+  not semantic fact-checking; preserve the fixed scope notice and original
+  evidence/caveats. Optional panels, persistence and indexing remain excluded.
+  Browser integration and host acceptance remain next, not already shipped.
 - Current release: **v2.1.0**, tagged and published from `a1efc0c` on
   2026-10-18 after maintainer host acceptance and green release-prep CI.
   Keep `backend/config/settings.py` and `frontend/package.json` in lockstep when
