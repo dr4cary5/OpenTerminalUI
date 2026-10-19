@@ -59,8 +59,10 @@ complete historical information set or infer which disclosure supersedes another
 v2.0 introduced the bounded cross-market context journey alongside time-aware
 Second Brain and Brain Log foundations. v1 completed fork consolidation and
 base-currency portfolio accounting. See the [changelog](CHANGELOG.md) for release
-history and the [roadmap](docs/wiki/Roadmap.md) for later work; no next minor
-release scope is implied by the broader backlog.
+history. The next agreed milestone is **v2.2 Grounded Comparison Briefing**:
+on-demand, cited synthesis of a selected comparison, not causal explanation or
+investment advice. It is in development, not part of the v2.1 browser experience;
+see the [roadmap](docs/wiki/Roadmap.md) for its bounded scope.
 
 ## Quick Start
 

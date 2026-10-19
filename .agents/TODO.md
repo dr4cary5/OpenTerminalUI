@@ -4,8 +4,9 @@ Last post-release audit: **2026-10-18**, against **v2.1.0** at `a1efc0c`.
 The bounded filing-verification API, browser journey, configured host acceptance,
 local checks and all release-prep CI jobs are complete. PR #216 merged and the
 maintainer authorized tag/GitHub publication. No v2.1 release task remains.
-README/wiki reconciliation is the post-release follow-up; later v2.x scope
-still needs an explicit selection rather than automatic backlog execution.
+README/wiki reconciliation merged in PR #217. On 2026-10-19 the maintainer
+authorized v2.2 Grounded Comparison Briefing; its explicit scope and sequence
+below replace automatic execution of the broader v2.x backlog.
 
 This is a handoff, not an immutable roadmap. Before taking an item, verify it
 against recent Git history, code, and tests. Move shipped work to the completed
@@ -473,11 +474,41 @@ to make this milestone appear complete.
       release, including research entry points, API/auth boundaries, provider
       configuration, portfolio limitations and actual local/CI test commands.
 
+### v2.2 — Grounded Comparison Briefing
+
+Approved outcome: an explicit, cited synthesis of the selected comparison that
+separates observed movement, possible context, conflicts and unknowns. No causal
+or investment-advice claims, inferred historical knowledge, portfolio-wide
+context or automatic relationship discovery. Keep this release bounded.
+
+- [x] Build the first deterministic evidence contract: JWT-authenticated
+      `POST /api/market-context/briefing-evidence` accepts only anchor/proxies/
+      period, fetches a fresh server comparison and returns a fingerprinted
+      packet with local citation IDs, exact pair dates/returns, source/unit
+      metadata, freshness and caveats. Preserve provider failures without
+      inventing zeros. Bound preparation to 45 seconds and cancel on deadline.
+      This first packet is shared-UTC native provider-close returns only. Its
+      explicit exclusions are not claims of absent data. No model, optional
+      provider fan-out, persistence, UI or Brain indexing is added in this slice.
+- [ ] Add bounded, cancellable on-demand synthesis with per-statement references
+      validated against the exact packet; unknown/missing references and malformed
+      responses must fail honestly. Citation validity is not truth verification.
+- [ ] Add the browser action, lifecycle states, exact evidence scope and
+      inspectable citations. Prevent selection changes, failed retries and
+      interrupted work from retaining misleading old results. Do not claim
+      optional evidence panels informed the answer unless included explicitly.
+- [ ] Complete deterministic API/UI coverage and configured host acceptance of
+      a useful briefing plus degraded evidence/model cases before release prep.
+
+Deferred: full historical coverage, automatic discovery, portfolio-wide context,
+unreliable-provider replacement as a release gate, execution, and automatic
+Brain Log/retrieval integration. See `docs/wiki/Roadmap.md` for acceptance bounds.
+
 ### v2 evidence implementation ledger — shipped work and later gaps
 
 The completed entries below shipped in v2.0/v2.1. Unchecked entries remain later
-v2.x candidates, not an approved v2.2 plan. Agree the next bounded outcome and
-its acceptance gate with the maintainer before starting feature work.
+v2.x candidates; they are not additional v2.2 gates. The bounded briefing scope
+above does not authorize unsupported causal or historical explanations.
 
 - [x] Add an experimental, authenticated comparison API for one anchor and
       selected market proxies. It aligns daily closes by shared UTC dates,

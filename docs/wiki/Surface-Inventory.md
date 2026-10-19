@@ -139,6 +139,13 @@ Routes not shown in the sidebar are classified by family:
 | Algorithm framework | **experimental** | Advanced research surface, not a stable v1 core contract |
 | Legacy top-level redirects | **hidden** | Compatibility aliases into `/equity`, `/backtesting`, and portfolio-lab routes |
 
+The experimental `market-context` API family also includes v2.2's first
+`POST /api/market-context/briefing-evidence` foundation. It builds a fresh,
+bounded server evidence packet with explicit exclusions; it does not generate
+prose or add a browser destination. This does not reclassify comparisons or
+imply that optional panels informed a briefing. See the
+[v2.2 scope](Roadmap.md) and [research guide](Research-Workflows.md).
+
 ## Removed orphan surfaces
 
 Static import/reachability inspection found four page implementations absent from

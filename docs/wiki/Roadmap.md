@@ -260,15 +260,56 @@ of past price moves. The broader revision-aware fundamentals contract and
 tested historical coverage below remain later work; they are not silently
 satisfied by corroborating selected filing facts.
 
-## After v2.1 — scope the next bounded increment
+## v2.2 — Grounded Comparison Briefing (in development)
 
-No v2.2 scope has been approved. The unfinished evidence contracts below are
-candidates for later v2.x releases, not a queue of automatically authorized PRs.
-Select one useful outcome, its user journey, provider limits and acceptance
-checks before implementation. Full historical fundamentals/revision evidence,
-deeper macro timing, automatic relationships, portfolio-wide context and AI
-interpretation remain distinct undertakings. Multi-dimensional opportunity
-validation remains the v3 promise; broker execution is not implied.
+The maintainer selected a bounded, on-demand synthesis of the user's chosen
+comparison as the next outcome. It should explain what the supplied observations
+show, cite the exact evidence supporting each statement, and distinguish observed
+movement from possible context, conflicting evidence and unknowns. It must not
+invent a cause, recommend an action or assert historical knowledge the sources
+cannot establish. This is a descriptive briefing, not the full cross-market
+explanation or multi-dimensional validation ambition.
+
+The implementation sequence has three reviewable parts:
+
+1. **Evidence contract.** Prepare bounded server-built evidence with packet-local
+   citation identities, source/retrieval dates, actual pair windows, units,
+   provenance and explicit coverage/caveats. Do not accept browser assertions
+   as verified facts or silently fetch every optional provider.
+2. **Validated synthesis.** Generate only on demand through bounded/cancellable
+   model work. Require citations into the exact packet and reject malformed or
+   unknown references. Distinguish unavailable evidence/model failure from a
+   completed answer; a valid citation is not an automated truth verdict.
+3. **Browser journey and acceptance.** Provide an explicit briefing action,
+   progress/cancellation, inspectable citations and visible evidence scope.
+   Selection changes or failed fresh requests must not leave an old briefing
+   looking current. Deterministic tests plus configured host acceptance precede
+   release preparation.
+
+The first API slice, `POST /api/market-context/briefing-evidence`, fetches a fresh
+comparison and projects only its shared-UTC native-provider-close returns.
+It preserves available/unavailable pairs and fingerprints dates, values, source
+metadata, ordering, caveats and explicit exclusions. `P1`–`P6` identify pair
+records only within that packet. The hash is an identity, not a signature or
+durable archive. A page's earlier comparison may differ from this new fetch.
+The packet excludes optional news/fundamentals/SEC/macro, technical, FX,
+adjusted/local-date views and private research; it must not imply those were
+checked, absent or incorporated. This first slice performs no synthesis, exposes
+no briefing UI and saves/indexes nothing. Later slices must show precisely what
+their packet includes, rather than implying all visible panels informed prose.
+
+**Release gate:** citations resolve to the supplied snapshot; incomplete, stale,
+conflicting, unavailable and mixed-basis inputs remain explicit; malformed,
+uncited and interrupted model responses fail honestly; browser lifecycle and
+identity tests pass; and the maintainer accepts a live useful briefing and a
+degraded case. No new database schema is required by the initial evidence slice.
+
+**Outside v2.2:** portfolio-wide context, automatic relationship discovery,
+broader historical fundamentals/vintages, deeper macro publication-time audits,
+provider acquisition as a gate, trade recommendations and execution. Saving
+briefings into Brain Log or adding them to private retrieval is not implicit.
+Multi-dimensional opportunity validation remains the v3 promise. Other unchecked
+items below remain later candidates, not automatically authorized follow-ups.
 
 ## v2 opening principle — time-aware memory
 

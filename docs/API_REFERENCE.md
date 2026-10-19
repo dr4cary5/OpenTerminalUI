@@ -13,8 +13,8 @@ requirements are documented in [`wiki/Limitations.md`](wiki/Limitations.md).
 
 ## Contract summary
 
-- **467 operations** across **417 paths** and **87 families**.
-- Authentication: **422 bearer**, **5 read API-key**, **1 write API-key**, **39 unauthenticated** operations.
+- **468 operations** across **418 paths** and **87 families**.
+- Authentication: **423 bearer**, **5 read API-key**, **1 write API-key**, **39 unauthenticated** operations.
 - API keys are created and revoked by an authenticated user under `/api/settings/api-keys`.
 - `read_write` is required for `PUT /api/v1/notes/external`; market-data automation endpoints require `read` or `read_write`.
 
@@ -80,7 +80,7 @@ requirements are documented in [`wiki/Limitations.md`](wiki/Limitations.md).
 | `instruments` | `supported` | 1 |
 | `journal` | `supported` | 10 |
 | `kite` | `configuration-gated` | 6 |
-| `market-context` | `experimental` | 17 |
+| `market-context` | `experimental` | 18 |
 | `model-lab` | `hidden` | 12 |
 | `mutual-funds` | `supported` | 13 |
 | `news` | `supported` | 10 |
@@ -674,6 +674,7 @@ State: **experimental**
 
 | Method | Path | Authentication | Summary |
 |---|---|---|---|
+| `POST` | `/api/market-context/briefing-evidence` | Bearer token | Prepare Comparison Briefing Evidence |
 | `POST` | `/api/market-context/compare` | Bearer token | Compare Market Context |
 | `GET` | `/api/market-context/fundamental-captures` | Bearer token | List Fundamental Captures |
 | `POST` | `/api/market-context/fundamental-captures` | Bearer token | Capture Fundamentals |
