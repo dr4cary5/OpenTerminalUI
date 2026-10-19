@@ -35,3 +35,14 @@ def test_openapi_marks_exempt_routes_as_public() -> None:
     assert schema["paths"]["/health"]["get"]["security"] == []
     assert schema["paths"]["/api/auth/login"]["post"]["security"] == []
     assert schema["paths"]["/api/v1/crypto/search"]["get"]["security"] == []
+
+
+def test_comparison_briefing_evidence_is_mounted_and_bearer_scoped() -> None:
+    schema = app.openapi()
+    operation = schema["paths"]["/api/market-context/briefing-evidence"]["post"]
+    assert operation["security"] == [{"HTTPBearer": []}]
+    assert operation["x-openterminalui-auth"] == {"scheme": "bearer", "permission": "user"}
+    assert "504" in operation["responses"]
+    request = schema["components"]["schemas"]["ComparisonBriefingEvidenceRequest"]
+    assert request["additionalProperties"] is False
+    assert set(request["properties"]) == {"anchor", "comparisons", "period"}

@@ -147,6 +147,30 @@ A Brain memo is a dated synthesis, not an execution record.
 
 ## API reference
 
+### v2.2 evidence preparation API in development
+
+JWT-authenticated `POST /api/market-context/briefing-evidence` accepts
+`{"anchor":"AAPL","comparisons":["SPY"],"period":"1M"}`. It fetches a fresh
+server comparison, not the page's earlier result, and projects only shared-UTC
+native provider-close returns. Browser-supplied values, prose and unsupported
+fields (including reporting currency) are rejected. Preparation has a 45-second
+deadline; a timeout returns HTTP 504 with `evidence_timed_out`, not a partial
+success packet.
+
+The response includes a schema version, content fingerprint, retrieval time,
+available/partial/unavailable status and `P1`–`P6` pair citation records. Each
+keeps its actual window, exact returned metrics, source/feed, quote unit,
+freshness, reported basis and caveats. IDs are local to that packet; its hash is
+not an authenticity signature, persisted archive or historical knowledge claim.
+
+The explicit `not_included` list covers optional news, fundamentals, SEC checks,
+macro, technical measures, FX/adjusted/local-date views and private research.
+Exclusion does not establish that evidence is absent or that a provider failed.
+This first slice generates no answer and has no browser action or persistence;
+the remaining v2.2 work adds validated generation and the briefing journey.
+
+### Complete contract
+
 The backend serves Swagger UI at `/docs` and its schema at `/openapi.json`.
 The checked-in [API reference](../API_REFERENCE.md) and
 [OpenAPI JSON](../openapi.json) include authentication and surface classification.

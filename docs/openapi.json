@@ -1633,6 +1633,246 @@
         "title": "BrainMemoUpdate",
         "type": "object"
       },
+      "BriefingAssetEvidence": {
+        "properties": {
+          "history_adapter": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "History Adapter"
+          },
+          "history_feed": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "History Feed"
+          },
+          "latest_date": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Latest Date"
+          },
+          "quote_unit": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Quote Unit"
+          },
+          "quote_unit_source": {
+            "enum": [
+              "yahoo_chart_meta",
+              "unavailable"
+            ],
+            "title": "Quote Unit Source",
+            "type": "string"
+          },
+          "reported_adjustment_basis": {
+            "anyOf": [
+              {
+                "enum": [
+                  "raw",
+                  "non_split_adjusted",
+                  "unspecified"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reported Adjustment Basis"
+          },
+          "symbol": {
+            "title": "Symbol",
+            "type": "string"
+          },
+          "withheld_date_scope": {
+            "const": "selected_history_payload",
+            "default": "selected_history_payload",
+            "title": "Withheld Date Scope",
+            "type": "string"
+          },
+          "withheld_provider_close_count": {
+            "minimum": 0.0,
+            "title": "Withheld Provider Close Count",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "symbol",
+          "history_adapter",
+          "history_feed",
+          "latest_date",
+          "quote_unit",
+          "quote_unit_source",
+          "reported_adjustment_basis",
+          "withheld_provider_close_count"
+        ],
+        "title": "BriefingAssetEvidence",
+        "type": "object"
+      },
+      "BriefingPairEvidence": {
+        "properties": {
+          "anchor": {
+            "$ref": "#/components/schemas/BriefingAssetEvidence"
+          },
+          "caveats": {
+            "items": {
+              "enum": [
+                "native_quote_not_fx_normalized",
+                "utc_dates_not_simultaneous_sessions",
+                "no_causal_or_investment_conclusion",
+                "stale_history",
+                "mixed_reported_price_basis",
+                "unverified_price_basis",
+                "reported_basis_not_quality_verification",
+                "unknown_quote_unit",
+                "withheld_conflicting_closes",
+                "comparison_unavailable"
+              ],
+              "type": "string"
+            },
+            "title": "Caveats",
+            "type": "array"
+          },
+          "citation_id": {
+            "pattern": "^P[1-6]$",
+            "title": "Citation Id",
+            "type": "string"
+          },
+          "comparison": {
+            "$ref": "#/components/schemas/BriefingAssetEvidence"
+          },
+          "pair_reported_basis_status": {
+            "enum": [
+              "matching_reported",
+              "mixed_reported",
+              "unverified",
+              "unavailable"
+            ],
+            "title": "Pair Reported Basis Status",
+            "type": "string"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "enum": [
+                  "missing_history",
+                  "insufficient_overlap",
+                  "provider_error"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "returns": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/BriefingReturnEvidence"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "status": {
+            "enum": [
+              "available",
+              "unavailable"
+            ],
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "citation_id",
+          "status",
+          "reason",
+          "anchor",
+          "comparison",
+          "pair_reported_basis_status",
+          "returns",
+          "caveats"
+        ],
+        "title": "BriefingPairEvidence",
+        "type": "object"
+      },
+      "BriefingReturnEvidence": {
+        "properties": {
+          "anchor_return_pct": {
+            "title": "Anchor Return Pct",
+            "type": "number"
+          },
+          "comparison_return_pct": {
+            "title": "Comparison Return Pct",
+            "type": "number"
+          },
+          "end_date": {
+            "format": "date",
+            "title": "End Date",
+            "type": "string"
+          },
+          "freshness": {
+            "enum": [
+              "current",
+              "stale"
+            ],
+            "title": "Freshness",
+            "type": "string"
+          },
+          "observations": {
+            "minimum": 2.0,
+            "title": "Observations",
+            "type": "integer"
+          },
+          "relative_return_pp": {
+            "title": "Relative Return Pp",
+            "type": "number"
+          },
+          "start_date": {
+            "format": "date",
+            "title": "Start Date",
+            "type": "string"
+          }
+        },
+        "required": [
+          "start_date",
+          "end_date",
+          "observations",
+          "anchor_return_pct",
+          "comparison_return_pct",
+          "relative_return_pp",
+          "freshness"
+        ],
+        "title": "BriefingReturnEvidence",
+        "type": "object"
+      },
       "CapexPoint": {
         "properties": {
           "capex": {
@@ -2680,6 +2920,161 @@
           "run_ids"
         ],
         "title": "CompareRequest",
+        "type": "object"
+      },
+      "ComparisonBriefingEvidence": {
+        "properties": {
+          "anchor": {
+            "title": "Anchor",
+            "type": "string"
+          },
+          "citation_scope": {
+            "const": "packet_local",
+            "default": "packet_local",
+            "title": "Citation Scope",
+            "type": "string"
+          },
+          "comparisons": {
+            "items": {
+              "$ref": "#/components/schemas/BriefingPairEvidence"
+            },
+            "maxItems": 6,
+            "minItems": 1,
+            "title": "Comparisons",
+            "type": "array"
+          },
+          "data_source": {
+            "const": "unified_history",
+            "default": "unified_history",
+            "title": "Data Source",
+            "type": "string"
+          },
+          "included_evidence": {
+            "const": "shared_utc_provider_close_returns",
+            "default": "shared_utc_provider_close_returns",
+            "title": "Included Evidence",
+            "type": "string"
+          },
+          "method": {
+            "const": "same_utc_date_daily_closes",
+            "default": "same_utc_date_daily_closes",
+            "title": "Method",
+            "type": "string"
+          },
+          "not_included": {
+            "items": {
+              "enum": [
+                "headlines",
+                "fundamentals",
+                "sec_filing_checks",
+                "macro",
+                "technical_measures",
+                "fx_views",
+                "adjusted_views",
+                "exchange_local_views",
+                "private_research"
+              ],
+              "type": "string"
+            },
+            "title": "Not Included",
+            "type": "array"
+          },
+          "packet_id": {
+            "pattern": "^[0-9a-f]{64}$",
+            "title": "Packet Id",
+            "type": "string"
+          },
+          "period": {
+            "enum": [
+              "1M",
+              "3M",
+              "6M"
+            ],
+            "title": "Period",
+            "type": "string"
+          },
+          "retrieved_at": {
+            "format": "date-time",
+            "title": "Retrieved At",
+            "type": "string"
+          },
+          "return_basis": {
+            "const": "native_quote_currency_provider_closes",
+            "default": "native_quote_currency_provider_closes",
+            "title": "Return Basis",
+            "type": "string"
+          },
+          "schema_version": {
+            "const": "1",
+            "default": "1",
+            "title": "Schema Version",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "available",
+              "partial",
+              "unavailable"
+            ],
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "packet_id",
+          "status",
+          "anchor",
+          "period",
+          "retrieved_at",
+          "not_included",
+          "comparisons"
+        ],
+        "title": "ComparisonBriefingEvidence",
+        "type": "object"
+      },
+      "ComparisonBriefingEvidenceRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "anchor": {
+            "examples": [
+              "AAPL"
+            ],
+            "maxLength": 40,
+            "minLength": 1,
+            "title": "Anchor",
+            "type": "string"
+          },
+          "comparisons": {
+            "examples": [
+              [
+                "SPY",
+                "BTC-USD"
+              ]
+            ],
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 6,
+            "minItems": 1,
+            "title": "Comparisons",
+            "type": "array"
+          },
+          "period": {
+            "default": "1M",
+            "enum": [
+              "1M",
+              "3M",
+              "6M"
+            ],
+            "title": "Period",
+            "type": "string"
+          }
+        },
+        "required": [
+          "anchor",
+          "comparisons"
+        ],
+        "title": "ComparisonBriefingEvidenceRequest",
         "type": "object"
       },
       "CompileError": {
@@ -28039,6 +28434,63 @@
         },
         "x-openterminalui-feature-state": {
           "kite": "configuration-gated"
+        }
+      }
+    },
+    "/api/market-context/briefing-evidence": {
+      "post": {
+        "description": "Fetch a fresh comparison and project citable, bounded evidence only.\n\nThis does not generate a briefing, persist a snapshot or reuse the browser's\nprevious response. Optional provider panels and private notes are excluded.",
+        "operationId": "prepare_comparison_briefing_evidence_api_market_context_briefing_evidence_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ComparisonBriefingEvidenceRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ComparisonBriefingEvidence"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "504": {
+            "description": "Evidence preparation timed out; no packet was created."
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Prepare Comparison Briefing Evidence",
+        "tags": [
+          "market-context"
+        ],
+        "x-openterminalui-auth": {
+          "permission": "user",
+          "scheme": "bearer"
+        },
+        "x-openterminalui-feature-state": {
+          "market-context": "experimental"
         }
       }
     },

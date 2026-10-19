@@ -6,6 +6,15 @@ adopt [Semantic Versioning](https://semver.org/spec/v2.0.0.html) from `1.0.0`.
 
 ## [Unreleased]
 
+### Added
+- **Comparison briefing evidence foundation (v2.2)** — a JWT-authenticated,
+  on-demand endpoint builds bounded server-derived shared-date return evidence
+  with packet-local citations, a content fingerprint, source/unit/date metadata,
+  partial/unavailable states and explicit scope exclusions. It rejects browser
+  evidence assertions and bounds preparation to 45 seconds. This first slice
+  does not generate prose, fetch optional panels, persist/index data or expose a
+  briefing action in the browser; those are not implied by this API foundation.
+
 ### Documentation
 - Reconcile the README, wiki and external-agent handoff with published v2.1.0;
   add a research workflow guide for market context, source-filing checks,

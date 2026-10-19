@@ -7,8 +7,9 @@ previously existed only in a maintainer's chat or local agent memory.
 Last post-release audit: **2026-10-18**, against published **v2.1.0** at
 `a1efc0c` (release preparation PR #216). Implementation, maintainer host
 acceptance, all release-prep CI jobs, tag and GitHub publication are complete.
-README and maintained wiki describe the shipped workflows; broader v2.x items
-remain backlog, not an implicitly authorized next minor release.
+README and maintained wiki describe the shipped workflows. The maintainer
+subsequently approved **v2.2 Grounded Comparison Briefing** on 2026-10-19; its
+bounded sequence is in `TODO.md` and the Roadmap. Broader v2.x items remain backlog.
 
 ## Read order and sources of truth
 
@@ -84,6 +85,13 @@ release-level interpretation and safety boundaries.
 
 ## Current release and development state
 
+- **v2.2 in development — Grounded Comparison Briefing.** The agreed outcome is
+  on-demand cited synthesis of a selected comparison, with observations, possible
+  context, conflicts and unknowns kept distinct. No causal explanations, trade
+  advice, automatic discovery or portfolio-wide context. The first API slice
+  builds fingerprinted shared-UTC provider-close evidence on the server; it
+  invokes no model, includes no optional panels, and does not save/index anything.
+  Validated generation and browser integration remain next, not already shipped.
 - Current release: **v2.1.0**, tagged and published from `a1efc0c` on
   2026-10-18 after maintainer host acceptance and green release-prep CI.
   Keep `backend/config/settings.py` and `frontend/package.json` in lockstep when
