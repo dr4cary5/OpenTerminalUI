@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import math
 import re
 from datetime import datetime, timezone
 from typing import Any
@@ -18,13 +19,13 @@ MAX_SYMBOLS = 50
 SYMBOL_RE = re.compile(r"^\^?[A-Z0-9][A-Z0-9._=\-]{0,24}$")
 IN_MARKETS = {"NSE", "BSE"}
 US_MARKETS = {"NYSE", "NASDAQ"}
-SUPPORTED_MARKETS = IN_MARKETS | US_MARKETS
+SUPPORTED_MARKETS = IN_MARKETS | US_MARKETS | {"CRYPTO"}
 
 
 def _to_float(value: Any) -> float | None:
     try:
         out = float(value)
-        if out != out:
+        if not math.isfinite(out):
             return None
         return out
     except (TypeError, ValueError):
@@ -100,7 +101,7 @@ async def _fetch_yahoo_quotes(fetcher: Any, symbols: list[str], now_iso: str) ->
 
 @router.get("/quotes")
 async def get_quotes(
-    market: str = Query(..., description="NSE|BSE|NYSE|NASDAQ"),
+    market: str = Query(..., description="NSE|BSE|NYSE|NASDAQ|CRYPTO"),
     symbols: str = Query(..., description="Comma-separated symbols, e.g. RELIANCE,TCS"),
 ) -> dict[str, Any]:
     market_code = market.strip().upper()
@@ -141,6 +142,8 @@ async def get_quotes(
             quote = None
         if quote is None:
             continue
+        if market_code in US_MARKETS | {"CRYPTO"} and (_to_float(quote.price) is None or quote.price <= 0):
+            continue
         adapter_quotes.append(
             {
                 "symbol": symbol_item,
@@ -168,7 +171,7 @@ async def get_quotes(
             if isinstance(payload, Exception) or not isinstance(payload, dict):
                 continue
             last = _to_float(payload.get("c"))
-            if last is None:
+            if last is None or last <= 0:
                 continue
             change = _to_float(payload.get("d"))
             change_pct = _to_float(payload.get("dp"))
@@ -186,6 +189,12 @@ async def get_quotes(
                 }
             )
         all_quotes.extend(local_quotes)
+        return {"market": market_code, "quotes": all_quotes}
+
+    if market_code == "CRYPTO":
+        # Never send crypto through India suffixes/Kite when the adapter fails.
+        rows = await _fetch_yahoo_quotes(fetcher, local_syms, now_iso)
+        all_quotes.extend(row for row in rows if row["last"] > 0)
         return {"market": market_code, "quotes": all_quotes}
 
     local_quotes = []

@@ -6,6 +6,13 @@ adopt [Semantic Versioning](https://semver.org/spec/v2.0.0.html) from `1.0.0`.
 
 ## [Unreleased]
 
+### Fixed
+- **Crypto prices on stock detail** — route both the chart and initial snapshot
+  through the crypto market, preventing an unsupported Finnhub equity response
+  from overriding BTC with a zero price labelled live. Reject invalid/nonpositive
+  polled US/crypto quotes, preserve missing prices instead of coercing null to zero, and
+  poll Yahoo crypto symbols when the Binance stream is disconnected.
+
 ### Added
 - **On-demand comparison briefing browser (v2.2)** — generate from an applied
   comparison, follow progress or cancel, and inspect each citation in the exact

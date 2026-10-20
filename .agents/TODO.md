@@ -520,6 +520,13 @@ context or automatic relationship discovery. Keep this release bounded.
       evidence/model cases before release prep. Verify cited source values and
       scope, mandatory caveats, selection changes, cancellation and manual retry.
 
+Host testing after PR #220 exposed an independent crypto stock-detail regression:
+the chart still used the equity market, overriding valid crypto ticks with a
+Finnhub unsupported-symbol zero. The hotfix aligns chart/snapshot routing,
+rejects invalid US/crypto quotes and adds Yahoo polling for disconnected crypto
+streams. This does not change Binance's existing USDT-to-USD-symbol mapping;
+denomination fidelity remains a separate gap, not solved by this hotfix.
+
 Deferred: full historical coverage, automatic discovery, portfolio-wide context,
 unreliable-provider replacement as a release gate, execution, and automatic
 Brain Log/retrieval integration. See `docs/wiki/Roadmap.md` for acceptance bounds.
