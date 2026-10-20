@@ -1,11 +1,17 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { captureMarketFundamentals, compareMarketContext, compareMarketFundamentalCaptures, fetchEuroAreaHicpFirstPublished, fetchEuroAreaMacroObservations, fetchEuroAreaUnemploymentVintages, fetchMarketContextFundamentalReleases, fetchMarketContextHeadlines, fetchMarketContextMacroEvents, fetchMarketContextMacroObservations, fetchMarketSecFiledFacts, fetchSecFilingFactCheck, fetchSecSubmissionCrosscheck, getMarketFundamentalCapture, listMarketFundamentalCaptures } from "../api/marketContext";
 import { searchSymbols } from "../api/marketData";
 import { MarketContextPage } from "../pages/MarketContextPage";
+import { streamComparisonBriefing } from "../api/comparisonBriefing";
+import { makeBriefing } from "./fixtures/comparisonBriefing";
+
+vi.mock("../api/comparisonBriefing", async (original) => ({
+  ...await original<typeof import("../api/comparisonBriefing")>(), streamComparisonBriefing: vi.fn(),
+}));
 
 vi.mock("../api/marketContext", () => ({ captureMarketFundamentals: vi.fn(), compareMarketContext: vi.fn(), compareMarketFundamentalCaptures: vi.fn(), fetchEuroAreaHicpFirstPublished: vi.fn(), fetchEuroAreaMacroObservations: vi.fn(), fetchEuroAreaUnemploymentVintages: vi.fn(), fetchMarketContextFundamentalReleases: vi.fn(), fetchMarketContextHeadlines: vi.fn(), fetchMarketContextMacroEvents: vi.fn(), fetchMarketContextMacroObservations: vi.fn(), fetchMarketSecFiledFacts: vi.fn(), fetchSecFilingFactCheck: vi.fn(), fetchSecSubmissionCrosscheck: vi.fn(), getMarketFundamentalCapture: vi.fn(), listMarketFundamentalCaptures: vi.fn() }));
 vi.mock("../api/marketData", () => ({ searchSymbols: vi.fn() }));
@@ -40,6 +46,7 @@ function renderPage(path: string) {
 
 describe("MarketContextPage", () => {
   beforeEach(() => {
+    vi.mocked(streamComparisonBriefing).mockReset();
     compareMock.mockReset();
     headlinesMock.mockReset();
     macroMock.mockReset();
@@ -55,6 +62,39 @@ describe("MarketContextPage", () => {
     listCapturesMock.mockReset().mockResolvedValue([]);
     getCaptureMock.mockReset();
     searchMock.mockReset();
+  });
+
+  it("briefs only the applied selection and clears its answer immediately when a draft changes", async () => {
+    compareMock.mockResolvedValue({ anchor: "AAPL", period: "1M", retrieved_at: "2026-10-20T12:00:00Z", comparisons: [] } as any);
+    vi.mocked(streamComparisonBriefing).mockResolvedValue(makeBriefing());
+    renderPage("/equity/market-context?symbol=AAPL&proxies=SPY&period=1M&currency=EUR");
+    expect(streamComparisonBriefing).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole("button", { name: "Generate briefing" }));
+    await screen.findByText(makeBriefing().observations[0].text);
+    expect(streamComparisonBriefing).toHaveBeenCalledWith({ anchor: "AAPL", comparisons: ["SPY"], period: "1M" }, expect.any(Object));
+    fireEvent.change(screen.getByLabelText("Comparison symbols"), { target: { value: "QQQ" } });
+    expect(screen.queryByText(makeBriefing().observations[0].text)).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Generate briefing" })).toBeDisabled();
+    expect(screen.getByText("Apply your selection before generating a briefing.")).toBeVisible();
+    fireEvent.click(screen.getByRole("button", { name: "Compare dated moves" }));
+    await waitFor(() => expect(screen.getByRole("button", { name: "Generate briefing" })).toBeEnabled());
+    expect(streamComparisonBriefing).toHaveBeenCalledOnce();
+    expect(compareMock).toHaveBeenLastCalledWith("AAPL", ["QQQ"], "1M", "EUR");
+  });
+
+  it.each(["Window", "Reporting currency", "Anchor symbol", "Comparison symbols"])("aborts an active briefing when %s changes", async (field) => {
+    compareMock.mockResolvedValue({ anchor: "AAPL", period: "1M", retrieved_at: "2026-10-20T12:00:00Z", comparisons: [] } as any);
+    let resolve!: (value: ReturnType<typeof makeBriefing>) => void;
+    vi.mocked(streamComparisonBriefing).mockReturnValue(new Promise((done) => { resolve = done; }));
+    renderPage("/equity/market-context?symbol=AAPL&proxies=SPY&period=1M");
+    fireEvent.click(screen.getByRole("button", { name: "Generate briefing" }));
+    const signal = vi.mocked(streamComparisonBriefing).mock.calls[0][1]!.signal!;
+    const value = { Window: "3M", "Reporting currency": "EUR", "Anchor symbol": "MSFT", "Comparison symbols": "QQQ" }[field];
+    fireEvent.change(screen.getByLabelText(field), { target: { value } });
+    expect(signal.aborted).toBe(true);
+    await act(async () => resolve(makeBriefing()));
+    expect(screen.queryByText(makeBriefing().observations[0].text)).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Generate briefing" })).toBeDisabled();
   });
 
   it("requests optional reporting currency and keeps FX endpoint evidence separate from native returns", async () => {

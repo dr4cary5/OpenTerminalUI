@@ -95,7 +95,11 @@ release-level interpretation and safety boundaries.
   generation/repair and cancellable progress streaming. Reference validity is
   not semantic fact-checking; preserve the fixed scope notice and original
   evidence/caveats. Optional panels, persistence and indexing remain excluded.
-  Browser integration and host acceptance remain next, not already shipped.
+  The comparison browser now offers explicit generation, progress/cancellation,
+  manual retries, plain-text results and citation-to-snapshot inspection. Draft
+  or applied selection changes invalidate prior work; failed retries retain no
+  old prose. No automatic stream replay or saving/indexing. Configured host
+  acceptance remains next; v2.2 is not released.
 - Current release: **v2.1.0**, tagged and published from `a1efc0c` on
   2026-10-18 after maintainer host acceptance and green release-prep CI.
   Keep `backend/config/settings.py` and `frontend/package.json` in lockstep when

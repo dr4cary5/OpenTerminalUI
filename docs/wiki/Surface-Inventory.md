@@ -143,8 +143,10 @@ The experimental `market-context` API family also includes v2.2's
 `POST /api/market-context/briefing-evidence` foundation and separate `/briefing`
 and `/briefing/stream` generation APIs. They build fresh bounded evidence with
 explicit exclusions; synthesis checks structure/references, not semantic truth.
-They do not add a browser destination, save/index answers, reclassify comparisons
-or imply that optional panels informed a briefing. See the
+The existing contextual comparison page now has an explicit briefing action
+with cancellation and citation-to-snapshot inspection. This adds no destination,
+saving/indexing or reclassification, and does not imply that optional panels
+informed a briefing. See the
 [v2.2 scope](Roadmap.md) and [research guide](Research-Workflows.md).
 
 ## Removed orphan surfaces

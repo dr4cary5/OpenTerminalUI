@@ -7,6 +7,7 @@ import { captureMarketFundamentals, compareMarketContext, compareMarketFundament
 import { extractApiErrorMessage } from "../api/base";
 import { SymbolSuggestions } from "../components/market/SymbolSuggestions";
 import { SecFilingFactCheck } from "../components/market/SecFilingFactCheck";
+import { ComparisonBriefingPanel } from "../components/market/ComparisonBriefingPanel";
 import { TerminalPanel } from "../components/terminal/TerminalPanel";
 
 const SYMBOL_PATTERN = /^[A-Z0-9^._=-]{1,40}$/;
@@ -1329,6 +1330,15 @@ export function MarketContextPage() {
         <p className="mt-2 text-xs text-terminal-muted">Suggestions identify symbols; daily-history availability is checked when you compare.</p>
         {formError || selection.error ? <p role="alert" className="mt-2 text-xs text-terminal-neg">{formError || selection.error}</p> : null}
       </TerminalPanel>
+
+      <ComparisonBriefingPanel
+        key={JSON.stringify([selection.anchor, selection.comparisons, appliedPeriod, appliedCurrency, anchorInput, proxiesInput, periodInput, currencyInput])}
+        selection={{ anchor: selection.anchor, comparisons: selection.comparisons, period: appliedPeriod }}
+        disabledReason={selection.error || (anchorInput.trim().toUpperCase() !== selection.anchor
+          || JSON.stringify(selectedProxies) !== JSON.stringify(selection.comparisons)
+          || periodInput !== appliedPeriod || (currencyInput || null) !== appliedCurrency
+          ? "Apply your selection before generating a briefing." : undefined)}
+      />
 
       <TerminalPanel title="Observed comparison" subtitle={`${selection.anchor} · ${appliedPeriod} requested window`}>
         <p className="mb-3 text-xs text-terminal-muted">

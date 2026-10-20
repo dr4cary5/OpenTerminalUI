@@ -502,15 +502,23 @@ context or automatic relationship discovery. Keep this release bounded.
       generation. This is reference/structure checking, not semantic verification
       of numbers, causal wording or recommendations in model prose; prompt rules
       constrain those claims and the output explicitly carries that limitation.
-- [ ] Add the browser action, lifecycle states, exact evidence scope and
+- [x] Add the browser action, lifecycle states, exact evidence scope and
       inspectable citations. Prevent selection changes, failed retries and
       interrupted work from retaining misleading old results. Do not claim
       optional evidence panels informed the answer unless included explicitly.
       Render model text as untrusted plain text; citation navigation must resolve
       through the attached packet, not model-provided links. Display the fixed
       scope notice and mandatory packet caveats alongside the prose.
-- [ ] Complete deterministic API/UI coverage and configured host acceptance of
-      a useful briefing plus degraded evidence/model cases before release prep.
+      Generation is opt-in; progress and cancellation never publish partial
+      prose. Draft/applied symbol, period or reporting-currency changes clear
+      previous work. The browser allows the announced evidence/model deadlines
+      plus transport margin, without heartbeat extensions or automatic replay.
+- [x] Add deterministic API/UI coverage, including malformed/truncated/stalled
+      streams, cancellation, failed retries, plain-text output, exact snapshot
+      citation navigation and desktop/narrow-screen browser journeys.
+- [ ] Obtain configured host acceptance of a useful briefing plus degraded
+      evidence/model cases before release prep. Verify cited source values and
+      scope, mandatory caveats, selection changes, cancellation and manual retry.
 
 Deferred: full historical coverage, automatic discovery, portfolio-wide context,
 unreliable-provider replacement as a release gate, execution, and automatic
