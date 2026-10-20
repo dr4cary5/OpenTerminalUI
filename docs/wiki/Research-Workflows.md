@@ -167,7 +167,7 @@ The explicit `not_included` list covers optional news, fundamentals, SEC checks,
 macro, technical measures, FX/adjusted/local-date views and private research.
 Exclusion does not establish that evidence is absent or that a provider failed.
 The preparation endpoint generates no answer. Separate generation APIs below
-now build on that contract; there is still no browser action or persistence.
+now build on that contract; nothing is persisted or indexed.
 
 ### v2.2 comparison briefing APIs in development
 
@@ -203,6 +203,35 @@ endpoint's HTTP 504 on its own deadline. Health, completion and one repair share
 `LLM_TIMEOUT_SECONDS` (default 240 seconds), after up to 45 seconds of evidence
 preparation. Clients must allow both stages; heartbeats do not extend the server
 budget. No rejected/partial answer is published as a completed briefing.
+
+### v2.2 browser briefing in development
+
+On **Cross-market context**, apply the anchor, proxies and window with
+**Compare dated moves**, then choose **Generate briefing**. It is always opt-in;
+opening the page, focusing the window or reconnecting does not run the model.
+The request fetches its own fresh native-quote/shared-UTC snapshot. Optional
+panels and reporting-currency views are not included, even when visible.
+
+Progress reports the preparation, generation and reference-checking stages, not
+raw model tokens. **Cancel briefing** discards the run. The browser allows the
+server-announced preparation and model budgets plus 15 seconds of transport
+margin; absent response headers have a five-minute limit. Heartbeats do not
+extend deadlines. Failed/interrupted runs require a deliberate manual retry;
+there is no automatic second model run or fallback to a different snapshot.
+
+Completed observations, limitations and unknowns are plain text. Click a pair
+citation or `SCOPE` to open and focus its evidence in **Inspect briefing evidence
+snapshot**: exact returned numbers, pair window, source/unit/basis metadata,
+freshness, exclusions and snapshot identity. Material source caveats remain
+visible outside the inspector. References are checked, not prose truth; inspect
+values and caveats yourself. Expected unavailable results retain the packet when
+one exists but have no model prose. A preparation timeout has no packet.
+
+Editing any selection field, including window or reporting currency, clears old
+results and cancels active work. Apply the new selection before generating again.
+Starting a fresh run also removes the previous answer immediately, including if
+the new run fails. There is no Save/Brain Log/indexing action. Configured host
+acceptance is still pending before release preparation.
 
 ### Complete contract
 

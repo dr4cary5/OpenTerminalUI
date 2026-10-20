@@ -154,7 +154,13 @@ reuses `insight_lifecycle.py` for cancellable progress and final-result delivery
 No raw provider tokens are published before validation. Preparation is bounded
 to 45 seconds; health, completion and one repair share `LLM_TIMEOUT_SECONDS`.
 No provider token-stream capability, persistence, migration or Brain indexing is
-required. Browser integration and host acceptance remain pending.
+required. `ComparisonBriefingPanel.tsx` exposes explicit generation, cancellation,
+plain-text output, mandatory caveats and snapshot-local citation inspection.
+Its separate `comparisonBriefing.ts` client checks the transport envelope and
+reference identities, bounds fetch/reader stalls using announced stage budgets,
+and never automatically replays a failed stream. Selection changes remount and
+abort the panel; generation guards ignore late completions. Configured host
+acceptance remains pending.
 
 ## Frontend structure
 

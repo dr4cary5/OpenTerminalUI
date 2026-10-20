@@ -7,20 +7,26 @@ adopt [Semantic Versioning](https://semver.org/spec/v2.0.0.html) from `1.0.0`.
 ## [Unreleased]
 
 ### Added
+- **On-demand comparison briefing browser (v2.2)** — generate from an applied
+  comparison, follow progress or cancel, and inspect each citation in the exact
+  fresh evidence snapshot. Scope and mandatory source caveats remain visible
+  beside plain-text prose. Selection changes and failed retries clear older
+  answers; interrupted streams are bounded and never silently replayed. Includes
+  deterministic desktop/narrow-screen journeys. No saving or Brain indexing;
+  configured host acceptance remains before release preparation.
 - **Citation-linked comparison briefing APIs (v2.2)** — explicit synchronous and
   progress-streaming requests build fresh server evidence and generate bounded
   observations, limitations and unknowns. Structure, packet identity and citation
   coverage are checked before publishing any prose, with one bounded repair,
   health/generation deadlines, cancellation and typed unavailable states. The
   original packet/caveats remain inspectable. Reference checks are explicitly
-  not semantic fact-checking; no browser action or saving/indexing is added yet.
+  not semantic fact-checking; nothing is saved or indexed.
 - **Comparison briefing evidence foundation (v2.2)** — a JWT-authenticated,
   on-demand endpoint builds bounded server-derived shared-date return evidence
   with packet-local citations, a content fingerprint, source/unit/date metadata,
   partial/unavailable states and explicit scope exclusions. It rejects browser
-  evidence assertions and bounds preparation to 45 seconds. This first slice
-  does not generate prose, fetch optional panels, persist/index data or expose a
-  briefing action in the browser; those are not implied by this API foundation.
+  evidence assertions and bounds preparation to 45 seconds. The preparation-only
+  endpoint does not generate prose, fetch optional panels or persist/index data.
 
 ### Documentation
 - Reconcile the README, wiki and external-agent handoff with published v2.1.0;

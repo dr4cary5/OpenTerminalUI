@@ -309,9 +309,15 @@ The stream sends progress and only the final checked result, never raw provider
 tokens; non-streaming model providers work through completion calls. Health,
 completion and one repair share the configured model deadline after the bounded
 preparation stage. Evidence/model failures remain typed; cancellation stops work.
-The browser integration and configured host acceptance are still pending. The
-future UI must show the exact scope rather than imply all visible panels informed
-the prose; no saving/indexing is introduced by these APIs.
+The comparison browser now offers **Generate briefing**, progress/cancellation,
+manual retries and citations that open the attached snapshot. Prose is plain
+text; source caveats remain visible beside it. Draft or applied selection,
+window and reporting-currency changes invalidate previous work. The request
+still includes only anchor/proxies/period, not the optional currency or panels.
+Interrupted or failed retries cannot leave an older answer looking current,
+and there is no automatic replay against a new snapshot. Deterministic API/UI
+coverage includes desktop and narrow-screen journeys. Configured host acceptance
+is still pending; no saving/indexing or v2.2 release is implied.
 
 **Release gate:** citations resolve to the supplied snapshot; incomplete, stale,
 conflicting, unavailable and mixed-basis inputs remain explicit; malformed,
