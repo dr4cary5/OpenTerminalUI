@@ -646,7 +646,7 @@ class MarketDataHub:
                 if isinstance(payload, Exception) or not isinstance(payload, dict):
                     continue
                 last = _to_float(payload.get("c"))
-                if last is None:
+                if last is None or not 0 < last < float("inf"):
                     continue
                 epoch = payload.get("t")
                 ts_iso = now_iso
@@ -698,18 +698,20 @@ class MarketDataHub:
                 return await self._fetch_nfo_fallback_quotes(fetcher, symbol_list, now_iso)
             return []
 
-        if market in IN_MARKETS:
+        if market in IN_MARKETS | CRYPTO_MARKETS:
             suffix = ".NS" if market == "NSE" else ".BO"
-            yahoo_symbols = [f"{symbol}{suffix}" for symbol in symbol_list]
+            yahoo_symbols = symbol_list if market in CRYPTO_MARKETS else [f"{symbol}{suffix}" for symbol in symbol_list]
             rows = await fetcher.yahoo.get_quotes(yahoo_symbols)
             quotes = []
             for row in rows:
                 if not isinstance(row, dict):
                     continue
                 raw_symbol = str(row.get("symbol") or "").upper()
-                symbol = raw_symbol.replace(".NS", "").replace(".BO", "")
+                symbol = raw_symbol if market in CRYPTO_MARKETS else raw_symbol.replace(".NS", "").replace(".BO", "")
                 last = _to_float(row.get("regularMarketPrice"))
                 if symbol not in symbol_list or last is None:
+                    continue
+                if market in CRYPTO_MARKETS and not 0 < last < float("inf"):
                     continue
                 epoch = row.get("regularMarketTime")
                 ts_iso = now_iso

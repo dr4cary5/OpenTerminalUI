@@ -36464,12 +36464,12 @@
         "operationId": "get_quotes_api_quotes_get",
         "parameters": [
           {
-            "description": "NSE|BSE|NYSE|NASDAQ",
+            "description": "NSE|BSE|NYSE|NASDAQ|CRYPTO",
             "in": "query",
             "name": "market",
             "required": true,
             "schema": {
-              "description": "NSE|BSE|NYSE|NASDAQ",
+              "description": "NSE|BSE|NYSE|NASDAQ|CRYPTO",
               "title": "Market",
               "type": "string"
             }

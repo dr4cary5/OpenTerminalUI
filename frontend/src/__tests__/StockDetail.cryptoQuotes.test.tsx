@@ -1,0 +1,88 @@
+import { act, render, screen, waitFor, within } from "@testing-library/react";
+import { MemoryRouter } from "react-router-dom";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { StockDetailPage } from "../pages/StockDetail";
+import { useStockStore } from "../store/stockStore";
+import { useSettingsStore } from "../store/settingsStore";
+
+const mocks = vi.hoisted(() => ({
+  fetchQuotes: vi.fn(), subscribe: vi.fn(), unsubscribe: vi.fn(), market: vi.fn(),
+  chartProps: null as any,
+  stock: { current_price: null, change_pct: null } as any,
+  ticks: {} as Record<string, any>,
+  chart: { currency: "USD", data: [{ t: 1792520000, o: 82000, h: 83000, l: 81000, c: 82500, v: 10 }] },
+}));
+vi.mock("../api/client", async (original) => ({
+  ...await original<typeof import("../api/client")>(), fetchQuotesBatch: mocks.fetchQuotes,
+}));
+vi.mock("../hooks/useStocks", () => ({
+  useStock: () => ({ data: mocks.stock }), useStockHistory: () => ({ data: mocks.chart }),
+  useStockReturns: () => ({}), useEquityPerformance: () => ({}), useDeliverySeries: () => ({}),
+  useFinancials: () => ({}), useNextEarnings: () => ({}),
+}));
+vi.mock("../hooks/useDisplayCurrency", () => ({
+  useDisplayCurrency: () => ({ formatDisplayMoney: (value: number) => `$${value.toFixed(2)}` }),
+}));
+vi.mock("../realtime/useQuotesStream", () => ({
+  useQuotesStream: (market: string) => {
+    mocks.market(market);
+    return { subscribe: mocks.subscribe, unsubscribe: mocks.unsubscribe, isConnected: false, connectionState: "disconnected" };
+  },
+  useQuotesStore: (selector: any) => selector({ ticksByToken: mocks.ticks }),
+}));
+vi.mock("../shared/chart/ChartEngine", () => ({
+  ChartEngine: (props: any) => { mocks.chartProps = props; return <div>Chart fixture</div>; },
+}));
+vi.mock("../shared/chart/ChartToolbar", () => ({ SharedChartToolbar: () => null }));
+vi.mock("../shared/chart/IndicatorPanel", () => ({ IndicatorPanel: () => null }));
+vi.mock("../components/crypto/CryptoOverviewPanel", () => ({ CryptoOverviewPanel: () => null }));
+vi.mock("../components/terminal/AiInsightCard", () => ({ AiInsightCard: () => null }));
+vi.mock("../components/market/TickerNewsCard", () => ({ TickerNewsCard: () => null }));
+
+function renderPage() { return render(<MemoryRouter><StockDetailPage /></MemoryRouter>); }
+function latest() { return within(screen.getByText("Latest Price").closest("section")!); }
+
+describe("StockDetail crypto quote routing", () => {
+  beforeEach(() => {
+    mocks.fetchQuotes.mockReset().mockResolvedValue({ quotes: [] });
+    mocks.market.mockClear(); mocks.subscribe.mockClear(); mocks.unsubscribe.mockClear();
+    mocks.chartProps = null; mocks.ticks = {}; mocks.stock = { current_price: null, change_pct: null };
+    useStockStore.setState({ ticker: "BTC-USD", interval: "1d", range: "1y" });
+    useSettingsStore.setState({ selectedMarket: "NASDAQ" });
+  });
+
+  it("uses CRYPTO for both snapshot and chart despite an equity market selection", async () => {
+    mocks.fetchQuotes.mockResolvedValue({ quotes: [{ last: 82521.45, change: 535.14, changePct: 0.65 }] });
+    renderPage();
+    expect(await latest().findByText("$82521.45")).toBeVisible();
+    expect(mocks.fetchQuotes).toHaveBeenCalledWith(["BTC-USD"], "CRYPTO");
+    await waitFor(() => expect(mocks.chartProps.market).toBe("CRYPTO"));
+    expect(mocks.market).toHaveBeenCalledWith("CRYPTO");
+    expect(latest().getByText("+535.14")).toBeVisible();
+    expect(latest().getByText("+0.65%")).toBeVisible();
+  });
+
+  it.each([null, 0, NaN, Infinity])("does not turn a missing/invalid quote (%s) into $0.00", async (last) => {
+    mocks.fetchQuotes.mockResolvedValue({ quotes: [{ last, change: 0, changePct: 0 }] });
+    renderPage();
+    await waitFor(() => expect(mocks.fetchQuotes).toHaveBeenCalledOnce());
+    expect(latest().queryByText("$0.00")).not.toBeInTheDocument();
+    expect(latest().queryByText("+0.00%")).not.toBeInTheDocument();
+    expect(latest().getAllByText("-")).toHaveLength(3);
+  });
+
+  it("ignores an invalid chart tick without masking a valid crypto tick", async () => {
+    mocks.ticks = { "CRYPTO:BTC-USD": { ltp: 82521.45, change: 535.14, change_pct: 0.65 } };
+    renderPage(); await waitFor(() => expect(mocks.chartProps).not.toBeNull());
+    act(() => mocks.chartProps.onTick({ ltp: 0, change_pct: 0 }));
+    expect(latest().getByText("$82521.45")).toBeVisible();
+    expect(latest().getByText("+0.65%")).toBeVisible();
+  });
+
+  it("retains equity routing for non-crypto symbols", async () => {
+    useStockStore.setState({ ticker: "^GSPC" });
+    renderPage();
+    expect(mocks.fetchQuotes).toHaveBeenCalledWith(["^GSPC"], "NASDAQ");
+    await waitFor(() => expect(mocks.chartProps.market).toBe("NASDAQ"));
+  });
+});

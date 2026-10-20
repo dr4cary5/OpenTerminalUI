@@ -16,6 +16,7 @@ and cover only stable, release-critical behavior. The set covers the login
 surface, authenticated shell/navigation/GO-bar routing, and a fixture-backed
 Backtesting submit/poll/result journey, and desktop/narrow-screen comparison
 briefing generation, citation inspection, failed retry and selection invalidation.
+It also checks crypto stock-detail snapshot/chart routing with mocked quote ticks.
 Because those requests are fully
 intercepted, the smoke command runs the built frontend without starting backend
 jobs or contacting upstream providers.
@@ -48,7 +49,7 @@ whether its product surface is supported.
 
 | Class | Specs | Next action |
 |---|---|---|
-| CI smoke | `auth-smoke`, `critical-shell-smoke`, `backtesting-tabs`, `comparison-briefing` | Keep deterministic and small. |
+| CI smoke | `auth-smoke`, `critical-shell-smoke`, `backtesting-tabs`, `comparison-briefing`, `crypto-stock-detail` | Keep deterministic and small. |
 | Mocked journey candidates | `alerts-v2`, `chart-workstation`, `correlation-dashboard`, `custom-formula-screener`, `factor-attribution`, `fno-option-chain`, `hotkey-trading`, `market-heatmap`, `model-lab-flow`, `notification-center`, `options-flow`, `portfolio-lab-flow`, `position-sizer`, `risk-oms-ops`, `screener-scanner`, `stress-test`, `time-and-sales`, `trade-journal`, `workspace-templates` | Reconcile fixtures and assertions with current contracts, then promote valuable journeys individually. |
 | Provider/live-data dependent | `dom-ladder`, `insider-activity`, `multi-timeframe`, `pair-trading-lab`, `statlab-v2-tabs`, `terminal-shell-go-bar` | Replace upstream dependencies and pre-v1 defaults with explicit fixtures before gating. |
 | Mobile-only | `mobile-interactions` and the mobile case in `terminal-shell-go-bar` | Run only in the scoped `mobile-chromium` project; update fixtures before promotion. |

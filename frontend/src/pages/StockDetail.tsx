@@ -82,14 +82,24 @@ function normalizeRealtimeMarketCode(value: string): "NSE" | "NASDAQ" {
   return "NASDAQ";
 }
 
+function optionalNumber(value: unknown): number | null {
+  if (value == null || value === "") return null;
+  const number = Number(value);
+  return Number.isFinite(number) ? number : null;
+}
+
+function positivePrice(value: unknown): number | null {
+  const price = optionalNumber(value);
+  return price !== null && price > 0 ? price : null;
+}
+
 export function StockDetailPage() {
   const { ticker, interval, range, setInterval, setRange } = useStockStore();
   const { formatDisplayMoney } = useDisplayCurrency();
   const selectedMarket = useSettingsStore((s) => s.selectedMarket);
   const realtimeMarket = normalizeRealtimeMarketCode(selectedMarket);
-  // Crypto realtime ticks come from the Binance feed under the CRYPTO market,
-  // independent of the equity market selector. Other realtimeMarket uses
-  // (quote batch, chart hint, order book) stay on the equity code.
+  // Chart and snapshot quotes must use the instrument's market, not the equity
+  // selector: an unsupported Finnhub crypto symbol can return c=0.
   const streamMarket = isCryptoSymbol(ticker) ? "CRYPTO" : realtimeMarket;
   const { subscribe, unsubscribe, isConnected, connectionState } = useQuotesStream(streamMarket);
   const ticksByToken = useQuotesStore((s) => s.ticksByToken);
@@ -153,6 +163,7 @@ export function StockDetailPage() {
 
   useEffect(() => {
     setSnapshotTick(null);
+    setRealtimeTick(null);
     if (!ticker) return;
     subscribe([ticker]);
     return () => unsubscribe([ticker]);
@@ -163,12 +174,12 @@ export function StockDetailPage() {
     if (!ticker) return;
     void (async () => {
       try {
-        const payload = await fetchQuotesBatch([ticker], realtimeMarket);
+        const payload = await fetchQuotesBatch([ticker], streamMarket);
         if (!active) return;
         const row = payload.quotes?.[0];
         if (!row) return;
-        const ltp = Number(row.last);
-        if (!Number.isFinite(ltp)) return;
+        const ltp = positivePrice(row.last);
+        if (ltp === null) return;
         setSnapshotTick({
           ltp,
           change: Number.isFinite(Number(row.change)) ? Number(row.change) : 0,
@@ -181,7 +192,7 @@ export function StockDetailPage() {
     return () => {
       active = false;
     };
-  }, [realtimeMarket, ticker]);
+  }, [streamMarket, ticker]);
 
   useEffect(() => {
     const storageKey = `chart:indicators:${ticker.toUpperCase()}`;
@@ -273,24 +284,16 @@ export function StockDetailPage() {
     }),
     [stock, ticker],
   );
-  const latestPrice =
-    typeof stockForOverview?.current_price === "number"
-      ? stockForOverview.current_price
-      : Number.isFinite(Number(stockForOverview?.current_price))
-      ? Number(stockForOverview?.current_price)
-      : null;
-  const changePct =
-    typeof stockForOverview?.change_pct === "number"
-      ? stockForOverview.change_pct
-      : Number.isFinite(Number(stockForOverview?.change_pct))
-      ? Number(stockForOverview?.change_pct)
-      : null;
+  const latestPrice = positivePrice(stockForOverview?.current_price);
+  const changePct = optionalNumber(stockForOverview?.change_pct);
   const derivedChangeFromSnapshot =
     latestPrice !== null && changePct !== null && changePct > -100 ? latestPrice - latestPrice / (1 + changePct / 100) : null;
   const liveTick = ticker ? ticksByToken[`${streamMarket}:${ticker.toUpperCase()}`] : undefined;
-  const displayedLatestPrice = realtimeTick?.ltp ?? liveTick?.ltp ?? snapshotTick?.ltp ?? latestPrice;
-  const displayedChange = liveTick?.change ?? snapshotTick?.change ?? derivedChangeFromSnapshot;
-  const displayedChangePct = realtimeTick?.change_pct ?? liveTick?.change_pct ?? snapshotTick?.change_pct ?? changePct;
+  const chartTick = positivePrice(realtimeTick?.ltp) !== null ? realtimeTick : null;
+  const streamTick = positivePrice(liveTick?.ltp) !== null ? liveTick : null;
+  const displayedLatestPrice = chartTick?.ltp ?? streamTick?.ltp ?? snapshotTick?.ltp ?? latestPrice;
+  const displayedChange = streamTick?.change ?? snapshotTick?.change ?? derivedChangeFromSnapshot;
+  const displayedChangePct = chartTick?.change_pct ?? streamTick?.change_pct ?? snapshotTick?.change_pct ?? changePct;
   const moveClass =
     displayedChangePct === null
       ? "text-terminal-muted"
@@ -477,7 +480,7 @@ export function StockDetailPage() {
                 symbol={ticker}
                 timeframe={timeframe}
                 historicalData={historicalData}
-                market={realtimeMarket}
+                market={streamMarket}
                 activeIndicators={selectedIndicators}
                 chartType={chartType}
                 showVolume={showVolume}
