@@ -147,7 +147,7 @@ A Brain memo is a dated synthesis, not an execution record.
 
 ## API reference
 
-### v2.2 evidence preparation API in development
+### v2.2 evidence preparation API (release preparation)
 
 JWT-authenticated `POST /api/market-context/briefing-evidence` accepts
 `{"anchor":"AAPL","comparisons":["SPY"],"period":"1M"}`. It fetches a fresh
@@ -169,7 +169,7 @@ Exclusion does not establish that evidence is absent or that a provider failed.
 The preparation endpoint generates no answer. Separate generation APIs below
 now build on that contract; nothing is persisted or indexed.
 
-### v2.2 comparison briefing APIs in development
+### v2.2 comparison briefing APIs (release preparation)
 
 JWT-authenticated `POST /api/market-context/briefing` accepts the same selection
 and returns a complete or unavailable result. `POST /api/market-context/briefing/stream`
@@ -204,7 +204,7 @@ endpoint's HTTP 504 on its own deadline. Health, completion and one repair share
 preparation. Clients must allow both stages; heartbeats do not extend the server
 budget. No rejected/partial answer is published as a completed briefing.
 
-### v2.2 browser briefing in development
+### v2.2 browser briefing (release preparation)
 
 On **Cross-market context**, apply the anchor, proxies and window with
 **Compare dated moves**, then choose **Generate briefing**. It is always opt-in;
@@ -230,8 +230,10 @@ one exists but have no model prose. A preparation timeout has no packet.
 Editing any selection field, including window or reporting currency, clears old
 results and cancels active work. Apply the new selection before generating again.
 Starting a fresh run also removes the previous answer immediately, including if
-the new run fails. There is no Save/Brain Log/indexing action. Configured host
-acceptance is still pending before release preparation.
+the new run fails. There is no Save/Brain Log/indexing action. The maintainer
+accepted the live workflow on 2026-10-21; release preparation is underway, not a
+published tag. The configured model influences prose quality; reference checks
+do not compensate for weaker reasoning, and model tuning remains later work.
 
 ### Complete contract
 

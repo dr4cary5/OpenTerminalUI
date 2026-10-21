@@ -218,6 +218,37 @@ the annotated tag and [GitHub release v2.1.0](https://github.com/laanito/OpenTer
 were published from `a1efc0c` on 2026-10-18. Publication is complete; the broader
 v2.x evidence backlog is not part of this release gate.
 
+### v2.2.0 verification ledger (release preparation)
+
+Grounded Comparison Briefing is bounded to on-demand interpretation of fresh
+shared-UTC native provider-close returns. It does not incorporate optional page
+panels or private research, establish causation, recommend trades, persist/index
+answers or require a database migration/new provider setting. The existing
+OpenAI-compatible LLM configuration is used; model capability affects prose
+quality, and model tuning is explicitly outside the accepted milestone.
+
+| Contract | Evidence |
+|---|---|
+| Fresh server-only evidence, exact dates/metrics, packet-local IDs, provenance and explicit scope | `backend/tests/test_market_briefing_evidence.py` |
+| Bounded preparation/model/repair, citation-reference coverage, typed unavailable results and cancellation | `backend/tests/test_comparison_briefing.py`, `backend/tests/test_comparison_briefing_routes.py` |
+| No partial model prose, no automatic stream replay, fetch/reader deadlines and exact selection/reference validation | `frontend/src/__tests__/comparisonBriefing.test.ts` |
+| Opt-in generation, plain-text output, mandatory caveats, snapshot inspection, cancellation and stale-result invalidation | `frontend/src/__tests__/ComparisonBriefingPanel.test.tsx`, `frontend/src/__tests__/MarketContextPage.test.tsx`, desktop/narrow Chrome smoke |
+| Crypto chart/snapshot routing cannot turn unsupported Finnhub zero prices into live BTC quotes | `backend/tests/test_crypto_quote_routing.py`, `frontend/src/__tests__/StockDetail.cryptoQuotes.test.tsx`, `frontend/tests/e2e/crypto-stock-detail.spec.ts` |
+
+Implementation merged in PRs #218–#220. Host testing exposed an independent
+crypto stock-detail chart-routing regression; PR #221 fixed it. On 2026-10-21
+the maintainer confirmed both the crypto fix and that the briefing worked as
+intended, while explicitly keeping a smarter model outside this release.
+
+Local release verification on 2026-10-21 passed `make gate`: compilation,
+production mocks, API/surface contracts, the full backend coverage suite (1,182
+collected, one skipped; 74.90% coverage against the 45% gate), the production frontend build
+and 447 Vitest tests across 111 files. Six Chrome smoke tests and Compose
+configuration validation also passed. Local Python was 3.12; CI uses 3.11.
+Disposable PostgreSQL/clean-install jobs remain CI checks;
+this workflow does not tear down or rebuild the running deployment. Merge with
+green CI and explicit maintainer tag/publication authorization remain pending.
+
 ## Cutting the release
 
 ```bash

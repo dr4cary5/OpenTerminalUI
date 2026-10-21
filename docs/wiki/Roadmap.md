@@ -260,7 +260,7 @@ of past price moves. The broader revision-aware fundamentals contract and
 tested historical coverage below remain later work; they are not silently
 satisfied by corroborating selected filing facts.
 
-## v2.2 — Grounded Comparison Briefing (in development)
+## v2.2.0 — Grounded Comparison Briefing (release preparation)
 
 The maintainer selected a bounded, on-demand synthesis of the user's chosen
 comparison as the next outcome. It should explain what the supplied observations
@@ -316,8 +316,12 @@ window and reporting-currency changes invalidate previous work. The request
 still includes only anchor/proxies/period, not the optional currency or panels.
 Interrupted or failed retries cannot leave an older answer looking current,
 and there is no automatic replay against a new snapshot. Deterministic API/UI
-coverage includes desktop and narrow-screen journeys. Configured host acceptance
-is still pending; no saving/indexing or v2.2 release is implied.
+coverage includes desktop and narrow-screen journeys. The maintainer accepted the
+live briefing on 2026-10-21 and confirmed the independent crypto quote-routing fix
+from PR #221. Model capability may improve later, but is explicitly outside this
+scope. Implementation and host acceptance are complete; release verification,
+CI/merge and explicit tag/publication authorization remain. No saving/indexing
+is introduced.
 
 **Release gate:** citations resolve to the supplied snapshot; incomplete, stale,
 conflicting, unavailable and mixed-basis inputs remain explicit; malformed,

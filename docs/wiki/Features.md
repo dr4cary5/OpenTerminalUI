@@ -1,6 +1,6 @@
 # Features
 
-This is a workflow overview for **v2.1.0**, not a promise that every inherited
+This is a workflow overview through **v2.2.0 release preparation**, not a promise that every inherited
 route has live data. The [surface inventory](Surface-Inventory.md) defines
 supported, gated, experimental and hidden areas; [Limitations](Limitations.md)
 records provider gaps.
@@ -17,6 +17,14 @@ economic-calendar and US/euro-area macro observations. They do not automatically
 explain a move. v2.1 adds **Check source filing** for selected SEC facts, matching
 the official filing instance's exact issuer, concept, unit and fiscal duration.
 Conflicts, absent coverage and provider failures remain distinct.
+
+v2.2 adds **Generate briefing** for an applied comparison. It fetches a fresh
+shared-UTC native-quote return snapshot and produces observations, limitations
+and unknowns with inspectable citations. Progress, cancellation and manual retries
+are explicit; selection changes remove earlier work. Optional panels and private
+research are excluded even if visible. Reference/structure checks are not semantic
+fact-checking or investment advice. Nothing is automatically saved or indexed;
+host acceptance is complete, publication pending.
 
 Follow [Research Workflows](Research-Workflows.md) for entry points, source-check
 outcomes and configuration. Cross-market context remains classified experimental;
