@@ -6,6 +6,10 @@ adopt [Semantic Versioning](https://semver.org/spec/v2.0.0.html) from `1.0.0`.
 
 ## [Unreleased]
 
+### Documentation
+- Reconcile the README, maintained wiki and external-agent handoff with published
+  v2.2.0, close its release gates and leave later minor-release scope unassigned.
+
 ## [2.2.0] - 2026-10-21
 
 Grounded Comparison Briefing adds on-demand interpretation of a selected
@@ -15,8 +19,8 @@ returns, not optional page panels or private research. Citation references and
 structure are checked, not the semantic truth of the model's prose. Host testing
 confirmed the briefing works as intended and exposed an independent crypto
 quote-routing bug, also fixed and verified. No database migration or new provider
-setting is required. Release preparation is pending merge/CI; no tag has been
-published yet.
+setting is required. Host acceptance and release-prep CI passed; the tag and
+GitHub release were published from `039c395` on 2026-10-21.
 
 ### Fixed
 - **Crypto prices on stock detail** — route both the chart and initial snapshot

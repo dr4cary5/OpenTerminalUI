@@ -218,7 +218,7 @@ the annotated tag and [GitHub release v2.1.0](https://github.com/laanito/OpenTer
 were published from `a1efc0c` on 2026-10-18. Publication is complete; the broader
 v2.x evidence backlog is not part of this release gate.
 
-### v2.2.0 verification ledger (release preparation)
+### v2.2.0 verification ledger (released)
 
 Grounded Comparison Briefing is bounded to on-demand interpretation of fresh
 shared-UTC native provider-close returns. It does not incorporate optional page
@@ -245,9 +245,12 @@ production mocks, API/surface contracts, the full backend coverage suite (1,182
 collected, one skipped; 74.90% coverage against the 45% gate), the production frontend build
 and 447 Vitest tests across 111 files. Six Chrome smoke tests and Compose
 configuration validation also passed. Local Python was 3.12; CI uses 3.11.
-Disposable PostgreSQL/clean-install jobs remain CI checks;
-this workflow does not tear down or rebuild the running deployment. Merge with
-green CI and explicit maintainer tag/publication authorization remain pending.
+PR #222 then passed all three CI jobs: build-and-test, clean-install and
+postgres-contract. Disposable verification did not tear down or rebuild the
+running deployment. The PR merged at `039c395`, and after explicit maintainer
+authorization the annotated tag and
+[GitHub release v2.2.0](https://github.com/laanito/OpenTerminalUI/releases/tag/v2.2.0)
+were published on 2026-10-21. No further release gate remains open for v2.2.
 
 ## Cutting the release
 

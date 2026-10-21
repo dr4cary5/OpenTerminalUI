@@ -4,12 +4,13 @@ This directory is the repository-owned handoff for AI coding agents and new
 maintainers. Read it before making changes. It records decisions that may have
 previously existed only in a maintainer's chat or local agent memory.
 
-Last post-release audit: **2026-10-18**, against published **v2.1.0** at
-`a1efc0c` (release preparation PR #216). Implementation, maintainer host
+Last post-release audit: **2026-10-21**, against published **v2.2.0** at
+`039c395` (release preparation PR #222). Implementation, maintainer host
 acceptance, all release-prep CI jobs, tag and GitHub publication are complete.
 README and maintained wiki describe the shipped workflows. The maintainer
-subsequently approved **v2.2 Grounded Comparison Briefing** on 2026-10-19; its
-bounded sequence is in `TODO.md` and the Roadmap. Broader v2.x items remain backlog.
+approved **v2.2 Grounded Comparison Briefing** on 2026-10-19 and accepted it on
+2026-10-21. Its completed bounded scope is in `TODO.md` and the Roadmap. No next
+minor release scope is approved; broader v2.x items remain backlog.
 
 ## Read order and sources of truth
 
@@ -85,7 +86,7 @@ release-level interpretation and safety boundaries.
 
 ## Current release and development state
 
-- **v2.2.0 release preparation — Grounded Comparison Briefing.** The agreed outcome is
+- **v2.2.0 released — Grounded Comparison Briefing.** The agreed outcome is
   on-demand cited synthesis of a selected comparison, with observations, possible
   context, conflicts and unknowns kept distinct. No causal explanations, trade
   advice, automatic discovery or portfolio-wide context. The first API slice
@@ -101,10 +102,12 @@ release-level interpretation and safety boundaries.
   old prose. No automatic stream replay or saving/indexing. The maintainer
   accepted the live briefing and confirmed the crypto quote fix after PR #221
   on 2026-10-21. Model capability may merit later work but is explicitly outside
-  this milestone. Backend/frontend versions are prepared as 2.2.0 and the local
-  release gate passed. CI/merge and explicit tag/publication authorization remain.
-- Current release: **v2.1.0**, tagged and published from `a1efc0c` on
-  2026-10-18 after maintainer host acceptance and green release-prep CI.
+  this milestone. The local gate passed with 74.90% backend coverage, 447 frontend
+  tests and six Chrome smoke tests. PR #222 passed build-and-test, clean-install
+  and PostgreSQL-contract CI and merged. With explicit maintainer authorization,
+  the annotated tag and GitHub release were published from `039c395` on 2026-10-21.
+- Current release: **v2.2.0**, tagged and published from `039c395` on
+  2026-10-21 after maintainer host acceptance and green release-prep CI.
   Keep `backend/config/settings.py` and `frontend/package.json` in lockstep when
   releasing.
 - **v2.0 shipped the bounded cross-market context feature**, alongside the

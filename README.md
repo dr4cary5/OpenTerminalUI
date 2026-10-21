@@ -44,21 +44,22 @@ the [surface inventory](docs/wiki/Surface-Inventory.md) and
 
 ## Current release
 
-**v2.2.0 — Grounded Comparison Briefing is in release preparation.** On
+[v2.2.0 — Grounded Comparison Briefing](https://github.com/laanito/OpenTerminalUI/releases/tag/v2.2.0)
+was published on **2026-10-21**. On
 Cross-market context, apply a comparison and choose **Generate briefing** for
 observations, limitations and unknowns with citations into an inspectable fresh
 snapshot. Only shared-UTC native-quote returns are included, not optional page
 panels or private research. Reference checks are **not semantic fact-checking**,
 causal explanation or investment advice. Progress, cancellation and manual
 retries are explicit; changing a selection clears old work. Nothing is saved or
-indexed. Host acceptance is complete; CI/merge and publication remain pending.
+indexed. Host acceptance and all release-prep CI checks passed.
 There is **no database migration or new provider setting**. The existing
 OpenAI-compatible LLM configuration is used; model capability can affect prose
 quality and is not guaranteed by reference validation.
 
-The latest published release remains
+The preceding release,
 [v2.1.0 — Filing-grounded US fundamentals](https://github.com/laanito/OpenTerminalUI/releases/tag/v2.1.0),
-published on **2026-10-18**. From a cross-market comparison, request SEC filed
+was published on **2026-10-18**. From a cross-market comparison, request SEC filed
 facts and choose **Check source filing** under a selected value. The terminal
 checks that claim against the official filing's listed XBRL instance for the
 same company, concept, unit and exact fiscal period. Results distinguish

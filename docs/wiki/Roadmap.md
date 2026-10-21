@@ -260,7 +260,7 @@ of past price moves. The broader revision-aware fundamentals contract and
 tested historical coverage below remain later work; they are not silently
 satisfied by corroborating selected filing facts.
 
-## v2.2.0 — Grounded Comparison Briefing (release preparation)
+## v2.2.0 — Grounded Comparison Briefing (released 2026-10-21)
 
 The maintainer selected a bounded, on-demand synthesis of the user's chosen
 comparison as the next outcome. It should explain what the supplied observations
@@ -319,9 +319,11 @@ and there is no automatic replay against a new snapshot. Deterministic API/UI
 coverage includes desktop and narrow-screen journeys. The maintainer accepted the
 live briefing on 2026-10-21 and confirmed the independent crypto quote-routing fix
 from PR #221. Model capability may improve later, but is explicitly outside this
-scope. Implementation and host acceptance are complete; release verification,
-CI/merge and explicit tag/publication authorization remain. No saving/indexing
-is introduced.
+scope. Implementation, host acceptance and release verification are complete.
+Release-prep PR #222 passed all three CI jobs and merged at `039c395`; following
+explicit maintainer authorization, the tag and GitHub release were published on
+2026-10-21. No saving/indexing is introduced. No v2.3 scope has been approved;
+the remaining evidence ideas below are candidates, not an active release plan.
 
 **Release gate:** citations resolve to the supplied snapshot; incomplete, stale,
 conflicting, unavailable and mixed-basis inputs remain explicit; malformed,

@@ -141,7 +141,7 @@ size, XML complexity and a 45-second operation deadline bound the work.
 deadline, cancellation and manual retries. No filing-check persistence, new
 database migration or complete historical-vintage archive is introduced.
 
-## Comparison briefing generation (v2.2 release preparation)
+## Comparison briefing generation (v2.2)
 
 `comparison_briefing.py` adds bounded completion-based synthesis to the selected
 shared-UTC evidence packet. It validates structure, snapshot identity, reference
@@ -160,7 +160,7 @@ Its separate `comparisonBriefing.ts` client checks the transport envelope and
 reference identities, bounds fetch/reader stalls using announced stage budgets,
 and never automatically replays a failed stream. Selection changes remount and
 abort the panel; generation guards ignore late completions. Configured host
-acceptance is complete; release preparation is underway.
+acceptance and v2.2.0 publication are complete.
 
 ## Frontend structure
 
