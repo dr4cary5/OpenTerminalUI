@@ -2,14 +2,11 @@
 
 OpenTerminalUI is a self-hosted research terminal for US/EU equities and crypto,
 with intentional provider-gated NSE/BSE F&O support. The current release is
-[v2.1.0](https://github.com/laanito/OpenTerminalUI/releases/tag/v2.1.0), published
-2026-10-18: selected US fundamentals can be checked against official SEC filing
-evidence. No database migration is required for this release.
-
-**v2.2.0 is in release preparation**, with accepted host testing of the new
-on-demand, citation-linked comparison briefing and the crypto quote-routing fix.
-Reference checks are not semantic fact-checking. CI/merge and tag publication
-remain pending; see [Roadmap](Roadmap.md) and [Releasing](Releasing.md).
+[v2.2.0](https://github.com/laanito/OpenTerminalUI/releases/tag/v2.2.0), published
+2026-10-21: on-demand, citation-linked comparison briefings with inspectable
+evidence, plus the host-tested crypto quote-routing fix. Reference checks are
+not semantic fact-checking. No database migration or new provider setting is
+required; see [Roadmap](Roadmap.md) and [Releasing](Releasing.md).
 
 > **North star.** An open, private terminal that helps an individual invest *without being fooled* — by markets, by hype, or by themselves — through AI-native research you can grow privately. Bloomberg parity is pursued only "just enough to be credible"; the differentiation is being AI-native, private, open, and multi-asset. See the [Roadmap](Roadmap) for the full direction.
 
@@ -26,7 +23,7 @@ remain pending; see [Roadmap](Roadmap.md) and [Releasing](Releasing.md).
 - Local, provider-agnostic LLM (Ollama default) for AI insights, news sentiment & emotion
 - User-selected cross-market comparisons with dated source, currency and coverage disclosures
 - On-demand SEC source-filing checks for exact selected US facts
-- v2.2: explicit comparison briefings with snapshot inspection, cancellation and
+- Explicit comparison briefings with snapshot inspection, cancellation and
   visible evidence scope; no automatic saving/indexing
 - Time-aware private Notes/Second Brain and saved Brain Log research memos
 - Base-currency portfolio accounting with explicit partial results when FX is missing
@@ -40,7 +37,7 @@ remain pending; see [Roadmap](Roadmap.md) and [Releasing](Releasing.md).
 - [Data Providers](Data-Providers)
 - [Limitations](Limitations) — what works keyless vs. needs keys, and honest caveats
 - [Contributing](Contributing)
-- [Roadmap](Roadmap) — v2.2 release preparation and later, unscheduled generation work
+- [Roadmap](Roadmap) — released v2.2 scope and later, unscheduled generation work
 - [Releasing](Releasing) — how we cut a tagged release
 
 ## Smoke Routes

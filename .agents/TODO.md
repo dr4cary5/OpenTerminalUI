@@ -1,12 +1,11 @@
 # Current project state and backlog
 
-Last post-release audit: **2026-10-18**, against **v2.1.0** at `a1efc0c`.
-The bounded filing-verification API, browser journey, configured host acceptance,
-local checks and all release-prep CI jobs are complete. PR #216 merged and the
-maintainer authorized tag/GitHub publication. No v2.1 release task remains.
-README/wiki reconciliation merged in PR #217. On 2026-10-19 the maintainer
-authorized v2.2 Grounded Comparison Briefing; its explicit scope and sequence
-below replace automatic execution of the broader v2.x backlog.
+Last post-release audit: **2026-10-21**, against **v2.2.0** at `039c395`.
+The bounded comparison-briefing APIs/browser, configured host acceptance, local
+checks and all release-prep CI jobs are complete. PR #222 merged and the
+maintainer authorized tag/GitHub publication. No v2.2 release gate remains.
+No next minor release has an approved scope. The broader v2.x evidence backlog
+below is for discussion, not automatic execution.
 
 This is a handoff, not an immutable roadmap. Before taking an item, verify it
 against recent Git history, code, and tests. Move shipped work to the completed
@@ -474,7 +473,7 @@ to make this milestone appear complete.
       release, including research entry points, API/auth boundaries, provider
       configuration, portfolio limitations and actual local/CI test commands.
 
-### v2.2.0 — Grounded Comparison Briefing (release preparation)
+### v2.2.0 released — Grounded Comparison Briefing
 
 Approved outcome: an explicit, cited synthesis of the selected comparison that
 separates observed movement, possible context, conflicts and unknowns. No causal
@@ -525,11 +524,16 @@ context or automatic relationship discovery. Keep this release bounded.
 - [x] Prepare backend/frontend 2.2.0 metadata, dated changelog and release docs.
 - [x] Complete the local release gate and record results in Releasing.md:
       `make gate`, six Chrome smoke tests and Compose configuration validation.
-- [ ] Merge release preparation with all CI jobs green (including disposable
-      PostgreSQL contracts and clean install).
-- [ ] After explicit maintainer authorization, tag and publish v2.2.0.
-- [ ] After publication, reconcile release-preparation notices in README/wiki
-      and the agent handoff; the customary blog retrospective follows separately.
+- [x] Merge release preparation with all CI jobs green (including disposable
+      PostgreSQL contracts and clean install): PR #222 merged at `039c395`.
+- [x] After explicit maintainer authorization, tag and publish v2.2.0:
+      annotated tag and GitHub release published on 2026-10-21.
+- [x] After publication, reconcile release-preparation notices in README/wiki
+      and the agent handoff. The customary blog retrospective is a separate PR
+      in `praderasblog`; deployment remains outside the coding agent's scope.
+
+No v2.3 scope has been approved. The unchecked evidence-ledger entries below are
+candidates for discussion, not permission to start another feature sequence.
 
 Host testing after PR #220 exposed an independent crypto stock-detail regression:
 the chart still used the equity market, overriding valid crypto ticks with a
