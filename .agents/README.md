@@ -85,7 +85,7 @@ release-level interpretation and safety boundaries.
 
 ## Current release and development state
 
-- **v2.2 in development — Grounded Comparison Briefing.** The agreed outcome is
+- **v2.2.0 release preparation — Grounded Comparison Briefing.** The agreed outcome is
   on-demand cited synthesis of a selected comparison, with observations, possible
   context, conflicts and unknowns kept distinct. No causal explanations, trade
   advice, automatic discovery or portfolio-wide context. The first API slice
@@ -98,8 +98,11 @@ release-level interpretation and safety boundaries.
   The comparison browser now offers explicit generation, progress/cancellation,
   manual retries, plain-text results and citation-to-snapshot inspection. Draft
   or applied selection changes invalidate prior work; failed retries retain no
-  old prose. No automatic stream replay or saving/indexing. Configured host
-  acceptance remains next; v2.2 is not released.
+  old prose. No automatic stream replay or saving/indexing. The maintainer
+  accepted the live briefing and confirmed the crypto quote fix after PR #221
+  on 2026-10-21. Model capability may merit later work but is explicitly outside
+  this milestone. Backend/frontend versions are prepared as 2.2.0 and the local
+  release gate passed. CI/merge and explicit tag/publication authorization remain.
 - Current release: **v2.1.0**, tagged and published from `a1efc0c` on
   2026-10-18 after maintainer host acceptance and green release-prep CI.
   Keep `backend/config/settings.py` and `frontend/package.json` in lockstep when

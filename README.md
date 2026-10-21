@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-2.1.0-0f172a" alt="Version 2.1.0" />
+  <img src="https://img.shields.io/badge/version-2.2.0-0f172a" alt="Version 2.2.0" />
   <img src="https://img.shields.io/badge/python-3.11-3776AB?logo=python&logoColor=white" alt="Python 3.11" />
   <img src="https://img.shields.io/badge/node-22-339933?logo=node.js&logoColor=white" alt="Node 22" />
   <img src="https://img.shields.io/badge/FastAPI-009688?logo=fastapi&logoColor=white" alt="FastAPI" />
@@ -44,8 +44,21 @@ the [surface inventory](docs/wiki/Surface-Inventory.md) and
 
 ## Current release
 
-[v2.1.0 — Filing-grounded US fundamentals](https://github.com/laanito/OpenTerminalUI/releases/tag/v2.1.0)
-was published on **2026-10-18**. From a cross-market comparison, request SEC filed
+**v2.2.0 — Grounded Comparison Briefing is in release preparation.** On
+Cross-market context, apply a comparison and choose **Generate briefing** for
+observations, limitations and unknowns with citations into an inspectable fresh
+snapshot. Only shared-UTC native-quote returns are included, not optional page
+panels or private research. Reference checks are **not semantic fact-checking**,
+causal explanation or investment advice. Progress, cancellation and manual
+retries are explicit; changing a selection clears old work. Nothing is saved or
+indexed. Host acceptance is complete; CI/merge and publication remain pending.
+There is **no database migration or new provider setting**. The existing
+OpenAI-compatible LLM configuration is used; model capability can affect prose
+quality and is not guaranteed by reference validation.
+
+The latest published release remains
+[v2.1.0 — Filing-grounded US fundamentals](https://github.com/laanito/OpenTerminalUI/releases/tag/v2.1.0),
+published on **2026-10-18**. From a cross-market comparison, request SEC filed
 facts and choose **Check source filing** under a selected value. The terminal
 checks that claim against the official filing's listed XBRL instance for the
 same company, concept, unit and exact fiscal period. Results distinguish
@@ -59,10 +72,8 @@ complete historical information set or infer which disclosure supersedes another
 v2.0 introduced the bounded cross-market context journey alongside time-aware
 Second Brain and Brain Log foundations. v1 completed fork consolidation and
 base-currency portfolio accounting. See the [changelog](CHANGELOG.md) for release
-history. The next agreed milestone is **v2.2 Grounded Comparison Briefing**:
-on-demand, cited synthesis of a selected comparison, not causal explanation or
-investment advice. It is in development, not part of the v2.1 browser experience;
-see the [roadmap](docs/wiki/Roadmap.md) for its bounded scope.
+history and the [roadmap](docs/wiki/Roadmap.md) for the bounded v2.2 scope and
+later candidates.
 
 ## Quick Start
 

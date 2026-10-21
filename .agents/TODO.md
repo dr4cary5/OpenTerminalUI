@@ -474,7 +474,7 @@ to make this milestone appear complete.
       release, including research entry points, API/auth boundaries, provider
       configuration, portfolio limitations and actual local/CI test commands.
 
-### v2.2 — Grounded Comparison Briefing
+### v2.2.0 — Grounded Comparison Briefing (release preparation)
 
 Approved outcome: an explicit, cited synthesis of the selected comparison that
 separates observed movement, possible context, conflicts and unknowns. No causal
@@ -516,15 +516,27 @@ context or automatic relationship discovery. Keep this release bounded.
 - [x] Add deterministic API/UI coverage, including malformed/truncated/stalled
       streams, cancellation, failed retries, plain-text output, exact snapshot
       citation navigation and desktop/narrow-screen browser journeys.
-- [ ] Obtain configured host acceptance of a useful briefing plus degraded
+- [x] Obtain configured host acceptance of a useful briefing plus degraded
       evidence/model cases before release prep. Verify cited source values and
       scope, mandatory caveats, selection changes, cancellation and manual retry.
+      The maintainer confirmed on 2026-10-21 that the briefing worked as intended
+      and the merged crypto fix resolved the price issue. A smarter model may
+      improve quality but is explicitly outside this release; do not extend scope.
+- [x] Prepare backend/frontend 2.2.0 metadata, dated changelog and release docs.
+- [x] Complete the local release gate and record results in Releasing.md:
+      `make gate`, six Chrome smoke tests and Compose configuration validation.
+- [ ] Merge release preparation with all CI jobs green (including disposable
+      PostgreSQL contracts and clean install).
+- [ ] After explicit maintainer authorization, tag and publish v2.2.0.
+- [ ] After publication, reconcile release-preparation notices in README/wiki
+      and the agent handoff; the customary blog retrospective follows separately.
 
 Host testing after PR #220 exposed an independent crypto stock-detail regression:
 the chart still used the equity market, overriding valid crypto ticks with a
 Finnhub unsupported-symbol zero. The hotfix aligns chart/snapshot routing,
 rejects invalid US/crypto quotes and adds Yahoo polling for disconnected crypto
-streams. This does not change Binance's existing USDT-to-USD-symbol mapping;
+streams. PR #221 merged and passed maintainer testing. This does not change
+Binance's existing USDT-to-USD-symbol mapping;
 denomination fidelity remains a separate gap, not solved by this hotfix.
 
 Deferred: full historical coverage, automatic discovery, portfolio-wide context,

@@ -6,12 +6,24 @@ adopt [Semantic Versioning](https://semver.org/spec/v2.0.0.html) from `1.0.0`.
 
 ## [Unreleased]
 
+## [2.2.0] - 2026-10-21
+
+Grounded Comparison Briefing adds on-demand interpretation of a selected
+cross-market comparison with inspectable snapshot-local citations, explicit
+limitations and unknowns. It uses only fresh shared-UTC native provider-close
+returns, not optional page panels or private research. Citation references and
+structure are checked, not the semantic truth of the model's prose. Host testing
+confirmed the briefing works as intended and exposed an independent crypto
+quote-routing bug, also fixed and verified. No database migration or new provider
+setting is required. Release preparation is pending merge/CI; no tag has been
+published yet.
+
 ### Fixed
 - **Crypto prices on stock detail** — route both the chart and initial snapshot
   through the crypto market, preventing an unsupported Finnhub equity response
   from overriding BTC with a zero price labelled live. Reject invalid/nonpositive
-  polled US/crypto quotes, preserve missing prices instead of coercing null to zero, and
-  poll Yahoo crypto symbols when the Binance stream is disconnected.
+  polled US/crypto quotes, preserve missing prices instead of coercing null to
+  zero, and poll Yahoo crypto symbols when the Binance stream is disconnected.
 
 ### Added
 - **On-demand comparison briefing browser (v2.2)** — generate from an applied
@@ -19,8 +31,7 @@ adopt [Semantic Versioning](https://semver.org/spec/v2.0.0.html) from `1.0.0`.
   fresh evidence snapshot. Scope and mandatory source caveats remain visible
   beside plain-text prose. Selection changes and failed retries clear older
   answers; interrupted streams are bounded and never silently replayed. Includes
-  deterministic desktop/narrow-screen journeys. No saving or Brain indexing;
-  configured host acceptance remains before release preparation.
+  deterministic desktop/narrow-screen journeys. No saving or Brain indexing.
 - **Citation-linked comparison briefing APIs (v2.2)** — explicit synchronous and
   progress-streaming requests build fresh server evidence and generate bounded
   observations, limitations and unknowns. Structure, packet identity and citation
