@@ -6,7 +6,16 @@ adopt [Semantic Versioning](https://semver.org/spec/v2.0.0.html) from `1.0.0`.
 
 ## [Unreleased]
 
+### Added
+- **Optional briefing context contract (v2.3 foundation)** — a pure server-side
+  projection preserves selected dated headline and US/euro-area macro evidence
+  alongside the original price packet, with local citations, source metadata,
+  explicit coverage/failure states, bounded output and a complete fingerprint.
+  No providers, synthesis, public API or browser behavior change in this slice.
+
 ### Documentation
+- Record the approved v2.3 **Context beyond price** scope and review sequence;
+  broader evidence work and thesis validation remain outside this milestone.
 - Reconcile the README, maintained wiki and external-agent handoff with published
   v2.2.0, close its release gates and leave later minor-release scope unassigned.
 

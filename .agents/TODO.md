@@ -4,8 +4,9 @@ Last post-release audit: **2026-10-21**, against **v2.2.0** at `039c395`.
 The bounded comparison-briefing APIs/browser, configured host acceptance, local
 checks and all release-prep CI jobs are complete. PR #222 merged and the
 maintainer authorized tag/GitHub publication. No v2.2 release gate remains.
-No next minor release has an approved scope. The broader v2.x evidence backlog
-below is for discussion, not automatic execution.
+On 2026-10-22 the maintainer approved v2.3 **Context beyond price**. Its bounded
+sequence below is active; the broader v2.x evidence backlog remains for
+discussion, not automatic execution.
 
 This is a handoff, not an immutable roadmap. Before taking an item, verify it
 against recent Git history, code, and tests. Move shipped work to the completed
@@ -532,9 +533,6 @@ context or automatic relationship discovery. Keep this release bounded.
       and the agent handoff. The customary blog retrospective is a separate PR
       in `praderasblog`; deployment remains outside the coding agent's scope.
 
-No v2.3 scope has been approved. The unchecked evidence-ledger entries below are
-candidates for discussion, not permission to start another feature sequence.
-
 Host testing after PR #220 exposed an independent crypto stock-detail regression:
 the chart still used the equity market, overriding valid crypto ticks with a
 Finnhub unsupported-symbol zero. The hotfix aligns chart/snapshot routing,
@@ -543,9 +541,46 @@ streams. PR #221 merged and passed maintainer testing. This does not change
 Binance's existing USDT-to-USD-symbol mapping;
 denomination fidelity remains a separate gap, not solved by this hotfix.
 
-Deferred: full historical coverage, automatic discovery, portfolio-wide context,
-unreliable-provider replacement as a release gate, execution, and automatic
-Brain Log/retrieval integration. See `docs/wiki/Roadmap.md` for acceptance bounds.
+### v2.3 — Context beyond price (in development)
+
+Approved goal: the selected comparison briefing connects price observations with
+explicitly included, dated news and macro evidence. Keep observed movement,
+possible context and unknowns distinct; co-occurrence is not causation. Acceptance
+is improved understanding over a price-only summary, with an inspectable basis
+for every interpretation and honest degradation when optional sources fail.
+
+- [x] Establish the deterministic optional-context contract. A separate
+      fingerprinted envelope contains the original price-only packet and
+      selected per-pair news/macro sections. Preserve source times/links,
+      units, flags, original coverage counts and declared output caps; empty,
+      failed, not-prepared and missing-price-window states stay distinct.
+      Context sections, groups, headlines and series have local references.
+      First slice is pure projection/tests only: no API or generation change.
+- [ ] Collect selected context server-side with bounded fan-out/deadlines and
+      cancellation, skipping unselected sources and pairs without valid windows.
+      Reuse existing current keyless headlines and US FRED/euro-area observations;
+      expose explicit region choices rather than inferring ticker relevance.
+      Provider exceptions must not leak keys or become successful empty searches.
+- [ ] Extend bounded generation/reference checks to the exact context envelope.
+      Treat provider text as untrusted evidence, preserve mandatory source
+      caveats, distinguish possible context from observation/unknowns, and retain
+      useful price-only interpretation when selected optional context is absent.
+      Preserve the unselected v2.2 contract and no automatic replay behavior.
+- [ ] Add opt-in browser controls, scope/coverage inspection and context citation
+      navigation. Scope changes cancel/invalidate prior work; an open optional
+      page panel is never implicit consent to include it in model evidence.
+- [ ] Complete deterministic API/UI tests and host acceptance of useful richer
+      interpretation plus partial, empty, missing-key and timed-out cases before
+      release preparation. Evaluate claims, not just valid citation identifiers.
+
+Excluded: fundamentals/SEC, technical measures, private notes, portfolio-wide
+context, automatic proxy discovery, saving/Brain indexing, trade recommendations,
+execution and new providers. Initial macro scope is existing US/euro-area
+reference-period observations, not economic-calendar feeds or historical market-
+knowledge reconstruction. Model upgrades are not an implementation gate.
+
+Unchecked evidence-ledger entries below remain later candidates unless the
+bounded v2.3 sequence explicitly includes them.
 
 ### v2 evidence implementation ledger — shipped work and later gaps
 

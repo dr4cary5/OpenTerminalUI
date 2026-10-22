@@ -9,8 +9,9 @@ Last post-release audit: **2026-10-21**, against published **v2.2.0** at
 acceptance, all release-prep CI jobs, tag and GitHub publication are complete.
 README and maintained wiki describe the shipped workflows. The maintainer
 approved **v2.2 Grounded Comparison Briefing** on 2026-10-19 and accepted it on
-2026-10-21. Its completed bounded scope is in `TODO.md` and the Roadmap. No next
-minor release scope is approved; broader v2.x items remain backlog.
+2026-10-21. Its completed bounded scope is in `TODO.md` and the Roadmap. On
+2026-10-22 the maintainer approved **v2.3 Context beyond price**: selected dated
+news and macro context in the comparison briefing. Broader v2.x items remain backlog.
 
 ## Read order and sources of truth
 
@@ -86,6 +87,20 @@ release-level interpretation and safety boundaries.
 
 ## Current release and development state
 
+- **v2.3 in development — Context beyond price.** Extend the selected comparison
+  briefing with explicitly included dated headlines and existing US/euro-area
+  macro observations, preserving scope, source links, actual pair windows,
+  current-vintage/reference-period semantics and failures. First slice is a pure
+  deterministic context projection in `market_briefing_context_evidence.py`:
+  selected regions are never inferred from tickers, headline text is untrusted,
+  values/flags/counts survive bounded projection, and references are local to a
+  separately fingerprinted envelope. Its nested v2.2 price packet keeps its
+  original price-only scope. No providers, model, route, UI, persistence or
+  indexing are added yet. Bounded server collection/synthesis and the opt-in
+  browser journey follow; v2.2 runtime behavior remains unchanged. Fundamentals,
+  technicals, private notes, portfolio-wide context, discovery, saving and new
+  provider acquisition are excluded. Calendar-provider reliability and historical
+  vintage/release audits are not gates on this milestone.
 - **v2.2.0 released — Grounded Comparison Briefing.** The agreed outcome is
   on-demand cited synthesis of a selected comparison, with observations, possible
   context, conflicts and unknowns kept distinct. No causal explanations, trade
