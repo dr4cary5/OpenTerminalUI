@@ -235,6 +235,30 @@ accepted the live workflow on 2026-10-21, and v2.2.0 was published that day.
 The configured model influences prose quality; reference checks
 do not compensate for weaker reasoning, and model tuning remains later work.
 
+### v2.3 optional context foundation in development
+
+The approved next step is explicitly selected news and US/euro-area macro
+observations in the comparison briefing. The first implementation is an internal
+deterministic projection, not a new endpoint or UI control. Existing v2.2
+briefings still receive price-only evidence; do not send new selection fields
+to the current APIs or assume visible optional panels inform their answer.
+
+The new envelope retains the original price packet and separately selected
+per-pair context. A selected but unprepared source is unavailable, not an empty
+successful search; a pair without price overlap has no invented context window.
+Headlines carry dated source links, coverage and at most five items per symbol;
+macro series preserve units/flags and at most 24 most recent returned observations
+per series, with original counts retained. A monthly macro reference period can
+begin before the pair's first daily observation; it is not a publication date.
+Only current-at-retrieval macro views are supported by this initial contract.
+
+Section/group/item references are local to the complete fingerprinted envelope,
+not cross-request identifiers or fact-checks. News is untrusted source text and
+current feeds do not establish complete historical coverage. Macro is global
+context, not issuer-specific relevance or causal attribution. Collection,
+generation and opt-in browser controls follow in separate reviewable slices;
+fundamentals, technicals, private research and saving remain excluded.
+
 ### Complete contract
 
 The backend serves Swagger UI at `/docs` and its schema at `/openapi.json`.

@@ -322,8 +322,8 @@ from PR #221. Model capability may improve later, but is explicitly outside this
 scope. Implementation, host acceptance and release verification are complete.
 Release-prep PR #222 passed all three CI jobs and merged at `039c395`; following
 explicit maintainer authorization, the tag and GitHub release were published on
-2026-10-21. No saving/indexing is introduced. No v2.3 scope has been approved;
-the remaining evidence ideas below are candidates, not an active release plan.
+2026-10-21. No saving/indexing is introduced. v2.3's later approved scope is
+recorded below; remaining evidence ideas are not automatically release gates.
 
 **Release gate:** citations resolve to the supplied snapshot; incomplete, stale,
 conflicting, unavailable and mixed-basis inputs remain explicit; malformed,
@@ -337,6 +337,46 @@ provider acquisition as a gate, trade recommendations and execution. Saving
 briefings into Brain Log or adding them to private retrieval is not implicit.
 Multi-dimensional opportunity validation remains the v3 promise. Other unchecked
 items below remain later candidates, not automatically authorized follow-ups.
+
+## v2.3 — Context beyond price (in development)
+
+Approved on 2026-10-22: generate a briefing that connects a selected comparison
+with explicitly included dated news and macro evidence. The user should
+understand the comparison better than from a price summary alone and be able
+to inspect the basis of each interpretation. Distinguish observed movement,
+possible context, conflicts and what remains unexplained. Temporal overlap does
+not establish a cause, and a valid reference does not certify model reasoning.
+
+The review boundaries are:
+
+1. **Deterministic context contract.** Project the existing source responses into
+   a bounded, separately fingerprinted envelope around the v2.2 price packet.
+   Keep exact per-pair windows, reference IDs, source links/times, units, flags,
+   counts and explicit missing-data states. This first slice is implemented as a
+   pure projection with tests; it performs no fetching or inference and changes
+   no public API, model prompt or browser behavior.
+2. **Bounded collection and interpretation.** Fetch only selected news/macro
+   sources server-side, reuse existing providers, and extend generation to cite
+   that exact envelope. Optional failure must preserve useful price evidence,
+   not imply there was no news or relevant macro activity. Preserve deadlines,
+   cancellation, no automatic replay, and the unselected v2.2 behavior.
+3. **Opt-in browser journey and acceptance.** Expose scope and explicit US/
+   euro-area macro choices, source coverage and context citations; changing scope
+   invalidates old work. Host acceptance should inspect a genuinely more useful
+   answer and degraded/empty/provider-failure cases before release preparation.
+
+News means bounded dated headlines from current feeds, not article-body research
+or a complete historical archive. Treat headline text as untrusted provider data,
+not instructions or verified facts. Initial macro scope is existing FRED US and
+Eurostat/ECB euro-area observations, not new calendar providers. Reference dates
+are not publication dates; current-vintage values cannot establish what investors
+knew during the comparison window. Regions are selected, not guessed from tickers.
+
+**Outside v2.3:** fundamentals/SEC, technical evidence, private notes, portfolio-
+wide analysis, automatic proxy discovery, saving/Brain indexing, historical
+market-knowledge audits, model upgrades, trade advice and execution. These do not
+become compulsory sub-releases. v3 remains thesis-oriented multi-dimensional
+validation; v2.3 improves contextual understanding, not an investment verdict.
 
 ## v2 opening principle — time-aware memory
 
