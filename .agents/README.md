@@ -105,8 +105,16 @@ release-level interpretation and safety boundaries.
   not prose truth. Evidence above 120,000 serialized characters is rejected for
   synthesis without silent trimming; model failure retains the entire envelope.
   Closing either briefing stream immediately cancels/joins its operation. The
-  opt-in browser journey is next; no UI, persistence or indexing is added yet,
-  and existing v2.2 request/result shapes stay price-only. Fundamentals,
+  browser now defaults to price-only and offers independent news, US FRED and
+  euro-area macro opt-ins. Scope/selection changes abort and clear old work;
+  the shared stream reader includes the context budget without silent replay.
+  Coverage/failures stay beside prose, with keyboard-focusable section/group/
+  headline/series citations, safe source links, exact values/counts/flags and
+  separate outer/price snapshot IDs. Browser shape/reference checks do not
+  fact-check prose. Desktop/narrow Chrome journeys and deterministic frontend
+  tests cover the richer and degraded paths. Maintainer host/model-quality
+  acceptance remains the next gate before release preparation. No persistence
+  or indexing is added; v2.2 request/result shapes stay price-only. Fundamentals,
   technicals, private notes, portfolio-wide context, discovery, saving and new
   provider acquisition are excluded. Calendar-provider reliability and historical
   vintage/release audits are not gates on this milestone.

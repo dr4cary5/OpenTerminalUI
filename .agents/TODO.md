@@ -578,12 +578,22 @@ for every interpretation and honest degradation when optional sources fail.
       Evidence above 120,000 serialized characters fails explicitly without
       dropping sources. Completion output allows 4,800 tokens. Both stream
       wrappers now close/join their lifecycle immediately on cancellation.
-- [ ] Add opt-in browser controls, scope/coverage inspection and context citation
+- [x] Add opt-in browser controls, scope/coverage inspection and context citation
       navigation. Scope changes cancel/invalidate prior work; an open optional
       page panel is never implicit consent to include it in model evidence.
+      Independent news/US/euro-area checkboxes default off; all-off uses the old
+      price-only endpoint. Source coverage remains visible on model failure.
+      All packet-local section/group/headline/series references open/focus the
+      exact evidence with source links, dates, counts, units and flags. The
+      context stream reader adds the server collection budget to its deadline,
+      validates the selected scope and rejects unresolved/misclassified refs.
 - [ ] Complete deterministic API/UI tests and host acceptance of useful richer
       interpretation plus partial, empty, missing-key and timed-out cases before
       release preparation. Evaluate claims, not just valid citation identifiers.
+      Automated source/synthesis tests and desktop/narrow Chrome journeys are
+      implemented. Next: maintainer host acceptance with real data/model, including
+      useful possible context and partial/empty/missing-key/timeout journeys.
+      Do not interpret mocked browser evidence as model-quality acceptance.
 
 Excluded: fundamentals/SEC, technical measures, private notes, portfolio-wide
 context, automatic proxy discovery, saving/Brain indexing, trade recommendations,

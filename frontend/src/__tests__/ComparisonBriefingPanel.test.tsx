@@ -2,12 +2,17 @@ import { act, fireEvent, render, screen, waitFor, within } from "@testing-librar
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { streamComparisonBriefing } from "../api/comparisonBriefing";
 import { ComparisonBriefingPanel } from "../components/market/ComparisonBriefingPanel";
-import { briefingSelection, makeBriefing } from "./fixtures/comparisonBriefing";
+import { streamContextBriefing, type ContextBriefingResult } from "../api/comparisonContextBriefing";
+import { briefingSelection, makeBriefing, makeContextBriefing } from "./fixtures/comparisonBriefing";
 
 vi.mock("../api/comparisonBriefing", async (original) => ({
   ...await original<typeof import("../api/comparisonBriefing")>(), streamComparisonBriefing: vi.fn(),
 }));
 const generate = vi.mocked(streamComparisonBriefing);
+vi.mock("../api/comparisonContextBriefing", async (original) => ({
+  ...await original<typeof import("../api/comparisonContextBriefing")>(), streamContextBriefing: vi.fn(),
+}));
+const generateContext = vi.mocked(streamContextBriefing);
 function pending() {
   let resolve!: (value: ReturnType<typeof makeBriefing>) => void;
   const promise = new Promise<ReturnType<typeof makeBriefing>>((done) => { resolve = done; });
@@ -16,7 +21,7 @@ function pending() {
 const clickGenerate = () => fireEvent.click(screen.getByRole("button", { name: "Generate briefing" }));
 
 describe("ComparisonBriefingPanel", () => {
-  beforeEach(() => { generate.mockReset(); });
+  beforeEach(() => { generate.mockReset(); generateContext.mockReset(); });
 
   it("is opt-in and keeps scope and mandatory evidence warnings beside plain-text prose", async () => {
     const value = makeBriefing();
@@ -143,5 +148,103 @@ describe("ComparisonBriefingPanel", () => {
     expect(screen.getByRole("button", { name: "Generate briefing" })).toBeDisabled();
     expect(screen.getByText("Apply your selection first.")).toBeVisible();
     expect(generate).not.toHaveBeenCalled();
+  });
+
+  it("includes only explicitly checked context and navigates exact headline/series/scope citations", async () => {
+    const value = makeContextBriefing();
+    if (value.evidence!.sections[0].kind === "headlines") value.evidence!.sections[0].groups[0].headlines[0].title = "<img src=x onerror=alert(1)> Untrusted title";
+    generateContext.mockResolvedValue(value);
+    const { container } = render(<ComparisonBriefingPanel selection={briefingSelection} />);
+    for (const label of ["Dated news headlines", "US macro (FRED)", "Euro-area macro (Eurostat/ECB)"]) {
+      expect(screen.getByRole("checkbox", { name: label })).not.toBeChecked();
+      fireEvent.click(screen.getByRole("checkbox", { name: label }));
+    }
+    expect(generateContext).not.toHaveBeenCalled();
+    clickGenerate();
+    expect(await screen.findByRole("region", { name: "Possible context" })).toBeVisible();
+    expect(generate).not.toHaveBeenCalled();
+    expect(generateContext.mock.calls[0][1]).toEqual({ news: true, macro_regions: ["us", "euro_area"] });
+    expect(screen.getByRole("region", { name: "Selected context coverage" })).toHaveTextContent("C3");
+    fireEvent.click(screen.getByRole("button", { name: "Inspect C1G1H1 for possible context 1" }));
+    const headline = screen.getByRole("region", { name: "C1G1H1 evidence" });
+    expect(headline).toHaveFocus();
+    expect(headline).toHaveTextContent("<img src=x onerror=alert(1)> Untrusted title");
+    expect(container.querySelector("img")).toBeNull();
+    expect(within(headline).getByRole("link", { name: "Open source headline" })).toHaveAttribute("rel", "noopener noreferrer");
+    fireEvent.click(screen.getByRole("button", { name: "Inspect C2S1 for possible context 2" }));
+    const series = screen.getByRole("region", { name: "C2S1 evidence" });
+    expect(series).toHaveFocus();
+    expect(series).toHaveTextContent("3.123456789");
+    expect(series).toHaveTextContent("Conflicting observations withheld 2");
+    fireEvent.click(screen.getByRole("button", { name: "Inspect C3S1 for possible context 3" }));
+    expect(screen.getByRole("region", { name: "C3S1 evidence" })).toHaveTextContent("source flag p");
+    fireEvent.click(screen.getByRole("button", { name: "Inspect SCOPE for unknowns 1" }));
+    expect(screen.getByRole("region", { name: "SCOPE evidence" })).toHaveFocus();
+    expect(screen.getByText(`Snapshot ID: ${value.evidence!.packet_id}`)).toBeVisible();
+    expect(screen.getByText(/Price subpacket ID:/)).toBeVisible();
+    expect(screen.getByRole("region", { name: "SCOPE evidence" })).not.toHaveTextContent("Not included (not evidence of absence): News headlines");
+  });
+
+  it("scope changes abort old work and clear answers without automatic generation", async () => {
+    let resolve!: (result: ContextBriefingResult) => void;
+    generateContext.mockReturnValueOnce(new Promise((done) => { resolve = done; }));
+    const old = pending(); generate.mockReturnValue(old.promise);
+    render(<ComparisonBriefingPanel selection={briefingSelection} />);
+    clickGenerate();
+    const priceSignal = generate.mock.calls[0][1]!.signal!;
+    fireEvent.click(screen.getByRole("checkbox", { name: "Dated news headlines" }));
+    expect(priceSignal.aborted).toBe(true);
+    expect(generateContext).not.toHaveBeenCalled();
+    clickGenerate();
+    const options = generateContext.mock.calls[0][2]!;
+    act(() => options.onProgress!("collecting_context"));
+    expect(screen.getByRole("status")).toHaveTextContent("Collecting selected dated context");
+    fireEvent.click(screen.getByRole("checkbox", { name: "US macro (FRED)" }));
+    expect(options.signal!.aborted).toBe(true);
+    await act(async () => { resolve(makeContextBriefing({ news: true, macro_regions: [] })); old.resolve(makeBriefing()); options.onProgress!("generating"); });
+    expect(screen.queryByRole("region", { name: "Possible context" })).not.toBeInTheDocument();
+    expect(screen.queryByText(/Snapshot ID:/)).not.toBeInTheDocument();
+    expect(screen.queryByRole("status")).not.toBeInTheDocument();
+    generateContext.mockResolvedValue(makeContextBriefing({ news: true, macro_regions: ["us"] }));
+    clickGenerate();
+    await screen.findByRole("region", { name: "Possible context" });
+    fireEvent.click(screen.getByRole("checkbox", { name: "Dated news headlines" }));
+    expect(screen.queryByRole("region", { name: "Possible context" })).not.toBeInTheDocument();
+    expect(generateContext).toHaveBeenCalledTimes(2);
+  });
+
+  it.each(["missing_api_key", "timed_out", "provider_error", "empty", "no_price_window"])("retains visible context coverage when %s and does not imply absence", async (reason) => {
+    const value = makeContextBriefing({ news: false, macro_regions: ["us"] });
+    const section = value.evidence!.sections[0];
+    section.status = reason === "empty" ? "empty" : reason === "no_price_window" ? "no_price_window" : "unavailable";
+    section.reason = reason === "empty" ? null : reason;
+    if (section.kind === "macro") section.series = [];
+    value.possible_context = [];
+    generateContext.mockResolvedValue(value);
+    render(<ComparisonBriefingPanel selection={briefingSelection} />);
+    fireEvent.click(screen.getByRole("checkbox", { name: "US macro (FRED)" })); clickGenerate();
+    const coverage = await screen.findByRole("region", { name: "Selected context coverage" });
+    expect(coverage).toBeVisible();
+    expect(coverage).toHaveTextContent("Missing, empty or failed feeds do not establish");
+    expect(coverage).toHaveTextContent(reason === "missing_api_key" ? "Provider key not configured" : reason === "timed_out" ? "Source deadline reached" : reason === "empty" ? "No returned matches" : reason === "no_price_window" ? "No shared price window" : "Provider failed");
+    expect(screen.getByText(/No possible context was generated/)).toBeVisible();
+    fireEvent.click(screen.getByRole("button", { name: "Inspect C1 coverage" }));
+    expect(screen.getByRole("region", { name: "C1 evidence" })).toHaveFocus();
+    expect(screen.getByRole("region", { name: "Observed movement" })).toBeVisible();
+  });
+
+  it("model failure retains selected context but clears old interpretation", async () => {
+    const value = makeContextBriefing({ news: true, macro_regions: [] });
+    value.status = "unavailable"; value.engine = "unavailable";
+    value.observations = []; value.possible_context = []; value.limitations = []; value.unknowns = [];
+    value.failure = { code: "invalid_response", message: "The response failed validation.", retryable: true };
+    generateContext.mockResolvedValue(value);
+    render(<ComparisonBriefingPanel selection={briefingSelection} />);
+    fireEvent.click(screen.getByRole("checkbox", { name: "Dated news headlines" })); clickGenerate();
+    expect(await screen.findByRole("alert")).toHaveTextContent("failed validation");
+    expect(screen.getByRole("region", { name: "Selected context coverage" })).toBeVisible();
+    expect(screen.queryByRole("region", { name: "Possible context" })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Inspect C1 coverage" }));
+    expect(screen.getByRole("region", { name: "C1G1H1 evidence" })).toBeVisible();
   });
 });

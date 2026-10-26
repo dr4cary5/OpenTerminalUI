@@ -52,7 +52,7 @@ export interface ComparisonBriefingResult {
   observations: BriefingStatement[]; limitations: BriefingStatement[]; unknowns: BriefingStatement[];
   failure: null | { code: string; message: string; retryable: boolean };
 }
-export type BriefingPhase = "queued" | "preparing_evidence" | "checking_model" | "generating" | "validating" | "retrying";
+export type BriefingPhase = "queued" | "preparing_evidence" | "collecting_context" | "checking_model" | "generating" | "validating" | "retrying";
 
 function record(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === "object" && !Array.isArray(value);
@@ -143,11 +143,24 @@ export function validateBriefingResult(value: unknown, selection: BriefingSelect
   return value as unknown as ComparisonBriefingResult;
 }
 
+export const briefingValidation = { record, text, nullableText, finite, day, timestamp, choice, strings, unique, invalid, validEvidence };
+
+type StreamOptions = { signal?: AbortSignal; onProgress?: (phase: BriefingPhase) => void };
 /** No automatic replay: a new request would incur a new model run and snapshot. */
-export async function streamComparisonBriefing(
+export function streamComparisonBriefing(selection: BriefingSelection, options: StreamOptions = {}): Promise<ComparisonBriefingResult> {
+  return streamBriefing(selection, options, {
+    path: "/market-context/briefing/stream", context: false,
+    body: (requested) => requested, validate: validateBriefingResult,
+  });
+}
+
+/** Shared bounded NDJSON lifecycle; each contract supplies its own validator. */
+export async function streamBriefing<T>(
   selection: BriefingSelection,
-  options: { signal?: AbortSignal; onProgress?: (phase: BriefingPhase) => void } = {},
-): Promise<ComparisonBriefingResult> {
+  options: StreamOptions,
+  contract: { path: string; context: boolean; body: (selection: BriefingSelection) => unknown;
+    validate: (value: unknown, selection: BriefingSelection) => T },
+): Promise<T> {
   if (options.signal?.aborted) throw new DOMException("Cancelled", "AbortError");
   const requested: BriefingSelection = {
     anchor: selection.anchor.trim().toUpperCase(),
@@ -173,11 +186,12 @@ export async function streamComparisonBriefing(
   const expire = () => { timedOut = true; controller.abort(); };
   let timer = setTimeout(expire, 300_000);
   let startedEvent = false;
-  let result: ComparisonBriefingResult | null = null;
+  let result: T | null = null;
+  const maxRecord = contract.context ? 512_000 : 256_000;
   try {
-    const response = await Promise.race([fetchApi("/market-context/briefing/stream", {
+    const response = await Promise.race([fetchApi(contract.path, {
       method: "POST", headers: { "Content-Type": "application/json", Accept: "application/x-ndjson" },
-      body: JSON.stringify(requested), signal: controller.signal,
+      body: JSON.stringify(contract.body(requested)), signal: controller.signal,
     }), aborted]);
     if (!response.ok) throw new Error(`Could not start briefing (HTTP ${response.status}). Retry manually.`);
     if (!response.headers.get("content-type")?.includes("application/x-ndjson") || !response.body) throw invalid();
@@ -186,7 +200,7 @@ export async function streamComparisonBriefing(
     let buffer = "";
     const apply = (line: string) => {
       if (!line.trim()) return;
-      if (line.length > 256_000 || result) throw invalid();
+      if (line.length > maxRecord || result) throw invalid();
       let event: unknown;
       try { event = JSON.parse(line); } catch { throw invalid(); }
       if (!record(event)) throw invalid();
@@ -194,8 +208,10 @@ export async function streamComparisonBriefing(
         if (startedEvent || !record(event.deadlines)) throw invalid();
         const evidence = event.deadlines.evidence_seconds;
         const model = event.deadlines.model_seconds;
+        const context = contract.context ? event.deadlines.context_seconds : 0;
         if (!finite(evidence) || evidence <= 0 || !finite(model) || model <= 0) throw invalid();
-        const budget = (evidence + model + 15) * 1000;
+        if (!finite(context) || (contract.context && context <= 0)) throw invalid();
+        const budget = (evidence + context + model + 15) * 1000;
         if (!Number.isSafeInteger(Math.ceil(budget)) || budget > 2_147_483_647) throw invalid();
         clearTimeout(timer);
         timer = setTimeout(expire, Math.max(0, started + budget - Date.now()));
@@ -203,16 +219,16 @@ export async function streamComparisonBriefing(
         options.onProgress?.("queued");
       } else if (!startedEvent) throw invalid();
       else if (event.type === "progress") {
-        if (!choice(event.phase, ["preparing_evidence", "checking_model", "generating", "validating", "retrying"])) throw invalid();
+        if (!choice(event.phase, ["preparing_evidence", "checking_model", "generating", "validating", "retrying", ...(contract.context ? ["collecting_context"] : [])])) throw invalid();
         options.onProgress?.(event.phase as BriefingPhase);
-      } else if (event.type === "result") result = validateBriefingResult(event.result, requested);
+      } else if (event.type === "result") result = contract.validate(event.result, requested);
       else if (event.type === "error") throw new Error("The briefing failed before completion. No answer was kept; retry manually.");
       else throw invalid(); // In particular, never render unchecked provider deltas.
     };
     while (true) {
       const { done, value } = await Promise.race([reader.read(), aborted]);
       buffer += decoder.decode(value, { stream: !done });
-      if (buffer.length > 256_000) throw invalid();
+      if (buffer.length > maxRecord) throw invalid();
       const lines = buffer.split("\n");
       buffer = lines.pop() ?? "";
       for (const line of lines) apply(line);

@@ -364,10 +364,14 @@ The review boundaries are:
    exact source-to-pair references, explicit coverage checks and retained evidence
    on model failure. Context gets a bounded 40s collection budget (12s/source,
    three concurrent jobs) after price preparation; health/generation/one repair
-   share the configured model deadline. Browser opt-in remains the next slice.
+   share the configured model deadline.
 3. **Opt-in browser journey and acceptance.** Expose scope and explicit US/
    euro-area macro choices, source coverage and context citations; changing scope
-   invalidates old work. Host acceptance should inspect a genuinely more useful
+   invalidates old work. Browser integration and deterministic desktop/narrow
+   Chrome journeys are implemented. The default remains price-only; explicit
+   source selections invoke the separate context endpoints. Context references
+   open exact evidence, while source failures remain visible beside prose.
+   **Host acceptance remains the next gate:** inspect a genuinely more useful
    answer and degraded/empty/provider-failure cases before release preparation.
 
 News means bounded dated headlines from current feeds, not article-body research
