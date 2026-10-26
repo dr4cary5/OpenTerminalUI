@@ -7,6 +7,14 @@ adopt [Semantic Versioning](https://semver.org/spec/v2.0.0.html) from `1.0.0`.
 ## [Unreleased]
 
 ### Added
+- **Opt-in context briefing browser (v2.3)** — independently include dated news,
+  US FRED and euro-area macro context; all default off. Scope changes cancel and
+  clear previous work. See possible context separately from price observations,
+  inspect exact headline/series/group/section citations, and retain explicit
+  source coverage/failures even when synthesis fails. Source links, periods,
+  units, flags, counts and both snapshot identities remain inspectable. Browser
+  validation checks scope, structure and references, not prose truth. No silent
+  replay, saving or indexing. Includes desktop and narrow-screen Chrome journeys.
 - **Opt-in context briefing APIs (v2.3)** — separate authenticated evidence,
   synthesis and progress-streaming endpoints fetch selected dated headlines and
   US/euro-area macro observations within each actual price window. Bounded
@@ -14,8 +22,8 @@ adopt [Semantic Versioning](https://semver.org/spec/v2.0.0.html) from `1.0.0`.
   evidence. Checked output separates observations, possible context, limitations
   and unknowns; context statements link exact sources to pairs. Model failure
   retains the full packet; oversized input fails explicitly. References are not
-  semantic fact-checks. Existing price-only APIs and browser remain unchanged;
-  opt-in browser controls follow in the next slice.
+  semantic fact-checks. Existing price-only APIs remain unchanged; the browser
+  uses them when no context sources are selected.
 - **Optional briefing context contract (v2.3 foundation)** — a pure server-side
   projection preserves selected dated headline and US/euro-area macro evidence
   alongside the original price packet, with local citations, source metadata,

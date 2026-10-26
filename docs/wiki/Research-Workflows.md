@@ -235,12 +235,27 @@ accepted the live workflow on 2026-10-21, and v2.2.0 was published that day.
 The configured model influences prose quality; reference checks
 do not compensate for weaker reasoning, and model tuning remains later work.
 
-### v2.3 optional context APIs in development
+### v2.3 optional context briefing in development
 
-The approved next step is explicitly selected news and US/euro-area macro
-observations in the comparison briefing. The browser still uses v2.2 price-only
-briefings; visible optional panels never implicitly inform their answer.
-Separate JWT-authenticated endpoints now accept explicit context selection:
+The comparison briefing now offers a **Briefing evidence scope** fieldset.
+Keep all options off for the original price-only briefing, or independently
+select **Dated news headlines**, **US macro (FRED)** and **Euro-area macro
+(Eurostat/ECB)** before generating. Regions are not inferred from tickers;
+visible optional panels never implicitly inform the answer. Changing scope or
+comparison cancels/clears previous work without automatically running a model.
+
+Selected-source coverage stays visible alongside the answer, including partial,
+empty, failed, missing-key, timeout and no-price-window states. **Possible
+context** is distinct from **Observed movement**, limitations and unknowns.
+Click a citation or coverage link to open and focus its exact section, group,
+headline or macro series in the returned snapshot. Inspect source links,
+publication times, reference periods, units, flags, coverage counts and caps.
+The scope section distinguishes the outer context snapshot from the nested
+price-only packet, whose exclusions do not describe the entire context answer.
+Model failure retains evidence but no prose; an interrupted stream requires a
+manual retry and never automatically incurs another model run.
+
+Separate JWT-authenticated endpoints accept explicit context selection:
 
 - `POST /api/market-context/briefing-context-evidence`: prepare evidence only.
 - `POST /api/market-context/briefing-context`: prepare and synthesize.
@@ -287,8 +302,10 @@ discarded sources; the completion output cap is 4,800 tokens. Typed model
 failures return the entire packet and no prose. The stream's start event reports
 price/context/model budgets; `collecting_context` is a progress phase.
 
-Opt-in browser controls and live acceptance follow in the next reviewable slice;
-fundamentals, technicals, private research and saving remain excluded.
+Browser unit tests and deterministic desktop/narrow Chrome journeys cover the
+scope, source inspection and degraded paths. Real-data/model-quality host
+acceptance remains required before release preparation. Fundamentals, technicals,
+private research and saving remain excluded.
 
 ### Complete contract
 

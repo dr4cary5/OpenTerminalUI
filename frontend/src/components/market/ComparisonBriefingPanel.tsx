@@ -7,9 +7,15 @@ import {
 } from "../../api/comparisonBriefing";
 import { extractApiErrorMessage } from "../../api/base";
 import { TerminalPanel } from "../terminal/TerminalPanel";
+import {
+  CONTEXT_CAVEATS, streamContextBriefing,
+  type BriefingContextOptions, type ContextBriefingResult,
+} from "../../api/comparisonContextBriefing";
+import { ContextCoverage, ContextEvidenceSections } from "./BriefingContextEvidence";
 
 const PHASES: Record<BriefingPhase, string> = {
   queued: "Starting briefing", preparing_evidence: "Preparing fresh comparison evidence",
+  collecting_context: "Collecting selected dated context",
   checking_model: "Checking the model", generating: "Generating the briefing",
   validating: "Checking structure and citation references", retrying: "Repairing the model response once",
 };
@@ -51,7 +57,8 @@ function BriefingPanelContent({ selection, disabledReason }: Props) {
   const request = useRef<{ generation: number; controller?: AbortController }>({ generation: 0 });
   const [status, setStatus] = useState<"idle" | "running" | "finished" | "failed" | "cancelled">("idle");
   const [phase, setPhase] = useState<BriefingPhase>("queued");
-  const [result, setResult] = useState<ComparisonBriefingResult | null>(null);
+  const [context, setContext] = useState<BriefingContextOptions>({ news: false, macro_regions: [] });
+  const [result, setResult] = useState<ComparisonBriefingResult | ContextBriefingResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [elapsed, setElapsed] = useState(0);
   const [expanded, setExpanded] = useState(false);
@@ -83,12 +90,15 @@ function BriefingPanelContent({ selection, disabledReason }: Props) {
     setResult(null); setError(null); setExpanded(false); setCitation(null);
     setElapsed(0); setPhase("queued"); setStatus("running");
     try {
-      const response = await streamComparisonBriefing(selection, {
+      const options = {
         signal: controller.signal,
-        onProgress: (next) => {
+        onProgress: (next: BriefingPhase) => {
           if (request.current.generation === generation && !controller.signal.aborted) setPhase(next);
         },
-      });
+      };
+      const response = context.news || context.macro_regions.length
+        ? await streamContextBriefing(selection, context, options)
+        : await streamComparisonBriefing(selection, options);
       if (request.current.generation !== generation || controller.signal.aborted) return;
       setResult(response); setStatus("finished");
     } catch (failure) {
@@ -109,6 +119,12 @@ function BriefingPanelContent({ selection, disabledReason }: Props) {
   function inspect(reference: string) {
     setCitation(reference); setExpanded(true);
   }
+  function changeContext(next: BriefingContextOptions) {
+    request.current.generation += 1;
+    request.current.controller?.abort();
+    request.current.controller = undefined;
+    setContext(next); setStatus("idle"); setResult(null); setError(null); setExpanded(false); setCitation(null);
+  }
   function statements(title: string, points: BriefingStatement[]) {
     return <section aria-label={title} className="space-y-2">
       <h3 className="font-semibold">{title}</h3>
@@ -122,7 +138,8 @@ function BriefingPanelContent({ selection, disabledReason }: Props) {
       </li>)}</ul>
     </section>;
   }
-  const packet = result?.evidence;
+  const contextPacket = result && "possible_context" in result ? result.evidence : null;
+  const packet = contextPacket?.price ?? (result && !("possible_context" in result) ? result.evidence : null);
   const warnings = packet?.comparisons.filter((pair) => pair.caveats.some((caveat) => !GENERAL.has(caveat))) ?? [];
 
   return <TerminalPanel title="Comparison briefing" subtitle="On demand · citation references checked, not fact-checked">
@@ -130,8 +147,21 @@ function BriefingPanelContent({ selection, disabledReason }: Props) {
       <p className="text-terminal-muted">
         Applied selection: {selection.anchor} vs {selection.comparisons.join(", ")} · {selection.period}.
         {" "}This fetches a fresh shared-UTC, native-quote return snapshot, which may differ from the comparison below.
-        {" "}Optional news, fundamentals, SEC, macro, technical, FX/adjusted/local-date views and private research are not included—even if open elsewhere on this page.
+        {context.news || context.macro_regions.length ? " Only news and macro regions explicitly selected below will be included. Other page panels never imply inclusion. Fundamentals, SEC, technical, FX/adjusted/local-date views, private research and economic-calendar events remain excluded."
+          : " Optional news, fundamentals, SEC, macro, technical, FX/adjusted/local-date views and private research are not included—even if open elsewhere on this page."}
       </p>
+      <fieldset className="space-y-2 rounded border border-terminal-border p-3">
+        <legend className="px-1 font-semibold">Briefing evidence scope</legend>
+        <p className="text-xs text-terminal-muted">Price returns are always included when available. Context is opt-in; macro regions are not inferred from tickers. Changing scope clears the answer and cancels any running request.</p>
+        <div className="flex flex-wrap gap-x-5 gap-y-3">
+          <label className="flex items-center gap-2"><input type="checkbox" checked={context.news}
+            onChange={(event) => changeContext({ ...context, news: event.target.checked })} />Dated news headlines</label>
+          {(["us", "euro_area"] as const).map((region) => <label key={region} className="flex items-center gap-2"><input type="checkbox" checked={context.macro_regions.includes(region)}
+            onChange={(event) => changeContext({ ...context, macro_regions: (["us", "euro_area"] as const).filter((item) => item === region ? event.target.checked : context.macro_regions.includes(item)) })} />
+            {region === "us" ? "US macro (FRED)" : "Euro-area macro (Eurostat/ECB)"}</label>)}
+        </div>
+        {context.news || context.macro_regions.length ? <p className="text-xs text-terminal-warn">Headlines are unverified source text from incomplete current feeds. Macro is global reference-period context, not publication-day evidence or ticker relevance; current vintages do not establish past knowledge.</p> : null}
+      </fieldset>
       <p className="text-xs text-terminal-warn">References are checked, not the truth of the model’s prose. This is neither a causal explanation nor investment advice.</p>
       <div className="flex flex-wrap items-center gap-3">
         <button type="button" className="rounded border border-terminal-border px-3 py-2 text-terminal-accent disabled:opacity-50"
@@ -147,6 +177,7 @@ function BriefingPanelContent({ selection, disabledReason }: Props) {
       {result ? <div className="space-y-3">
         <p className="text-xs text-terminal-muted">{result.status === "complete" ? "Generated interpretation" : "Briefing unavailable"} · {new Date(result.generated_at).toLocaleString()}{result.model ? ` · model ${result.model}` : ""}</p>
         <p className="text-xs text-terminal-warn">{result.scope_notice}</p>
+        {contextPacket ? <ContextCoverage evidence={contextPacket} inspect={inspect} /> : null}
         {result.failure ? <p role="alert" className="text-terminal-warn">{result.failure.message} ({result.failure.code})</p> : null}
         {warnings.length ? <div aria-label="Mandatory evidence caveats" className="rounded border border-terminal-border p-2 text-xs text-terminal-warn">
           {warnings.map((pair) => <p key={pair.citation_id} className="mt-1">
@@ -155,6 +186,8 @@ function BriefingPanelContent({ selection, disabledReason }: Props) {
         </div> : null}
         {result.status === "complete" ? <>
           {statements("Observed movement", result.observations)}
+          {"possible_context" in result ? (result.possible_context.length ? statements("Possible context", result.possible_context)
+            : <p className="text-terminal-muted">No possible context was generated from the selected sources. Inspect coverage; this does not establish absence of relevant events.</p>) : null}
           {statements("Evidence limitations", result.limitations)}
           {statements("Unknowns", result.unknowns)}
         </> : null}
@@ -164,14 +197,20 @@ function BriefingPanelContent({ selection, disabledReason }: Props) {
             <section id={`${id}-SCOPE`} tabIndex={-1} aria-label="SCOPE evidence" className="space-y-1 rounded p-2 focus:outline focus:outline-terminal-accent">
               <h3 className="font-semibold">SCOPE: this packet only</h3>
               <p>Fetched {new Date(packet.retrieved_at).toLocaleString()} · {packet.anchor} · {packet.period}. Shared UTC daily closes; native provider-close returns, not FX-normalized or verified simultaneous sessions.</p>
-              <p>Not included (not evidence of absence): {packet.not_included.map((key) => BRIEFING_EXCLUSIONS[key]).join(", ")}.</p>
-              <p className="break-all">Snapshot ID: {packet.packet_id}</p>
-              <p>Pair citations are local to this snapshot. The hash is not a signature or a historical archive.</p>
+              {contextPacket ? <>
+                <p>Included by explicit request: {contextPacket.requested.news ? "dated headlines" : "no news"}; macro regions {contextPacket.requested.macro_regions.join(", ") || "none"}. Prepared {new Date(contextPacket.prepared_at).toLocaleString()}.</p>
+                <p>Always excluded (not evidence of absence): {contextPacket.always_excluded.map((key) => key === "economic_calendar" ? "Economic calendar" : BRIEFING_EXCLUSIONS[key as keyof typeof BRIEFING_EXCLUSIONS]).join(", ")}.</p>
+                <ul className="list-disc space-y-1 pl-5">{contextPacket.caveats.map((key) => <li key={key}>{CONTEXT_CAVEATS[key as keyof typeof CONTEXT_CAVEATS]}</li>)}</ul>
+                <p className="break-all">Price subpacket ID: {packet.packet_id}</p>
+              </> : <p>Not included (not evidence of absence): {packet.not_included.map((key) => BRIEFING_EXCLUSIONS[key]).join(", ")}.</p>}
+              <p className="break-all">Snapshot ID: {contextPacket?.packet_id ?? packet.packet_id}</p>
+              <p>All citations are local to this snapshot. The hash is not a signature or a historical archive.</p>
             </section>
             {packet.comparisons.map((pair) => <section key={pair.citation_id} id={`${id}-${pair.citation_id}`}
               tabIndex={-1} aria-label={`${pair.citation_id} evidence`} className="rounded border-t border-terminal-border p-2 focus:outline focus:outline-terminal-accent">
               <PairEvidence pair={pair} />
             </section>)}
+            {contextPacket ? <ContextEvidenceSections evidence={contextPacket} id={id} /> : null}
           </div>
         </details> : null}
       </div> : null}
