@@ -76,14 +76,19 @@ never silently faked.
   `^NSEI`, …) shows price / chart / performance + notes; issuer fundamentals
   (P/E, financials, peers, shareholding) are intentionally hidden because they
   don't apply to an index.
-- **Comparison briefings are reference-checked, not fact-checked.** v2.2's
-  opt-in synthesis includes only its fresh shared-UTC native provider-close
-  snapshot, not optional news/fundamentals/SEC/macro/technical/FX panels or private
-  research. Inspect the attached values and mandatory caveats. Citation/structure
+- **Comparison briefings are reference-checked, not fact-checked.** The default
+  remains a fresh shared-UTC native provider-close snapshot. v2.3 adds independent
+  opt-ins for dated current-feed headlines, US FRED and euro-area Eurostat/ECB
+  reference-period observations; open panels elsewhere never imply inclusion.
+  Feeds are not complete historical archives, macro dates are not publication
+  dates and current vintages do not establish past investor knowledge or issuer
+  relevance. Coverage/failures and exact source links, values, counts and flags
+  remain inspectable. Fundamentals/SEC, technical/FX views, private research and
+  economic calendars are excluded. Inspect values and caveats. Citation/structure
   validation does not prove the model's arithmetic, reasoning or compliance with
   no-advice/no-causation prompt rules. A weaker model can still produce weaker
-  prose; changing models is not part of this release. Failures retain evidence
-  when available, never partial prose or an older answer. No automatic Brain Log
+  prose; Fast/Deep model routing is scoped for v2.4, not this release. Failures
+  retain evidence when available, never partial prose or an older answer. No automatic Brain Log
   saving or retrieval indexing is introduced.
 - **Cross-market comparison is experimental and descriptive.** The read-only
   comparison API aligns each selected proxy with an anchor on common UTC daily

@@ -252,6 +252,46 @@ authorization the annotated tag and
 [GitHub release v2.2.0](https://github.com/laanito/OpenTerminalUI/releases/tag/v2.2.0)
 were published on 2026-10-21. No further release gate remains open for v2.2.
 
+### v2.3.0 verification ledger (release preparation)
+
+Context beyond price extends the selected comparison briefing with explicitly
+included dated news and US/euro-area macro reference-period observations.
+Price-only is still the default. Coverage, exact pair windows, current-vintage
+semantics and failures remain inspectable; references are checked, not prose
+truth or causation. No migration or new provider setting is required. FRED uses
+the existing `FRED_API_KEY`; the existing single LLM configuration remains in use.
+Fast/Deep task routing is approved for v2.4 and is not a v2.3 release gate.
+
+| Contract | Evidence |
+|---|---|
+| Deterministic context envelope with exact windows, source times/links, values/flags/counts, local references and explicit omissions | `backend/tests/test_market_briefing_context_evidence.py` |
+| Selected-source collection, bounded fan-out/deadlines, isolated source failure, exact source/pair citations and cancellation | `backend/tests/test_comparison_context_briefing.py` |
+| Validator-derived reference requirements, sanitized reasons/repair feedback, no raw model replay and unchanged strict checks | `backend/tests/test_briefing_validation_feedback.py`, `backend/tests/test_comparison_briefing.py` |
+| Selected-scope transport, context budget, closed references, safe URLs and no automatic inference replay | `frontend/src/__tests__/comparisonContextBriefing.test.ts`, `frontend/src/__tests__/comparisonBriefing.test.ts` |
+| Independent opt-ins, scope invalidation, coverage/failures beside prose and exact citation focus | `frontend/src/__tests__/ComparisonBriefingPanel.test.tsx`, `frontend/src/__tests__/MarketContextPage.test.tsx` |
+| Default/richer desktop and narrow-screen journeys, source inspection and missing-key degradation | `frontend/tests/e2e/comparison-briefing.spec.ts` |
+
+Implementation merged in PRs #224–#227. On 2026-10-27 the maintainer confirmed
+price-only worked and combined news+macro completed after its bounded repair.
+The instrumented first attempt logged `context_source_pair`; that does not
+diagnose the older uninstrumented failure. The fast model's shallow extraction
+and reasoning remain a known limitation, not a claim of semantic verification.
+The approved v2.4 scope is recorded in merged PR #228. Automated degraded cases
+must not be described as a fully manual host matrix.
+
+Local release verification on 2026-10-27 passed `make gate`: Python compilation,
+production-mock/surface/API guards, 1,280 backend tests (one skipped) with 76.05%
+coverage against the 45% gate, the production TypeScript/Vite build and 504
+frontend tests across 112 files. Eight installed-Chrome smoke tests (including
+desktop/narrow default and context journeys) and `docker compose config --quiet`
+also passed. Local Python was 3.12; CI uses 3.11. Generated OpenAPI differs only
+in its version, now 2.3.0; frontend/lock metadata agree.
+
+CI `build-and-test`, `clean-install` and `postgres-contract`, release-prep
+review/merge and explicit maintainer tag/GitHub
+publication authorization remain pending. Do not rebuild or tear down the host
+deployment for local verification. Confirm the dated changelog if tagging later.
+
 ## Cutting the release
 
 ```bash

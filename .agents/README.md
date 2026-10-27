@@ -13,6 +13,12 @@ approved **v2.2 Grounded Comparison Briefing** on 2026-10-19 and accepted it on
 2026-10-22 the maintainer approved **v2.3 Context beyond price**: selected dated
 news and macro context in the comparison briefing. Broader v2.x items remain backlog.
 
+v2.3.0 release preparation is active: backend/frontend and API version defaults
+are aligned to 2.3.0, while latest published release remains v2.2.0. The full local
+gate, eight Chrome smoke journeys and Compose configuration passed on 2026-10-27
+and are recorded in `docs/wiki/Releasing.md`; release-prep CI/review/merge and explicit
+tag/publication approval remain pending. v2.4 scope is approved, not started.
+
 ## Read order and sources of truth
 
 1. This file: mission, architecture, invariants, and working conventions.
@@ -87,7 +93,7 @@ release-level interpretation and safety boundaries.
 
 ## Current release and development state
 
-- **v2.3 in development — Context beyond price.** Extend the selected comparison
+- **v2.3 release preparation — Context beyond price.** Extend the selected comparison
   briefing with explicitly included dated headlines and existing US/euro-area
   macro observations, preserving scope, source links, actual pair windows,
   current-vintage/reference-period semantics and failures. First slice is a pure
@@ -157,7 +163,7 @@ release-level interpretation and safety boundaries.
   tests and six Chrome smoke tests. PR #222 passed build-and-test, clean-install
   and PostgreSQL-contract CI and merged. With explicit maintainer authorization,
   the annotated tag and GitHub release were published from `039c395` on 2026-10-21.
-- Current release: **v2.2.0**, tagged and published from `039c395` on
+- Latest published release: **v2.2.0**, tagged and published from `039c395` on
   2026-10-21 after maintainer host acceptance and green release-prep CI.
   Keep `backend/config/settings.py` and `frontend/package.json` in lockstep when
   releasing.
