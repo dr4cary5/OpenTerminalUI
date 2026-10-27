@@ -10,7 +10,7 @@ from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_valida
 from backend.config.settings import get_settings
 from backend.services.comparison_briefing import (
     BriefingStatement, ComparisonBriefingFailure, FailureCode, InvalidComparisonBriefing,
-    _FAILURES, synthesize_checked_briefing, validate_comparison_briefing,
+    _FAILURES, material_price_references, synthesize_checked_briefing, validate_comparison_briefing,
 )
 from backend.services.llm_client import LLMError, parse_json_response
 from backend.services.market_briefing_context_evidence import ComparisonContextEvidence, NewsContextSection
@@ -114,28 +114,32 @@ def _reference_rules(evidence):
 
 def validate_context_briefing(content: str, evidence: ComparisonContextEvidence) -> GeneratedContextBriefing:
     if not isinstance(content, str) or len(content) > 60_000:
-        raise InvalidComparisonBriefing("Invalid response size")
+        raise InvalidComparisonBriefing("response_size")
     try:
         result = GeneratedContextBriefing.model_validate(parse_json_response(content))
-    except (ValidationError, LLMError) as exc:
-        raise InvalidComparisonBriefing("Invalid response structure") from exc
+    except ValidationError as exc:
+        raise InvalidComparisonBriefing("response_structure", fields=[error["loc"] for error in exc.errors(include_input=False, include_context=False, include_url=False)]) from exc
+    except LLMError as exc:
+        raise InvalidComparisonBriefing("invalid_json") from exc
     if result.packet_id != evidence.packet_id:
-        raise InvalidComparisonBriefing("Wrong context snapshot")
+        raise InvalidComparisonBriefing("snapshot_mismatch")
     known, usable, missing, material = _reference_rules(evidence)
     statements = [*result.observations, *result.possible_context, *result.limitations, *result.unknowns]
     if any(set(item.citation_ids) - known for item in statements):
-        raise InvalidComparisonBriefing("Unknown context reference")
+        raise InvalidComparisonBriefing("unknown_reference")
     limited = {ref for item in result.limitations for ref in item.citation_ids}
     unknown = {ref for item in result.unknowns for ref in item.citation_ids}
-    if material - limited or missing - (limited | unknown):
-        raise InvalidComparisonBriefing("Context coverage or material limitations omitted")
-    for item in result.possible_context:
+    if material - limited:
+        raise InvalidComparisonBriefing("context_limitations", references=material - limited)
+    if missing - (limited | unknown):
+        raise InvalidComparisonBriefing("context_missing_inputs", references=missing - (limited | unknown))
+    for index, item in enumerate(result.possible_context):
         refs = set(item.citation_ids)
         inputs = refs & usable.keys()
         if not inputs or refs - (inputs | {usable[ref] for ref in inputs}):
-            raise InvalidComparisonBriefing("Possible context requires exact source and linked pair references")
+            raise InvalidComparisonBriefing("context_source_pair", fields=[("possible_context", index, "citation_ids")])
         if any(usable[ref] not in refs for ref in inputs):
-            raise InvalidComparisonBriefing("Possible context lacks its pair reference")
+            raise InvalidComparisonBriefing("context_source_pair", fields=[("possible_context", index, "citation_ids")])
     # Reuse every price coverage/caveat rule without allowing context references
     # to masquerade as price observations or removing the nested packet's scope.
     price_refs = {"SCOPE", *(pair.citation_id for pair in evidence.price.comparisons)}
@@ -146,6 +150,28 @@ def validate_context_briefing(content: str, evidence: ComparisonContextEvidence)
         projected[name] = [dict(text="Reference coverage projection only.", citation_ids=refs)] if refs else []
     validate_comparison_briefing(json.dumps(projected), evidence.price)
     return result
+
+
+def context_reference_requirements(evidence: ComparisonContextEvidence) -> dict:
+    """Explicit obligations derived from the validator, not source instructions.
+
+    Avoid making the model reverse-engineer coverage/flags across nested packets.
+    These IDs are local pointers; they neither verify facts nor provide prose.
+    """
+    known, usable, missing, material = _reference_rules(evidence)
+    available = {pair.citation_id for pair in evidence.price.comparisons if pair.status == "available"}
+    unavailable = {pair.citation_id for pair in evidence.price.comparisons if pair.status != "available"}
+    material_pairs = material_price_references(evidence.price)
+    return {
+        "packet_id": evidence.packet_id,
+        "allowed_references": sorted(known),
+        "observations_required_and_only_references": sorted(available),
+        "possible_context_source_pairs": dict(sorted(usable.items())),
+        "limitations_required_references": sorted(material | material_pairs),
+        "limitations_or_unknowns_required_references": sorted(missing | unavailable),
+        "unknowns_required_references": ["SCOPE"],
+        "unknowns_forbidden_pair_references": sorted(available),
+    }
 
 
 _SYSTEM = """Write a concise descriptive briefing from ONLY this exact context envelope.
@@ -190,6 +216,7 @@ async def generate_context_briefing(evidence: ComparisonContextEvidence, *, on_p
     parsed, failure = await synthesize_checked_briefing(
         evidence, schema=GeneratedContextBriefing.model_json_schema(), system=_SYSTEM,
         validate=validate_context_briefing, on_phase=on_phase, max_tokens=4800,
+        reference_requirements=context_reference_requirements(evidence),
     )
     if failure:
         return unavailable_context_briefing(failure, evidence=evidence, model=model)

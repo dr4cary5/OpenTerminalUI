@@ -302,6 +302,16 @@ discarded sources; the completion output cap is 4,800 tokens. Typed model
 failures return the entire packet and no prose. The stream's start event reports
 price/context/model budgets; `collecting_context` is a progress phase.
 
+Context generation receives a server-derived checklist of allowed references,
+source-to-pair links and required coverage, rather than having to infer every
+obligation from nested evidence. A failed validation logs the mode, attempt,
+short snapshot ID and a safe code such as `response_structure`,
+`context_limitations`, `context_missing_inputs` or `context_source_pair`.
+The existing single repair receives that reason plus known schema paths and
+required server IDs; rejected model prose, arbitrary extra-field names and
+provider errors are not echoed into logs or repair prompts. These diagnostics
+do not relax checks or establish that a model-quality issue has been resolved.
+
 Browser unit tests and deterministic desktop/narrow Chrome journeys cover the
 scope, source inspection and degraded paths. Real-data/model-quality host
 acceptance remains required before release preparation. Fundamentals, technicals,
