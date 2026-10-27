@@ -112,18 +112,31 @@ release-level interpretation and safety boundaries.
   headline/series citations, safe source links, exact values/counts/flags and
   separate outer/price snapshot IDs. Browser shape/reference checks do not
   fact-check prose. Desktop/narrow Chrome journeys and deterministic frontend
-  tests cover the richer and degraded paths. Maintainer host/model-quality
-  acceptance remains the next gate before release preparation. Host feedback on
+  tests cover the richer and degraded paths. Maintainer release-readiness review
+  remains pending; model-profile work is not a new release gate. Host feedback on
   2026-10-27 confirmed price-only works but news+macro hit validation failure
   after repair; the old logs did not capture which check failed. Context prompts
   now include validator-derived reference obligations, and the single repair
   gets safe reason codes/schema paths/required server IDs. Both attempts log
-  these diagnostics without rejected prose/provider secrets. Retest is pending;
-  do not infer a confirmed original root cause or relax validation. No persistence
+  these diagnostics without rejected prose/provider secrets. The maintainer
+  confirmed the news+macro retest completed after repair on 2026-10-27; attempt 1
+  logged `context_source_pair`. This does not diagnose the older uninstrumented
+  failure or certify prose quality. Shallow extraction/reasoning on the fast
+  model remains a limitation; Fast/Deep task routing is approved for v2.4, not
+  a new v2.3 gate. Do not relax validation or infer publication approval. No persistence
   or indexing is added; v2.2 request/result shapes stay price-only. Fundamentals,
   technicals, private notes, portfolio-wide context, discovery, saving and new
   provider acquisition are excluded. Calendar-provider reliability and historical
   vintage/release audits are not gates on this milestone.
+- **v2.4 scope approved, not started — Task-appropriate models.** After v2.3
+  closure, add named Fast/Deep generation profiles with explicit task routing,
+  independent model/endpoint/credentials/timeout, legacy `LLM_*` compatibility,
+  consistent deadlines and visible resolved identity. Deep failure must not
+  silently substitute Fast; credentials must not leak across endpoints.
+  Embeddings remain independent. Evaluate representative tasks for usefulness,
+  fidelity and latency, not only structure. No model deployment, autonomous
+  escalation, new evidence providers or broader validation features. See the
+  Roadmap and TODO before starting; no model-profile implementation has started.
 - **v2.2.0 released — Grounded Comparison Briefing.** The agreed outcome is
   on-demand cited synthesis of a selected comparison, with observations, possible
   context, conflicts and unknowns kept distinct. No causal explanations, trade
