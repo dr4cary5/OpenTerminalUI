@@ -8,6 +8,11 @@ On 2026-10-22 the maintainer approved v2.3 **Context beyond price**. Its bounded
 sequence below is active; the broader v2.x evidence backlog remains for
 discussion, not automatic execution.
 
+v2.3.0 release preparation is now active. Default backend/frontend metadata and
+API docs are aligned to 2.3.0; latest published release remains v2.2.0. Host
+completion and limitations are recorded below; CI/review/merge and explicit
+publication approval remain pending. v2.4 scope is approved, not started.
+
 This is a handoff, not an immutable roadmap. Before taking an item, verify it
 against recent Git history, code, and tests. Move shipped work to the completed
 section and update this file in the same PR when priorities materially change.
@@ -541,7 +546,7 @@ streams. PR #221 merged and passed maintainer testing. This does not change
 Binance's existing USDT-to-USD-symbol mapping;
 denomination fidelity remains a separate gap, not solved by this hotfix.
 
-### v2.3 — Context beyond price (in development)
+### v2.3 — Context beyond price (release preparation)
 
 Approved goal: the selected comparison briefing connects price observations with
 explicitly included, dated news and macro evidence. Keep observed movement,
@@ -587,12 +592,13 @@ for every interpretation and honest degradation when optional sources fail.
       exact evidence with source links, dates, counts, units and flags. The
       context stream reader adds the server collection budget to its deadline,
       validates the selected scope and rejects unresolved/misclassified refs.
-- [ ] Complete deterministic API/UI tests and host acceptance of useful richer
-      interpretation plus partial, empty, missing-key and timed-out cases before
-      release preparation. Evaluate claims, not just valid citation identifiers.
+- [x] Complete deterministic API/UI coverage and maintainer host completion
+      checks for price-only and combined-context flows. Automated tests cover
+      partial, empty, missing-key and timed-out states. Evaluate claims, not
+      just valid citation identifiers; model quality remains explicitly limited.
       Automated source/synthesis tests and desktop/narrow Chrome journeys are
-      implemented. Next: maintainer host acceptance with real data/model, including
-      useful possible context and partial/empty/missing-key/timeout journeys.
+      implemented. Maintainer host completion was confirmed on 2026-10-27;
+      this does not certify useful reasoning or every degraded live journey.
       Do not interpret mocked browser evidence as model-quality acceptance.
       Host feedback on 2026-10-27: price-only works, but selected news+macro failed
       validation after both attempts. Prior logs discarded the exact cause.
@@ -607,6 +613,18 @@ for every interpretation and honest degradation when optional sources fail.
       to defer dual-model routing to v2.4. Do not claim semantic fact-checking or
       manual completion of every degraded host case. Release-prep review and
       explicit publication authorization remain separate from this scope decision.
+- [x] Align backend/frontend 2.3.0 metadata, dated changelog, generated API version,
+      public README/site, roadmap, limitations and release verification ledger.
+- [x] Complete the local release gate and record its results in Releasing.md:
+      `make gate`, eight Chrome smoke journeys and Compose configuration passed
+      on 2026-10-27. Full backend: 1,280 passed/one skipped, 76.05% coverage;
+      frontend: 504 tests across 112 files. Deployment was not rebuilt.
+- [ ] Merge release preparation after CI/review, including clean-install and
+      disposable PostgreSQL contract jobs. Do not monitor CI unless requested.
+- [ ] After explicit maintainer authorization, tag and publish v2.3.0 from the
+      reviewed merge. Reconfirm the changelog date if publication is later.
+- [ ] After publication, reconcile preparation notices and release handoff before
+      starting the approved v2.4 model-profile work.
 
 Excluded: fundamentals/SEC, technical measures, private notes, portfolio-wide
 context, automatic proxy discovery, saving/Brain indexing, trade recommendations,

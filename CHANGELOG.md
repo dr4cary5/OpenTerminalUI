@@ -6,6 +6,20 @@ adopt [Semantic Versioning](https://semver.org/spec/v2.0.0.html) from `1.0.0`.
 
 ## [Unreleased]
 
+## [2.3.0] - 2026-10-27
+
+Context beyond price extends the on-demand comparison briefing with explicitly
+selected dated headlines and US/euro-area macro observations. Source coverage,
+actual pair windows, exact citation targets, limitations and unknowns remain
+inspectable; co-occurrence is not causation and reference validation is not
+semantic fact-checking. Host testing confirmed price-only and combined-context
+completion after bounded repair, while identifying the fast model's reasoning
+quality as a limitation. Fast/Deep model profiles are scoped for v2.4, not this
+release. No migration or new provider setting is required: FRED uses the
+existing `FRED_API_KEY`, and the existing LLM configuration remains in use.
+Release preparation is in review; CI, merge and explicit tag/publication approval
+remain pending.
+
 ### Added
 - **Opt-in context briefing browser (v2.3)** — independently include dated news,
   US FRED and euro-area macro context; all default off. Scope changes cancel and

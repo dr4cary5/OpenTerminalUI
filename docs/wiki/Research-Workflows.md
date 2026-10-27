@@ -235,7 +235,7 @@ accepted the live workflow on 2026-10-21, and v2.2.0 was published that day.
 The configured model influences prose quality; reference checks
 do not compensate for weaker reasoning, and model tuning remains later work.
 
-### v2.3 optional context briefing in development
+### v2.3 optional context briefing (release preparation)
 
 The comparison briefing now offers a **Briefing evidence scope** fieldset.
 Keep all options off for the original price-only briefing, or independently
@@ -313,9 +313,14 @@ provider errors are not echoed into logs or repair prompts. These diagnostics
 do not relax checks or establish that a model-quality issue has been resolved.
 
 Browser unit tests and deterministic desktop/narrow Chrome journeys cover the
-scope, source inspection and degraded paths. Real-data/model-quality host
-acceptance remains required before release preparation. Fundamentals, technicals,
-private research and saving remain excluded.
+scope, source inspection and degraded paths. On 2026-10-27 the maintainer confirmed
+price-only works and combined news/macro completed after its bounded repair;
+the first attempt logged a source/pair reference violation. The fast model's
+shallow synthesis remains a quality limitation, not another v2.3 feature gate;
+Fast/Deep task routing is approved for v2.4. Successful completion is not semantic
+verification or a claim that every degraded host case was manually tested.
+v2.3 release-prep CI/review and explicit publication approval remain pending.
+Fundamentals, technicals, private research and saving remain excluded.
 
 ### Complete contract
 

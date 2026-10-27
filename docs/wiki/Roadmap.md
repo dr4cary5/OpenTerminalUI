@@ -338,7 +338,7 @@ briefings into Brain Log or adding them to private retrieval is not implicit.
 Multi-dimensional opportunity validation remains the v3 promise. Other unchecked
 items below remain later candidates, not automatically authorized follow-ups.
 
-## v2.3 — Context beyond price (in development)
+## v2.3 — Context beyond price (release preparation)
 
 Approved on 2026-10-22: generate a briefing that connects a selected comparison
 with explicitly included dated news and macro evidence. The user should
@@ -371,8 +371,9 @@ The review boundaries are:
    Chrome journeys are implemented. The default remains price-only; explicit
    source selections invoke the separate context endpoints. Context references
    open exact evidence, while source failures remain visible beside prose.
-   **Host acceptance remains the next gate:** inspect a genuinely more useful
-   answer and degraded/empty/provider-failure cases before release preparation.
+   Automated checks cover degraded/empty/provider-failure cases; the maintainer
+   confirmed host completion for price-only and combined-context flows. Source
+   inspection remains necessary: valid references do not establish useful prose.
 
 Host feedback on 2026-10-27 confirmed price-only succeeds and selected news+macro
 completed after its bounded repair. Diagnostics identified the first attempt's
@@ -382,7 +383,11 @@ the fast model's information extraction/reasoning shallow and agreed to address
 task-appropriate model routing in v2.4, not expand v2.3. Successful completion is
 not a claim that all prose is fact-checked or that every host failure case was
 manually tested. v2.3 release preparation/publication still require the usual
-maintainer review/authorization.
+maintainer review/authorization. Backend/frontend metadata, dated changelog and
+public docs are aligned for v2.3.0 release preparation. Local verification is
+recorded in [Releasing](Releasing.md); release-prep CI/review/merge and explicit
+tag/GitHub publication approval remain pending. No migration, new provider
+setting or Fast/Deep routing is introduced in v2.3.
 
 News means bounded dated headlines from current feeds, not article-body research
 or a complete historical archive. Treat headline text as untrusted provider data,

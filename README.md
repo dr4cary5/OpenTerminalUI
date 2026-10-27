@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-2.2.0-0f172a" alt="Version 2.2.0" />
+  <img src="https://img.shields.io/badge/version-2.3.0-0f172a" alt="Version 2.3.0" />
   <img src="https://img.shields.io/badge/python-3.11-3776AB?logo=python&logoColor=white" alt="Python 3.11" />
   <img src="https://img.shields.io/badge/node-22-339933?logo=node.js&logoColor=white" alt="Node 22" />
   <img src="https://img.shields.io/badge/FastAPI-009688?logo=fastapi&logoColor=white" alt="FastAPI" />
@@ -44,6 +44,25 @@ the [surface inventory](docs/wiki/Surface-Inventory.md) and
 
 ## Current release
 
+**v2.3.0 — Context beyond price is in release preparation, not yet published.**
+In Cross-market context, the comparison briefing still defaults to price-only.
+Explicitly opt into dated news, US macro (FRED) and/or euro-area macro
+(Eurostat/ECB) for possible context alongside observed movement, limitations and
+unknowns. Coverage and failures remain visible; citations open exact evidence
+with source links, dates, units, flags and original counts. Changing scope
+cancels and clears old work. Current feeds are incomplete archives; macro
+reference dates are not publication dates or proof of past investor knowledge.
+Neither reference checks nor temporal overlap verify prose or establish causes.
+No saving/indexing, new provider setting or migration is introduced. Existing
+`FRED_API_KEY` and LLM settings apply; missing keys/providers degrade explicitly.
+The maintainer confirmed combined-context completion after repair. The fast
+model's reasoning quality remains limited; Fast/Deep profiles are approved for
+v2.4, not implemented here. The full local release gate and eight Chrome smoke
+journeys passed. Release-prep CI/merge and explicit publication
+authorization remain pending.
+
+Latest published release:
+
 [v2.2.0 — Grounded Comparison Briefing](https://github.com/laanito/OpenTerminalUI/releases/tag/v2.2.0)
 was published on **2026-10-21**. On
 Cross-market context, apply a comparison and choose **Generate briefing** for
@@ -73,8 +92,8 @@ complete historical information set or infer which disclosure supersedes another
 v2.0 introduced the bounded cross-market context journey alongside time-aware
 Second Brain and Brain Log foundations. v1 completed fork consolidation and
 base-currency portfolio accounting. See the [changelog](CHANGELOG.md) for release
-history and the [roadmap](docs/wiki/Roadmap.md) for the bounded v2.2 scope and
-later candidates.
+history and the [roadmap](docs/wiki/Roadmap.md) for bounded v2.3 scope and the
+approved, not-started v2.4 model-profile milestone.
 
 ## Quick Start
 
