@@ -31,6 +31,12 @@ adopt [Semantic Versioning](https://semver.org/spec/v2.0.0.html) from `1.0.0`.
   No providers, synthesis, public API or browser behavior change in this slice.
 
 ### Fixed
+- Make context-briefing citation obligations explicit before generation and give
+  the existing single repair attempt specific, sanitized validation feedback.
+  Log allowlisted failure codes, schema locations and required server reference
+  IDs with mode/attempt/snapshot correlation, never rejected model prose or
+  arbitrary extra fields. Validation, response contracts and deadlines remain
+  strict and unchanged. Live context-model acceptance still requires a retest.
 - Explicitly close/join the underlying comparison-briefing lifecycle when either
   stream wrapper closes, so in-flight source/model work does not await garbage
   collection. Headline fetch logs expose exception types rather than raw errors

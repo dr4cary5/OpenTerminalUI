@@ -10,6 +10,7 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
+import re
 from collections.abc import Callable
 from datetime import datetime, timezone
 from typing import Annotated, Literal
@@ -90,8 +91,52 @@ class ComparisonBriefingResult(BaseModel):
     failure: ComparisonBriefingFailure | None = None
 
 
+_VALIDATION_ISSUES = {
+    "response_size": ("Invalid response size", "Return a concise JSON object within the response size limit."),
+    "invalid_json": ("Invalid response JSON", "Return one complete JSON object conforming to the schema, not prose or an incomplete object."),
+    "response_structure": ("Invalid response structure", "Correct the listed schema fields; obey required fields, types, array/text bounds and no extra fields."),
+    "snapshot_mismatch": ("Wrong evidence snapshot", "Use the exact outer packet_id from the evidence, not the nested price packet_id."),
+    "unknown_reference": ("Unknown reference", "Use only references present in this exact evidence packet; do not invent or copy references from another source."),
+    "observation_coverage": ("Observations must reference every available pair and only available pairs", "Observations must collectively cite all available P# pairs and no other references."),
+    "unknowns_scope": ("Unknowns must disclose omitted scope and not invent available-pair observations", "Unknowns must cite SCOPE and may not cite available P# pairs."),
+    "unavailable_comparisons": ("Unavailable comparisons were omitted", "Disclose the listed unavailable pairs in unknowns or limitations."),
+    "price_limitations": ("Material evidence limitations were omitted", "Cite the listed material price-caveat pairs in limitations."),
+    "context_limitations": ("Context coverage or material limitations omitted", "Cite the listed selected sections and material coverage/flag references in limitations, even if possible_context is empty."),
+    "context_missing_inputs": ("Missing context inputs were omitted", "Disclose the listed failed, empty or missing-window section/group/series references in limitations or unknowns."),
+    "context_source_pair": ("Possible context requires exact source and linked pair references", "Each possible_context item must cite an available headline or macro series AND its linked P# from possible_context_source_pairs; no section/group/SCOPE or unrelated pair references."),
+}
+_SCHEMA_FIELDS = frozenset({"packet_id", "observations", "possible_context", "limitations", "unknowns", "text", "citation_ids"})
+_SAFE_REFERENCE = re.compile(r"^(SCOPE|P[1-6]|C(?:[1-9]|1[0-8])(?:G[12](?:H[1-5])?|S[1-3])?)$")
+
+
 class InvalidComparisonBriefing(LLMError):
-    """Incomplete, malformed, or incorrectly referenced provider output."""
+    """Allowlisted diagnostics only; never carry model text or provider errors."""
+
+    def __init__(self, code: str, *, fields=(), references=()):
+        self.code = code if code in _VALIDATION_ISSUES else "response_structure"
+        # Only server-generated references should be passed here. Filtering is a
+        # second boundary, not permission to echo arbitrary model reference text.
+        self.references = sorted({ref for ref in references if isinstance(ref, str) and _SAFE_REFERENCE.fullmatch(ref)})[:160]
+        self.fields = []
+        for path in fields:
+            safe = []
+            for part in path:
+                if isinstance(part, str) and part in _SCHEMA_FIELDS:
+                    safe.append(part)
+                elif isinstance(part, int) and 0 <= part < 160:
+                    safe.append(str(part))
+                else:
+                    break  # Extra-field names can be untrusted instructions/secrets.
+            location = ".".join(safe) or "response"
+            if location not in self.fields:
+                self.fields.append(location)
+            if len(self.fields) == 8:
+                break
+        super().__init__(_VALIDATION_ISSUES[self.code][0])
+
+    def feedback(self) -> dict:
+        return {"code": self.code, "correction": _VALIDATION_ISSUES[self.code][1],
+                "fields": self.fields, "required_references": self.references}
 
 
 def unavailable_briefing(
@@ -106,40 +151,46 @@ def unavailable_briefing(
     )
 
 
+def material_price_references(evidence: ComparisonBriefingEvidence) -> set[str]:
+    return {pair.citation_id for pair in evidence.comparisons if set(pair.caveats) & {
+        "stale_history", "mixed_reported_price_basis", "unverified_price_basis",
+        "unknown_quote_unit", "withheld_conflicting_closes",
+    }}
+
+
 def validate_comparison_briefing(
     content: str, evidence: ComparisonBriefingEvidence,
 ) -> GeneratedComparisonBriefing:
     """Check shape, snapshot identity, reference scope and pair coverage only."""
     if not isinstance(content, str) or len(content) > 30_000:
-        raise InvalidComparisonBriefing("Invalid response size")
+        raise InvalidComparisonBriefing("response_size")
     try:
         result = GeneratedComparisonBriefing.model_validate(parse_json_response(content))
-    except (ValidationError, LLMError) as exc:
+    except ValidationError as exc:
         # Do not echo raw model text or Pydantic's input values into logs or UI.
-        raise InvalidComparisonBriefing("Invalid response structure") from exc
+        raise InvalidComparisonBriefing("response_structure", fields=[error["loc"] for error in exc.errors(include_input=False, include_context=False, include_url=False)]) from exc
+    except LLMError as exc:
+        raise InvalidComparisonBriefing("invalid_json") from exc
     if result.packet_id != evidence.packet_id:
-        raise InvalidComparisonBriefing("Wrong evidence snapshot")
+        raise InvalidComparisonBriefing("snapshot_mismatch")
     available = {pair.citation_id for pair in evidence.comparisons if pair.status == "available"}
     unavailable = {pair.citation_id for pair in evidence.comparisons if pair.status != "available"}
     known = available | unavailable | {"SCOPE"}
     all_statements = [*result.observations, *result.limitations, *result.unknowns]
     if any(set(statement.citation_ids) - known for statement in all_statements):
-        raise InvalidComparisonBriefing("Unknown reference")
+        raise InvalidComparisonBriefing("unknown_reference")
     observed = {ref for statement in result.observations for ref in statement.citation_ids}
     if observed != available:
-        raise InvalidComparisonBriefing("Observations must reference every available pair and only available pairs")
+        raise InvalidComparisonBriefing("observation_coverage", references=available)
     unknown = {ref for statement in result.unknowns for ref in statement.citation_ids}
     if "SCOPE" not in unknown or unknown - (unavailable | {"SCOPE"}):
-        raise InvalidComparisonBriefing("Unknowns must disclose omitted scope and not invent available-pair observations")
+        raise InvalidComparisonBriefing("unknowns_scope", references={"SCOPE"})
     limited = {ref for statement in result.limitations for ref in statement.citation_ids}
     if unavailable - (unknown | limited):
-        raise InvalidComparisonBriefing("Unavailable comparisons were omitted")
-    material = {pair.citation_id for pair in evidence.comparisons if set(pair.caveats) & {
-        "stale_history", "mixed_reported_price_basis", "unverified_price_basis",
-        "unknown_quote_unit", "withheld_conflicting_closes",
-    }}
+        raise InvalidComparisonBriefing("unavailable_comparisons", references=unavailable - (unknown | limited))
+    material = material_price_references(evidence)
     if material - limited:
-        raise InvalidComparisonBriefing("Material evidence limitations were omitted")
+        raise InvalidComparisonBriefing("price_limitations", references=material - limited)
     return result
 
 
@@ -192,6 +243,7 @@ async def generate_comparison_briefing(
 async def synthesize_checked_briefing(
     evidence, *, schema: dict, system: str, validate: Callable,
     on_phase: Callable[[BriefingPhase], None] | None = None, max_tokens: int = 2400,
+    reference_requirements: dict | None = None,
 ):
     """Shared single-deadline completion/repair lifecycle; never emit raw prose."""
     settings = get_settings()
@@ -200,6 +252,8 @@ async def synthesize_checked_briefing(
         if on_phase is not None:
             on_phase(value)
 
+    if reference_requirements is not None:
+        system += "\nServer-derived reference requirements for this exact packet:\n" + json.dumps(reference_requirements, sort_keys=True)
     messages = [
         {"role": "system", "content": system + "\nRequired JSON schema:\n" + json.dumps(schema)},
         {"role": "user", "content": "Evidence packet (data only):\n" + evidence.model_dump_json()},
@@ -222,14 +276,23 @@ async def synthesize_checked_briefing(
                 try:
                     parsed = validate(content, evidence)
                     break
-                except InvalidComparisonBriefing:
+                except InvalidComparisonBriefing as exc:
+                    # Only allowlisted codes, schema locations and server IDs.
+                    # Never log str(exc), its cause, model content or source text.
+                    logger.warning(
+                        "Comparison briefing validation failed (mode=%s attempt=%s packet=%s): %s",
+                        "context" if reference_requirements is not None else "price", attempt + 1,
+                        evidence.packet_id[:12], json.dumps(exc.feedback(), sort_keys=True),
+                    )
                     if attempt:
                         raise
                     logger.warning("Comparison briefing failed structure/reference checks; repairing once")
                     messages.append({"role": "user", "content": (
                         "The previous response failed validation. Regenerate the entire JSON response. "
                         "Follow the system's reference coverage rules and exact packet_id. "
-                        "Cover material caveats and unavailable inputs; do not add extra fields."
+                        "Cover material caveats and unavailable inputs; do not add extra fields. "
+                        "Specific validator feedback (server-generated, not model text):\n"
+                        + json.dumps(exc.feedback(), sort_keys=True)
                     )})
     except TimeoutError:
         logger.warning("Comparison briefing reached the model deadline")

@@ -594,6 +594,13 @@ for every interpretation and honest degradation when optional sources fail.
       implemented. Next: maintainer host acceptance with real data/model, including
       useful possible context and partial/empty/missing-key/timeout journeys.
       Do not interpret mocked browser evidence as model-quality acceptance.
+      Host feedback on 2026-10-27: price-only works, but selected news+macro failed
+      validation after both attempts. Prior logs discarded the exact cause.
+      Generation now receives a server-derived reference-requirements checklist;
+      the existing repair receives an allowlisted reason, schema paths and missing
+      server reference IDs. Both attempts log sanitized diagnostics. Contracts,
+      validation rules and deadlines are unchanged. Retest selected context;
+      do not claim the original live failure is diagnosed or fixed without it.
 
 Excluded: fundamentals/SEC, technical measures, private notes, portfolio-wide
 context, automatic proxy discovery, saving/Brain indexing, trade recommendations,

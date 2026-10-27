@@ -113,7 +113,13 @@ release-level interpretation and safety boundaries.
   separate outer/price snapshot IDs. Browser shape/reference checks do not
   fact-check prose. Desktop/narrow Chrome journeys and deterministic frontend
   tests cover the richer and degraded paths. Maintainer host/model-quality
-  acceptance remains the next gate before release preparation. No persistence
+  acceptance remains the next gate before release preparation. Host feedback on
+  2026-10-27 confirmed price-only works but news+macro hit validation failure
+  after repair; the old logs did not capture which check failed. Context prompts
+  now include validator-derived reference obligations, and the single repair
+  gets safe reason codes/schema paths/required server IDs. Both attempts log
+  these diagnostics without rejected prose/provider secrets. Retest is pending;
+  do not infer a confirmed original root cause or relax validation. No persistence
   or indexing is added; v2.2 request/result shapes stay price-only. Fundamentals,
   technicals, private notes, portfolio-wide context, discovery, saving and new
   provider acquisition are excluded. Calendar-provider reliability and historical
