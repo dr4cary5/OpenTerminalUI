@@ -374,6 +374,16 @@ The review boundaries are:
    **Host acceptance remains the next gate:** inspect a genuinely more useful
    answer and degraded/empty/provider-failure cases before release preparation.
 
+Host feedback on 2026-10-27 confirmed price-only succeeds and selected news+macro
+completed after its bounded repair. Diagnostics identified the first attempt's
+`context_source_pair` violation; do not infer that the final answer was invalid
+or that this diagnoses the earlier uninstrumented failure. The maintainer found
+the fast model's information extraction/reasoning shallow and agreed to address
+task-appropriate model routing in v2.4, not expand v2.3. Successful completion is
+not a claim that all prose is fact-checked or that every host failure case was
+manually tested. v2.3 release preparation/publication still require the usual
+maintainer review/authorization.
+
 News means bounded dated headlines from current feeds, not article-body research
 or a complete historical archive. Treat headline text as untrusted provider data,
 not instructions or verified facts. Initial macro scope is existing FRED US and
@@ -386,6 +396,40 @@ wide analysis, automatic proxy discovery, saving/Brain indexing, historical
 market-knowledge audits, model upgrades, trade advice and execution. These do not
 become compulsory sub-releases. v3 remains thesis-oriented multi-dimensional
 validation; v2.3 improves contextual understanding, not an investment verdict.
+
+## v2.4 — Task-appropriate models (approved scope, not started)
+
+Agreed on 2026-10-27, after the v2.3 host test: keep quick AI tasks responsive
+without asking the same small model to perform every deep synthesis. Configure
+two named generation profiles, **Fast** and **Deep**, and route tasks explicitly.
+This milestone follows v2.3 closure; it is not another v2.3 release gate.
+
+- **Fast:** sentiment scoring, classification and short summaries. **Deep:**
+  Second Brain answers, comparison/context briefings, Interrogate and portfolio
+  risk synthesis. Start implementation by auditing actual call sites and their
+  contracts; no model-based router or automatic escalation chain.
+- Each profile supports an independent model, endpoint, credentials and timeout,
+  allowing one serving host or different providers. Keep embedding configuration
+  independent; this work must not trigger reindexing or change embedding models.
+  Never inherit credentials accidentally across provider endpoints.
+- Existing `LLM_*` settings remain the Fast/default configuration. Without a
+  configured Deep profile, retain legacy single-model behavior and show the
+  resolved model honestly. Once Deep is configured, failure must not silently
+  substitute Fast or incur an additional unrequested inference run.
+- Resolve the profile consistently for client selection, health checks, request/
+  repair deadlines, streaming/browser budgets and reported model identity. Show
+  the selected profile/resolved model in affected AI experiences without exposing
+  credentials. Keep cancellation, bounded repair, strict evidence validation,
+  owner scope and existing degraded/no-model paths intact.
+- Verify routing/configuration compatibility and failure isolation deterministically,
+  then compare a small representative set of simple and deep tasks on configured
+  models. Assess usefulness, source fidelity, citation correctness, unknowns and
+  latency—not just schema validity. Profile names do not certify model quality.
+
+**Outside v2.4:** choosing/purchasing/deploying a particular model, model training,
+automatic model judges or multi-model voting, autonomous retries/escalation,
+new evidence providers, broader thesis-validation features and execution. This
+is bounded routing/configuration plus evaluation, not a general LLM framework.
 
 ## v2 opening principle — time-aware memory
 

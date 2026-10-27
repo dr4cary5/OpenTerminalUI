@@ -36,13 +36,16 @@ adopt [Semantic Versioning](https://semver.org/spec/v2.0.0.html) from `1.0.0`.
   Log allowlisted failure codes, schema locations and required server reference
   IDs with mode/attempt/snapshot correlation, never rejected model prose or
   arbitrary extra fields. Validation, response contracts and deadlines remain
-  strict and unchanged. Live context-model acceptance still requires a retest.
+  strict and unchanged. The maintainer confirmed the context retest completed
+  after repair; deeper reasoning quality is deferred to the v2.4 model profiles.
 - Explicitly close/join the underlying comparison-briefing lifecycle when either
   stream wrapper closes, so in-flight source/model work does not await garbage
   collection. Headline fetch logs expose exception types rather than raw errors
   that could contain provider credentials.
 
 ### Documentation
+- Record successful context-briefing repair on the host and the approved,
+  not-started v2.4 Fast/Deep model-profile scope. Keep it outside v2.3 release gates.
 - Record the approved v2.3 **Context beyond price** scope and review sequence;
   broader evidence work and thesis validation remain outside this milestone.
 - Reconcile the README, maintained wiki and external-agent handoff with published

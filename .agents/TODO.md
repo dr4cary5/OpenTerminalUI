@@ -599,8 +599,14 @@ for every interpretation and honest degradation when optional sources fail.
       Generation now receives a server-derived reference-requirements checklist;
       the existing repair receives an allowlisted reason, schema paths and missing
       server reference IDs. Both attempts log sanitized diagnostics. Contracts,
-      validation rules and deadlines are unchanged. Retest selected context;
-      do not claim the original live failure is diagnosed or fixed without it.
+      validation rules and deadlines are unchanged. Retest on 2026-10-27 logged
+      `context_source_pair` on attempt 1 and the maintainer confirmed completion
+      after repair; price-only also works. This identifies the instrumented first
+      attempt, not the earlier uninstrumented failure. The fast model's shallow
+      extraction/reasoning remains a quality limitation; the maintainer agreed
+      to defer dual-model routing to v2.4. Do not claim semantic fact-checking or
+      manual completion of every degraded host case. Release-prep review and
+      explicit publication authorization remain separate from this scope decision.
 
 Excluded: fundamentals/SEC, technical measures, private notes, portfolio-wide
 context, automatic proxy discovery, saving/Brain indexing, trade recommendations,
@@ -608,8 +614,29 @@ execution and new providers. Initial macro scope is existing US/euro-area
 reference-period observations, not economic-calendar feeds or historical market-
 knowledge reconstruction. Model upgrades are not an implementation gate.
 
+### v2.4 — Task-appropriate models (approved, not started)
+
+Agreed on 2026-10-27; implement only after v2.3 closure. Canonical scope is in
+`docs/wiki/Roadmap.md`, not a new v2.3 acceptance gate.
+
+- [ ] Audit generation call sites and define explicit Fast/Deep task routing.
+      Fast covers sentiment/classification/short summaries; Deep covers Brain,
+      comparison briefings, Interrogate and portfolio risk synthesis.
+- [ ] Support independent profile model/endpoint/credentials/timeout, preserving
+      existing `LLM_*` behavior when Deep is unset. Never accidentally forward
+      credentials across endpoints. Embeddings stay independent and unchanged.
+- [ ] Resolve health checks, model requests, repair/stream/browser deadlines and
+      displayed profile/model identity consistently. Configured Deep failures
+      must remain explicit, not silently fall back to Fast or trigger escalation.
+- [ ] Test backward compatibility, task routing, failure isolation, secret handling
+      and cancellation/deadlines; assess usefulness/source fidelity/latency on a
+      small representative simple/deep task set with configured models.
+
+No model acquisition/deployment, training, voting/model judges, autonomous
+escalation, new evidence or broader thesis-validation features are included.
+
 Unchecked evidence-ledger entries below remain later candidates unless the
-bounded v2.3 sequence explicitly includes them.
+bounded v2.3/v2.4 sequence explicitly includes them.
 
 ### v2 evidence implementation ledger — shipped work and later gaps
 
